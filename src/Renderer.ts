@@ -49,10 +49,7 @@ export class Renderer {
     }
   
     async initialize(geometry:Geometry,material:Material,uniforms:Float32Array): Promise<void> {
-
         this.mesh = new Mesh(this.device, geometry,material, uniforms);
-
-
         this.renderPipeline = this.device.createRenderPipeline(this.mesh.pipelineDescriptor());
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
@@ -74,8 +71,6 @@ export class Renderer {
                 view: this.context.getCurrentTexture().createView()
             }]
         };
-
-
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
         this.mesh.uniformBufferArray.set([time], 3); // time    
         this.mesh.updateUniforms();
