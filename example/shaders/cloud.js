@@ -19,8 +19,8 @@ exports.cloudWglsl =
         [[location(0)]] uv: vec2<f32>;
       };
 
-      let cloudscale: vec2<f32> = vec2<f32>(1.1, 1.1);
-      let speed: f32 = 0.03;
+     let cloudscale: vec2<f32> = vec2<f32>(1.1, 1.1);
+     let speed: f32 = 0.03;
      let clouddark: f32 = 0.5;
      let cloudlight: f32 = 0.3;
      let cloudcover: f32 = 0.2;
@@ -31,7 +31,7 @@ exports.cloudWglsl =
 
      let m: mat2x2<f32> = mat2x2<f32>(vec2<f32>(1.6,  1.2), vec2<f32>(-1.2,  1.6) );
 
-    let ZERO_VEC3: vec3<f32> = vec3<f32>(0., 0., 0.);
+     let ZERO_VEC3: vec3<f32> = vec3<f32>(0., 0., 0.);
 
     fn hash(p: vec2<f32>) -> vec2<f32> {
         var r: vec2<f32> = vec2<f32>(dot(p, vec2<f32>(127.1, 311.7)), dot(p, vec2<f32>(269.5, 183.3)));
@@ -58,8 +58,7 @@ exports.cloudWglsl =
 
       
       [[stage(vertex)]]
-
-
+      
       fn main_vertex(input: VertexInput) -> VertexOutput {
         var output: VertexOutput;
         var pos: vec2<f32> = input.pos * 2.0 - 1.0;
@@ -70,15 +69,15 @@ exports.cloudWglsl =
       
     fn main(fragCoord: vec2<f32>) -> vec4<f32> {
 
-        var p: vec2<f32> = (fragCoord + vec2<f32>(1., 1.)) * vec2<f32>(0.5, 0.5);
+    var p: vec2<f32> = (fragCoord + vec2<f32>(1., 1.)) * vec2<f32>(0.5, 0.5);
     var aspect: f32 = u.resolution.x / u.resolution.y;
-	var uv: vec2<f32> = p * vec2<f32>(aspect, 1.0);    
+	  var uv: vec2<f32> = p * vec2<f32>(aspect, 1.0);    
     var time: f32 = u.time * speed;
     var q: f32 = 0.;
     
     //ridged noise shape
-	var r: f32 = 0.0;
-	uv = uv * cloudscale;
+	  var r: f32 = 0.0;
+	  uv = uv * cloudscale;
     uv = uv - vec2<f32>(q - time, q - time);
     var weight: f32 = 0.8;
     for (var i: i32 = 0; i < 8; i = i + 1){
@@ -118,13 +117,13 @@ exports.cloudWglsl =
     var c1: f32 = 0.0;
     time = u.time * speed * 3.;
     uv = p * vec2<f32>(aspect, 1.0);
-	uv = uv * cloudscale * 3.0;
+  	uv = uv * cloudscale * 3.0;
     uv = uv - vec2<f32>(q - time, q - time);
     weight = 0.4;
     for (var i: i32 = 0; i < 7; i = i + 1) {
-	 	c1 = c1 + abs(weight * noise(uv));
+	     	c1 = c1 + abs(weight * noise(uv));
         uv = m * uv + vec2<f32>(time, time);
-	 	weight = weight * 0.6;
+  	   	weight = weight * 0.6;
     }
 	
     c = c + c1;
@@ -136,11 +135,10 @@ exports.cloudWglsl =
     
     var fc: f32 = clamp(f + c, 0.0, 1.0);
     var result: vec3<f32> = mix(skycolor, clamp(skytint * skycolor + cloudcolor, ZERO_VEC3, vec3<f32>(1.0, 1.0, 1.0)), vec3<f32>(fc, fc, fc));
-    
         
-        
-        return vec4<f32>(result,1.0);
-      }
+    return vec4<f32>(result,1.0);
+
+    }
       
       [[stage(fragment)]]
       fn main_fragment(in: VertexOutput) -> [[location(0)]] vec4<f32> {

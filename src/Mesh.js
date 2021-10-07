@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mesh = void 0;
 class Mesh {
-    constructor(device, geometry, material, uniformBufferArray) {
+    constructor(device, geometry, material, uniformBufferArray, numOfTextures = 0) {
         this.device = device;
         this.geometry = geometry;
         this.material = material;
@@ -11,15 +11,35 @@ class Mesh {
             size: 20,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
-        this.bindGroupLayout = this.device.createBindGroupLayout({
-            entries: [{
-                    binding: 0,
+        const layoutEntrys = [
+            {
+                binding: 0,
+                visibility: window.GPUShaderStage.FRAGMENT,
+                buffer: {
+                    type: "uniform"
+                }
+            }
+        ];
+        if (numOfTextures > 0) {
+            layoutEntrys.push({
+                binding: 1,
+                visibility: window.GPUShaderStage.FRAGMENT,
+                sampler: {
+                    type: "filtering"
+                }
+            });
+            for (let i = 0; i < numOfTextures; i++) {
+                layoutEntrys.push({
+                    binding: 2 + i,
                     visibility: window.GPUShaderStage.FRAGMENT,
-                    buffer: {
-                        type: "uniform"
+                    texture: {
+                        sampleType: "float"
                     }
-                },
-            ],
+                });
+            }
+        }
+        this.bindGroupLayout = this.device.createBindGroupLayout({
+            entries: layoutEntrys
         });
         this.pipelineLayout = this.device.createPipelineLayout({
             bindGroupLayouts: [this.bindGroupLayout],
@@ -42,6 +62,11 @@ class Mesh {
                         format: 'bgra8unorm'
                     }]
             },
+            // depthStencil: {
+            //     format: 'depth32float',
+            //     depthWriteEnabled: true,
+            //     depthCompare: 'less'
+            // },
             primitive: {
                 topology: 'triangle-list',
             },

@@ -17,6 +17,8 @@ const plasma_1 = require("./shaders/plasma");
 document.addEventListener("DOMContentLoaded", () => {
     const renderer = new Renderer_1.Renderer(document.querySelector('canvas'));
     renderer.getDevice().then((device) => __awaiter(void 0, void 0, void 0, function* () {
+        // quad (2x tri's)
+        // x,y,z,w,r,g,b,a
         const vertices = new Float32Array([
             -1, 1, 0, 1, 0, 1, 1, 1,
             -1, -1, 0, 1, 0, 1, 1, 1,
@@ -27,9 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
         ]);
         // width,height,devicePixelRatio,time 
         const uniforms = new Float32Array([renderer.canvas.width, renderer.canvas.height, devicePixelRatio, 0]);
-        const geometry = new Geometry_1.Geometry(device, vertices); // quad ( two triangles)
+        const geometry = new Geometry_1.Geometry(device, vertices);
         const material = new Material_1.Material(device, plasma_1.plasmaWglsl);
-        renderer.initialize(geometry, material, uniforms).then(() => {
+        const textures = [{
+                key: "textureA",
+                path: "/example/assets/channel0.jpg"
+            },
+            {
+                key: "textureB",
+                path: "/example/assets/channel1.jpg"
+            }
+        ];
+        renderer.initialize(geometry, material, uniforms, textures).then(() => {
             renderer.render();
         });
     }));

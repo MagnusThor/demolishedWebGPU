@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Renderer = void 0;
 const Mesh_1 = require("./Mesh");
+const TextureLoader_1 = require("./TextureLoader");
 class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
@@ -18,6 +19,7 @@ class Renderer {
             this.draw(performance.now() / 1000);
             requestAnimationFrame(this.render);
         };
+        this.textures = new Array();
     }
     getDevice() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -51,18 +53,42 @@ class Renderer {
             return this.device;
         });
     }
-    initialize(geometry, material, uniforms) {
+    initialize(geometry, material, uniforms, texture) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.mesh = new Mesh_1.Mesh(this.device, geometry, material, uniforms);
+            for (let i = 0; i < texture.length; i++) {
+                this.textures.push(yield TextureLoader_1.TextureLoader.createTexture(this.device, texture[i]));
+            }
+            this.mesh = new Mesh_1.Mesh(this.device, geometry, material, uniforms, texture.length);
             this.renderPipeline = this.device.createRenderPipeline(this.mesh.pipelineDescriptor());
+            const bindingGroupEntrys = [{
+                    binding: 0,
+                    resource: {
+                        buffer: this.mesh.uniformBuffer
+                    }
+                }];
+            // add a sampler if there is textures passed 
+            if (this.textures.length > 0) {
+                const sampler = this.device.createSampler({
+                    addressModeU: 'repeat',
+                    addressModeV: 'repeat',
+                    magFilter: 'linear',
+                    minFilter: 'nearest'
+                });
+                bindingGroupEntrys.push({
+                    binding: 1,
+                    resource: sampler
+                });
+            }
+            this.textures.forEach((t, i) => {
+                const entry = {
+                    binding: i + 2,
+                    resource: t.createView()
+                };
+                bindingGroupEntrys.push(entry);
+            });
             this.bindingGroup = this.device.createBindGroup({
                 layout: this.renderPipeline.getBindGroupLayout(0),
-                entries: [{
-                        binding: 0,
-                        resource: {
-                            buffer: this.mesh.uniformBuffer
-                        }
-                    }],
+                entries: bindingGroupEntrys,
             });
         });
     }

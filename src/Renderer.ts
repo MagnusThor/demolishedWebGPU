@@ -1,6 +1,7 @@
 import { Geometry } from "./Geometry";
 import { Material } from "./Material";
 import { Mesh } from "./Mesh";
+import { ITexture, TextureLoader } from "./TextureLoader";
 
 export class Renderer {
     adapter: GPUAdapter;
@@ -17,7 +18,10 @@ export class Renderer {
     material: Material;
     mesh: Mesh;
 
+    textures: Array<GPUTexture>;
+
     constructor(public canvas: HTMLCanvasElement) {
+        this.textures = new Array<GPUTexture>();
     }
     async getDevice(): Promise<GPUDevice> {
         const device = await this.initializeAPI();
@@ -48,19 +52,52 @@ export class Renderer {
         return this.device;
     }
   
-    async initialize(geometry:Geometry,material:Material,uniforms:Float32Array): Promise<void> {
-        this.mesh = new Mesh(this.device, geometry,material, uniforms);
+    async initialize(geometry:Geometry,material:Material,uniforms:Float32Array,texture:Array<ITexture>): Promise<void> {
+
+        for(let i = 0 ; i < texture.length;i++){
+            this.textures.push(await TextureLoader.createTexture(this.device,texture[i]));            
+        }     
+        
+        this.mesh = new Mesh(this.device, geometry,material, uniforms,texture.length);
+
         this.renderPipeline = this.device.createRenderPipeline(this.mesh.pipelineDescriptor());
+
+        const bindingGroupEntrys:Array<GPUBindGroupEntry> =  [{
+            binding: 0,
+            resource: {
+                buffer: this.mesh.uniformBuffer
+            }
+        }];        
+
+        // add a sampler if there is textures passed 
+        if(this.textures.length >0){
+            const sampler = this.device.createSampler({
+                addressModeU: 'repeat',
+                addressModeV: 'repeat',
+                magFilter: 'linear',
+                minFilter: 'nearest'
+              });
+
+            bindingGroupEntrys.push({
+                binding:1,
+                resource: sampler
+            });
+        }
+
+        this.textures.forEach( (t,i) => {
+            const entry:GPUBindGroupEntry = {
+                    binding:i+2,
+                    resource: t.createView()
+            }
+            bindingGroupEntrys.push(entry);     
+        });
+
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
-            entries: [{
-                binding: 0,
-                resource: {
-                    buffer: this.mesh.uniformBuffer
-                }
-            }],
+            entries:bindingGroupEntrys,
         });
     }  
+
     draw(time: number) {
         this.commandEncoder = this.device.createCommandEncoder();
         const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
@@ -72,7 +109,9 @@ export class Renderer {
             }]
         };
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
+
         this.mesh.uniformBufferArray.set([time], 3); // time    
+        
         this.mesh.updateUniforms();
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setVertexBuffer(0, this.mesh.geometry.vertexBuffer);

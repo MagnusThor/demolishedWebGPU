@@ -53,8 +53,8 @@ export const plasmaWglsl =
         var color: vec3<f32> = vec3<f32>(cc, cc, cc);
         color = clamp(color, vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(1.0, 1.0, 1.0));
     
-        var tint: vec3<f32>= vec3<f32>(uv.x, uv.y, (1.0 - uv.x) * (1.0 - uv.y));
-        return vec4<f32>(color* tint,1.0);
+        //var tint: vec3<f32>= vec3<f32>(uv.x, uv.y, (1.0 - uv.x) * (1.0 - uv.y));
+        return vec4<f32>(color,1.0);
 
       }
       

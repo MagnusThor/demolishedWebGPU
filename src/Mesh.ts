@@ -4,21 +4,48 @@ export class Mesh {
     uniformBuffer: GPUBuffer;
     private bindGroupLayout: GPUBindGroupLayout;
     pipelineLayout: GPUPipelineLayout;
-    constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, public uniformBufferArray: Float32Array) {
+    constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, public uniformBufferArray: Float32Array, numOfTextures: number = 0) {
+
         this.uniformBuffer = this.device.createBuffer({
             size: 20,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
-        this.bindGroupLayout = this.device.createBindGroupLayout({
-            entries: [{
+
+        const layoutEntrys: Array<GPUBindGroupLayoutEntry> = [
+            { // uniforms is manadory
                 binding: 0,
                 visibility: window.GPUShaderStage.FRAGMENT,
                 buffer: {
                     type: "uniform"
                 }
-            },
-            ],
+            }
+        ];
+
+        if (numOfTextures > 0) {
+            layoutEntrys.push({ // sampler
+                binding: 1,
+                visibility: window.GPUShaderStage.FRAGMENT,
+                sampler: {
+                    type: "filtering"
+                }
+            });
+
+            for (let i = 0; i < numOfTextures;i++) {
+                layoutEntrys.push( { // 1-n texture bindings?
+                    binding:2+i,
+                    visibility:window.GPUShaderStage.FRAGMENT,
+                    texture:{
+                        sampleType:"float"   
+                    }
+                }   )
+            }
+
+        }
+
+        this.bindGroupLayout = this.device.createBindGroupLayout({
+            entries: layoutEntrys
         });
+
         this.pipelineLayout = this.device.createPipelineLayout({
             bindGroupLayouts: [this.bindGroupLayout],
         });
@@ -46,6 +73,11 @@ export class Mesh {
                     format: 'bgra8unorm'
                 }]
             },
+            // depthStencil: {
+            //     format: 'depth32float',
+            //     depthWriteEnabled: true,
+            //     depthCompare: 'less'
+            // },
             primitive: {
                 topology: 'triangle-list',
             },
