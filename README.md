@@ -10,6 +10,7 @@ This an early version, but the following features will be available shortly;
 1. Multi-pass (1-n shader programs/buffers) 
 2. 1-n textures
 3. Custom uniforms
+4. glslang (optional) 
 
 As in demolishedRenderer the goal is to keep the *engine* tiny, and its written mainly for a demo-scene purpose, but as demolishedRenderer 
  you can use in graphics/rendering itense webapplications. 
@@ -18,11 +19,13 @@ As in demolishedRenderer the goal is to keep the *engine* tiny, and its written 
 # Example
 
 
-
     const renderer = new Renderer(document.querySelector('canvas'));
 
     renderer.getDevice().then(async device => {
-    
+
+    // quad (2x tri's)
+    // x,y,z,w,r,g,b,a
+  
     const vertices = new Float32Array([
       -1, 1, 0, 1, 0, 1, 1, 1,
       -1, -1, 0, 1, 0, 1, 1, 1,
@@ -33,15 +36,27 @@ As in demolishedRenderer the goal is to keep the *engine* tiny, and its written 
       1, 1, 0, 1, 0, 1, 1, 1,
     ]);
 
-    // width,height,devicePixelRatio,time 
+    // create a uniform buffer -> width,height,devicePixelRatio,time 
+
     const uniforms = new Float32Array([renderer.canvas.width, renderer.canvas.height, devicePixelRatio, 0]);
 
-    const geometry = new Geometry(device, vertices); // quad ( two triangles)
-    const material = new Material(device, cloudWglsl)
+    const geometry = new Geometry(device, vertices);
+    const material = new Material(device, plasmaWglsl)
 
-    renderer.initialize(geometry, material, uniforms).then(() => {
-      renderer.render();
-    })
+    const textures: Array<ITexture> = [{  
+        key: "textureA",
+        path: "/example/assets/channel0.jpg"
+      },
+      {
+        key: "textureB",
+        path: "/example/assets/channel1.jpg"
+      }
+      ];
+
+      renderer.initialize(geometry, material, uniforms, textures).then(() => {
+        renderer.render();
+      })
+    });
 
 
 ## Vertex & Fragment shader modules
