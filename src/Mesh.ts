@@ -50,6 +50,12 @@ export class Mesh {
             bindGroupLayouts: [this.bindGroupLayout],
         });
     }
+
+
+    setDimensions(width:number,height:number,dpr:number=0):void{
+        this.uniformBufferArray.set([width,height,dpr],0);
+    }
+    
     updateUniforms() {
         this.device.queue.writeBuffer(
             this.uniformBuffer,

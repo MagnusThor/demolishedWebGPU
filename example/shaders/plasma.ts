@@ -24,10 +24,7 @@ export const plasmaWglsl =
         output.uv = input.pos;
         return output;
       }
-
-       // your shader code implementation -->
-
-     
+       // your shader code implementation -->     
       let MAX_ITER: i32 = 20;
       let TAU: f32 = 7.28318530718;
             

@@ -45,6 +45,9 @@ class Mesh {
             bindGroupLayouts: [this.bindGroupLayout],
         });
     }
+    setDimensions(width, height, dpr = 0) {
+        this.uniformBufferArray.set([width, height, dpr], 0);
+    }
     updateUniforms() {
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
     }

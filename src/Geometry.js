@@ -4,11 +4,13 @@ exports.Geometry = void 0;
 class Geometry {
     constructor(device, vertices) {
         this.device = device;
+        this.vertices = vertices;
         this.vertexBuffer = this.device.createBuffer({
             size: vertices.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
             mappedAtCreation: true
         });
+        this.numOfVerticles = vertices.length / 4;
         new Float32Array(this.vertexBuffer.getMappedRange()).set(vertices);
         this.vertexBuffer.unmap();
     }

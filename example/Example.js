@@ -12,25 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Geometry_1 = require("../src/Geometry");
 const Material_1 = require("../src/Material");
 const Renderer_1 = require("../src/Renderer");
-//import { cloudWglsl } from "./shaders/cloud";
-const plasma_1 = require("./shaders/plasma");
+const cloud_1 = require("./shaders/cloud");
+const rect_1 = require("./meshes/rect");
 document.addEventListener("DOMContentLoaded", () => {
     const renderer = new Renderer_1.Renderer(document.querySelector('canvas'));
     renderer.getDevice().then((device) => __awaiter(void 0, void 0, void 0, function* () {
-        // quad (2x tri's)
-        // x,y,z,w,r,g,b,a
-        const vertices = new Float32Array([
-            -1, 1, 0, 1, 0, 1, 1, 1,
-            -1, -1, 0, 1, 0, 1, 1, 1,
-            1, -1, 0, 1, 0, 1, 1, 1,
-            -1, 1, 0, 1, 0, 1, 1, 1,
-            1, -1, 0, 1, 0, 1, 1, 1,
-            1, 1, 0, 1, 0, 1, 1, 1,
-        ]);
-        // width,height,devicePixelRatio,time 
-        const uniforms = new Float32Array([renderer.canvas.width, renderer.canvas.height, devicePixelRatio, 0]);
-        const geometry = new Geometry_1.Geometry(device, vertices);
-        const material = new Material_1.Material(device, plasma_1.plasmaWglsl);
+        const dpr = window.devicePixelRatio || 1;
+        const geometry = new Geometry_1.Geometry(device, rect_1.rextVertexArray);
+        const material = new Material_1.Material(device, cloud_1.cloudWglsl);
         const textures = [{
                 key: "textureA",
                 path: "/example/assets/channel0.jpg"
@@ -40,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 path: "/example/assets/channel1.jpg"
             }
         ];
-        renderer.initialize(geometry, material, uniforms, textures).then(() => {
+        renderer.initialize(geometry, material, textures).then(() => {
             renderer.render();
         });
     }));

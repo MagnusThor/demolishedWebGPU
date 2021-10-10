@@ -10,11 +10,9 @@ This an early version, but the following features will be available shortly;
 1. Multi-pass (1-n shader programs/buffers) 
 2. 1-n textures
 3. Custom uniforms
-4. glslang (optional) 
 
 As in demolishedRenderer the goal is to keep the *engine* tiny, and its written mainly for a demo-scene purpose, but as demolishedRenderer 
- you can use in graphics/rendering itense webapplications. 
-
+you can use in graphics/rendering itense webapplications. 
 
 # Example
 

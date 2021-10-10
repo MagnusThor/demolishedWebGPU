@@ -1,11 +1,13 @@
 export class Geometry {
     vertexBuffer: GPUBuffer;
-    constructor(public device: GPUDevice, vertices: Float32Array) {
+    numOfVerticles: number;
+    constructor(public device: GPUDevice, public vertices: Float32Array) {
         this.vertexBuffer = this.device.createBuffer({
             size: vertices.byteLength,
             usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
             mappedAtCreation: true
         });
+        this.numOfVerticles = vertices.length / 4;
         new Float32Array(this.vertexBuffer.getMappedRange()).set(vertices);
         this.vertexBuffer.unmap();
 

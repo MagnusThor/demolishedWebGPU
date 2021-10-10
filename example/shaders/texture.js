@@ -1,4 +1,7 @@
-export const simpleWglsl =
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.showTextureWglsl = void 0;
+exports.showTextureWglsl = 
 /* wgsl */ `
       [[block]] struct Uniforms {
         resolution: vec3<f32>;
@@ -9,6 +12,8 @@ export const simpleWglsl =
       [[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
       [[group(0), binding(1)]] var linearSampler: sampler;
       [[group(0), binding(2)]] var textureA: texture_2d<f32>;
+      [[group(0), binding(3)]] var textureB: texture_2d<f32>;
+      
     
       struct VertexInput {
         [[location(0)]] pos: vec2<f32>;
@@ -29,17 +34,17 @@ export const simpleWglsl =
       }
 
        // your shader code implementation -->
-
      
       fn main(fragCoord: vec2<f32>) -> vec4<f32> {
 
-         let color = vec3<f32>(1.0,0.0,0.0);
+        // display texture 
+        return textureSample(textureB, linearSampler, fragCoord);
 
-        return vec4<f32>(color,1.0);
+     
 
       }
       
       [[stage(fragment)]]
       fn main_fragment(in: VertexOutput) -> [[location(0)]] vec4<f32> {      
         return main(in.uv);
-}`
+}`;

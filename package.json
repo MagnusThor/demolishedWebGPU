@@ -1,6 +1,6 @@
 {
   "name": "demolishedwebgpu",
-  "version": "1.0.0",
+  "version": "1.0.1.beta.0",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,5 +9,8 @@
   "license": "ISC",
   "dependencies": {
     "@webgpu/types": "^0.1.6"
+  },
+  "devDependencies": {
+    "webpack": "^5.58.1"
   }
 }

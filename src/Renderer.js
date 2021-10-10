@@ -21,14 +21,15 @@ class Renderer {
         };
         this.textures = new Array();
     }
-    getDevice() {
+    getDevice(config) {
         return __awaiter(this, void 0, void 0, function* () {
             const device = yield this.initializeAPI();
             if (device) {
                 this.context = this.canvas.getContext('webgpu');
-                const canvasConfig = {
+                const presentationFormat = this.context.getPreferredFormat(this.adapter);
+                const canvasConfig = config || {
                     device: this.device,
-                    format: 'bgra8unorm',
+                    format: presentationFormat,
                     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
                 };
                 this.context.configure(canvasConfig);
@@ -53,8 +54,16 @@ class Renderer {
             return this.device;
         });
     }
-    initialize(geometry, material, uniforms, texture) {
+    updateCustomUniform(index, value) {
+        this.mesh.uniformBufferArray.set(value, index);
+    }
+    initialize(geometry, material, texture, customUniforms) {
         return __awaiter(this, void 0, void 0, function* () {
+            const dpr = devicePixelRatio || 1;
+            const uniforms = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
+            if (customUniforms) { // extend uniforms if custom is passed
+                uniforms.set(uniforms, 4);
+            }
             for (let i = 0; i < texture.length; i++) {
                 this.textures.push(yield TextureLoader_1.TextureLoader.createTexture(this.device, texture[i]));
             }

@@ -23,13 +23,14 @@ export class Renderer {
     constructor(public canvas: HTMLCanvasElement) {
         this.textures = new Array<GPUTexture>();
     }
-    async getDevice(): Promise<GPUDevice> {
+    async getDevice(config?:GPUCanvasConfiguration): Promise<GPUDevice> {
         const device = await this.initializeAPI();
         if (device) {
             this.context = this.canvas.getContext('webgpu');
-            const canvasConfig: GPUCanvasConfiguration = {
+            const presentationFormat = this.context.getPreferredFormat(this.adapter);
+            const canvasConfig: GPUCanvasConfiguration = config || {
                 device: this.device,
-                format: 'bgra8unorm',
+                format: presentationFormat,// 'bgra8unorm',
                 usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
             };
             this.context.configure(canvasConfig);
@@ -51,8 +52,21 @@ export class Renderer {
         }
         return this.device;
     }
+
+    updateCustomUniform(index:number,value:Float32Array){
+        this.mesh.uniformBufferArray.set(value,index)
+    }
   
-    async initialize(geometry:Geometry,material:Material,uniforms:Float32Array,texture:Array<ITexture>): Promise<void> {
+    async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array): Promise<void> {
+
+
+        const dpr = devicePixelRatio || 1;
+
+        const uniforms = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
+
+        if(customUniforms){ // extend uniforms if custom is passed
+                uniforms.set(uniforms,4)
+        }
 
         for(let i = 0 ; i < texture.length;i++){
             this.textures.push(await TextureLoader.createTexture(this.device,texture[i]));            
@@ -113,10 +127,10 @@ export class Renderer {
         this.mesh.uniformBufferArray.set([time], 3); // time    
         
         this.mesh.updateUniforms();
+
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setVertexBuffer(0, this.mesh.geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
-
         passEncoder.draw(6, 1, 0, 0);
         passEncoder.endPass();
         this.device.queue.submit([this.commandEncoder.finish()]);
