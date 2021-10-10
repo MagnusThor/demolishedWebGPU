@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     ];
 
+    let customUniforms = Float32Array
+
     renderer.initialize(geometry, material, textures).then(() => {
       renderer.render();
     })

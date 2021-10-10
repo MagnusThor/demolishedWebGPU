@@ -17,7 +17,6 @@ const rect_1 = require("./meshes/rect");
 document.addEventListener("DOMContentLoaded", () => {
     const renderer = new Renderer_1.Renderer(document.querySelector('canvas'));
     renderer.getDevice().then((device) => __awaiter(void 0, void 0, void 0, function* () {
-        const dpr = window.devicePixelRatio || 1;
         const geometry = new Geometry_1.Geometry(device, rect_1.rextVertexArray);
         const material = new Material_1.Material(device, cloud_1.cloudWglsl);
         const textures = [{
@@ -29,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 path: "/example/assets/channel1.jpg"
             }
         ];
+        let customUniforms = Float32Array;
         renderer.initialize(geometry, material, textures).then(() => {
             renderer.render();
         });
