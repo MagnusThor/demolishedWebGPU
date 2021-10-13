@@ -121,5 +121,11 @@ class Renderer {
         passEncoder.endPass();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
+    start(startTime) {
+        throw "not yet implemented";
+    }
+    stop() {
+        throw "not yet implemented";
+    }
 }
 exports.Renderer = Renderer;

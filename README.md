@@ -5,16 +5,20 @@ demolishedWebGPU is a shader rendering engine based on WebGPU. WebGPU is a new w
 
 This project; demolishedWebGPU is an WebGPU implementation of the existing demolishedRenderer engine (https://github.com/MagnusThor/demolishedRenderer).
 
-This an early version, but the following features will be available shortly;
+This an early version, but the following features will is available 
 
-1. Multi-pass (1-n shader programs/buffers) 
+1. Multi-pass ,1-n shader programs/buffers will be available shrtly 
 2. 1-n textures
 3. Custom uniforms
+4. WGLSL & SPRI-V support
 
 As in demolishedRenderer the goal is to keep the *engine* tiny, and its written mainly for a demo-scene purpose, but as demolishedRenderer 
 you can use in graphics/rendering itense webapplications. 
 
-# Example
+# Example 
+
+Se exaple/Example.ts for futher details.
+
 
 
     const renderer = new Renderer(document.querySelector('canvas'));
@@ -61,6 +65,9 @@ you can use in graphics/rendering itense webapplications.
 
 Below you find an example of a plasma written in wglsl, as you see there are enough similarities between for instance Metal and WebGPU that we can directly compare their respective APIs and shading languages.
 
+See example/shaders for futher detils.
+
+
     
       let MAX_ITER: i32 = 20;
       let TAU: f32 = 7.28318530718;
@@ -93,6 +100,20 @@ Below you find an example of a plasma written in wglsl, as you see there are eno
       }
       
     
+## Use GLSL to compile into SPIR-V
+
+    const glsl = await glslang();
+    let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);    
+    const myMaterial = Material.createMaterialShader(fractalShader.vertex,compiledShader,"main","main");
+    
+    const material = new Material(device,myMaterial)
+
+     ...
+
+     renderer.initialize(geometry, myMaterial).then(() => {
+      renderer.render();
+    })
+
 
 
 # How to use WebGPU 

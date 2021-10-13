@@ -54,13 +54,13 @@ class Mesh {
     pipelineDescriptor() {
         const pipelineDescriptor = {
             vertex: {
-                module: this.material.shaderModule,
-                entryPoint: 'main_vertex',
+                module: this.material.vertexShaderModule,
+                entryPoint: this.material.shader.vertexEntryPoint || 'main_vertex',
                 buffers: [this.geometry.vertexBufferLayout(0)]
             },
             fragment: {
-                module: this.material.shaderModule,
-                entryPoint: 'main_fragment',
+                module: this.material.fragmentShaderModule,
+                entryPoint: this.material.shader.fragmentEntryPoint || 'main_fragment',
                 targets: [{
                         format: 'bgra8unorm'
                     }]

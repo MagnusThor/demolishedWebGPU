@@ -3,6 +3,10 @@ import { Material } from "./Material";
 import { Mesh } from "./Mesh";
 import { ITexture, TextureLoader } from "./TextureLoader";
 
+   
+
+
+
 export class Renderer {
     adapter: GPUAdapter;
     device: GPUDevice;
@@ -140,4 +144,12 @@ export class Renderer {
         this.draw(performance.now() / 1000);
         requestAnimationFrame(this.render);
     };
+
+    start(startTime:number):void{
+        throw "not yet implemented";
+    }
+    stop():void{
+        throw "not yet implemented";
+    }
+    
 }

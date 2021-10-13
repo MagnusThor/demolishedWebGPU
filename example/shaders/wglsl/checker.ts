@@ -1,5 +1,9 @@
-export const checkerWglsl =
-/* wgsl */ `
+import { IMaterialShader } from "../../../src/Material";
+
+export const checkerShader:IMaterialShader = {
+  vertex: ``,
+  fragment:
+   /* wgsl */ `
       [[block]] struct Uniforms {
         resolution: vec3<f32>;
         time: f32;
@@ -7,24 +11,12 @@ export const checkerWglsl =
       
       [[group(0), binding(0)]] var<uniform> u: Uniforms;
       
-      struct VertexInput {
-        [[location(0)]] pos: vec2<f32>;
-      };
       
       struct VertexOutput {
         [[builtin(position)]] pos: vec4<f32>;
         [[location(0)]] uv: vec2<f32>;
       };
-      
-      [[stage(vertex)]]
-      fn main_vertex(input: VertexInput) -> VertexOutput {
-        var output: VertexOutput;
-        var pos: vec2<f32> = input.pos * 2.0 - 1.0;
-        output.pos = vec4<f32>(pos, 0.0, 1.0);
-        output.uv = input.pos;
-        return output;
-      }
-      
+          
       fn rotate2d(a: f32) -> mat2x2<f32> {
         let c = cos(a);
         let s = sin(a);
@@ -51,3 +43,5 @@ export const checkerWglsl =
         let x = u.resolution; // need to use all inputs
         return main(in.uv);
 }`
+};
+

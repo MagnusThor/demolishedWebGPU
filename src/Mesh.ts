@@ -20,7 +20,6 @@ export class Mesh {
                 }
             }
         ];
-
         if (numOfTextures > 0) {
             layoutEntrys.push({ // sampler
                 binding: 1,
@@ -29,17 +28,15 @@ export class Mesh {
                     type: "filtering"
                 }
             });
-
-            for (let i = 0; i < numOfTextures;i++) {
-                layoutEntrys.push( { // 1-n texture bindings?
-                    binding:2+i,
-                    visibility:window.GPUShaderStage.FRAGMENT,
-                    texture:{
-                        sampleType:"float"   
+            for (let i = 0; i < numOfTextures; i++) {
+                layoutEntrys.push({ // 1-n texture bindings
+                    binding: 2 + i,
+                    visibility: window.GPUShaderStage.FRAGMENT,
+                    texture: {
+                        sampleType: "float"
                     }
-                }   )
+                })
             }
-
         }
 
         this.bindGroupLayout = this.device.createBindGroupLayout({
@@ -50,12 +47,9 @@ export class Mesh {
             bindGroupLayouts: [this.bindGroupLayout],
         });
     }
-
-
-    setDimensions(width:number,height:number,dpr:number=0):void{
-        this.uniformBufferArray.set([width,height,dpr],0);
+    setDimensions(width: number, height: number, dpr: number = 0): void {
+        this.uniformBufferArray.set([width, height, dpr], 0);
     }
-    
     updateUniforms() {
         this.device.queue.writeBuffer(
             this.uniformBuffer,
@@ -68,13 +62,14 @@ export class Mesh {
     pipelineDescriptor(): GPURenderPipelineDescriptor {
         const pipelineDescriptor: GPURenderPipelineDescriptor = {
             vertex: {
-                module: this.material.shaderModule,
-                entryPoint: 'main_vertex',
+                module: this.material.vertexShaderModule,
+                entryPoint: this.material.shader.vertexEntryPoint || 'main_vertex',
                 buffers: [this.geometry.vertexBufferLayout(0)]
+
             },
             fragment: {
-                module: this.material.shaderModule,
-                entryPoint: 'main_fragment',
+                module: this.material.fragmentShaderModule,
+                entryPoint: this.material.shader.fragmentEntryPoint || 'main_fragment',
                 targets: [{
                     format: 'bgra8unorm'
                 }]

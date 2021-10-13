@@ -12,25 +12,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Geometry_1 = require("../src/Geometry");
 const Material_1 = require("../src/Material");
 const Renderer_1 = require("../src/Renderer");
-const cloud_1 = require("./shaders/cloud");
 const rect_1 = require("./meshes/rect");
-document.addEventListener("DOMContentLoaded", () => {
+const cloud_1 = require("./shaders/wglsl/cloud");
+document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const renderer = new Renderer_1.Renderer(document.querySelector('canvas'));
-    renderer.getDevice().then((device) => __awaiter(void 0, void 0, void 0, function* () {
-        const geometry = new Geometry_1.Geometry(device, rect_1.rextVertexArray);
-        const material = new Material_1.Material(device, cloud_1.cloudWglsl);
-        const textures = [{
-                key: "textureA",
-                path: "/example/assets/channel0.jpg"
-            },
-            {
-                key: "textureB",
-                path: "/example/assets/channel1.jpg"
-            }
-        ];
-        let customUniforms = Float32Array;
-        renderer.initialize(geometry, material, textures).then(() => {
-            renderer.render();
-        });
-    }));
-});
+    const device = yield renderer.getDevice();
+    /*
+          glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
+    */
+    //const glsl = await glslang();
+    //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
+    //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
+    const material = new Material_1.Material(device, cloud_1.cloudShader);
+    const geometry = new Geometry_1.Geometry(device, rect_1.rectVertexArray);
+    const textures = [{
+            key: "textureA",
+            path: "/example/assets/channel0.jpg"
+        },
+        {
+            key: "textureB",
+            path: "/example/assets/channel1.jpg"
+        }
+    ];
+    yield renderer.initialize(geometry, material, textures);
+    renderer.render();
+}));
