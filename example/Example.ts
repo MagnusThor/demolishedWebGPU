@@ -22,22 +22,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   /*
         glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
   */
-  //const glsl = await glslang();
-  //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
-  //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
+  const glsl = await glslang();
+  let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
+  const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
 
-  const material = new Material(device, cloudShader)
+  const material = new Material(device, myMaterial)
 
   const geometry = new Geometry(device, rectVertexArray);
 
 
   const textures: Array<ITexture> = [{
     key: "textureA",
-    path: "/example/assets/channel0.jpg"
+    path: "assets/channel0.jpg"
   },
   {
     key: "textureB",
-    path: "/example/assets/channel1.jpg"
+    path: "assets/channel1.jpg"
   }
   ];
 
