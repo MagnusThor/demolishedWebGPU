@@ -1,12 +1,29 @@
 {
   "name": "demolishedwebgpu",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.0.2",
+  "description": "demolishedWebGPU is a shader rendering engine based on WebGPU.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MagnusThor/demolishedWebGPU"
+  },
+  "keywords": [
+    "javascript",
+    "typescript",
+    "shaders",
+    "glsl",
+    "wglsl",
+    "spir-v",
+    "webgpu",
+    "demoscene"
+  ],
+  "author": {
+    "name": "Magnus Thor",
+    "email": "magnus.thor74@gmail.com"
+  },
+  "license": "MIT",
   "dependencies": {
     "@webgpu/types": "^0.1.6"
   },
