@@ -97,7 +97,6 @@ class Renderer {
                     textureBindingOffset++;
                 });
             }
-            console.log(textureBindingOffset, samplers);
             this.textures.forEach((t, i) => {
                 const entry = {
                     binding: i + textureBindingOffset,

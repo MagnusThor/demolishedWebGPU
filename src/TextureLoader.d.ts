@@ -2,6 +2,7 @@
 export interface ITexture {
     key: string;
     path: string;
+    sampler?: any;
 }
 export declare class TextureLoader {
     constructor();

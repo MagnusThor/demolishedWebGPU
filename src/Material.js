@@ -16,8 +16,7 @@ fn main_vertex(input: VertexInput) -> VertexOutput {
   output.pos = vec4<f32>(pos, 0.0, 1.0);
   output.uv = input.pos;
   return output;
-} 
-`;
+}`;
 class Material {
     constructor(device, shader) {
         this.device = device;

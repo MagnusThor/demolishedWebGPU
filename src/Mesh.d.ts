@@ -11,6 +11,7 @@ export declare class Mesh {
     pipelineLayout: GPUPipelineLayout;
     constructor(device: GPUDevice, geometry: Geometry, material: Material, uniformBufferArray: Float32Array, numOfTextures?: number);
     setDimensions(width: number, height: number, dpr?: number): void;
-    updateUniforms(): void;
+    setUniforms(values: any, offset: number): void;
+    updateUniformBuffer(): void;
     pipelineDescriptor(): GPURenderPipelineDescriptor;
 }

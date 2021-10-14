@@ -18,13 +18,14 @@ export declare class Renderer {
     material: Material;
     mesh: Mesh;
     textures: Array<GPUTexture>;
+    frame: number;
+    isPaused: any;
     constructor(canvas: HTMLCanvasElement);
     getDevice(config?: GPUCanvasConfiguration): Promise<GPUDevice>;
     initializeAPI(): Promise<GPUDevice>;
     updateCustomUniform(index: number, value: Float32Array): void;
-    initialize(geometry: Geometry, material: Material, texture?: Array<ITexture>, customUniforms?: Float32Array): Promise<void>;
+    initialize(geometry: Geometry, material: Material, texture?: Array<ITexture>, customUniforms?: Float32Array, samplers?: Array<GPUSamplerDescriptor>): Promise<void>;
     draw(time: number): void;
-    render: () => void;
-    start(startTime: number): void;
-    stop(): void;
+    start(t: number, maxFps?: number): void;
+    pause(): void;
 }

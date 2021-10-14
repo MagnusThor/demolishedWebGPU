@@ -1,9 +1,4 @@
-export interface ITexture {
-    key:string
-    path:string,
-    sampler?:any;
-}
-
+import { ITexture } from "./ITexture";
 export class TextureLoader {
     constructor(){
     }

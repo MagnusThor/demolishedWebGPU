@@ -1,4 +1,4 @@
-import { IMaterialShader } from "../../../src/Material";
+import { IMaterialShader } from "../../../src/IMaterialShader";
 
 export const magadoshShader: IMaterialShader = {
     vertexEntryPoint : "main",

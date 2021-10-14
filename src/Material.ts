@@ -1,3 +1,5 @@
+import { IMaterialShader } from "./IMaterialShader";
+
 export const defaultWglslVertex = /* wgsl */ `  
 struct VertexInput {
   [[location(0)]] pos: vec2<f32>;
@@ -13,17 +15,9 @@ fn main_vertex(input: VertexInput) -> VertexOutput {
   output.pos = vec4<f32>(pos, 0.0, 1.0);
   output.uv = input.pos;
   return output;
-} 
-`;
+}`;
 
 
-export interface IMaterialShader {
-    vertex: any
-    vertexEntryPoint?: string
-    fragment: any
-    fragmentEntryPoint?: string
-    type?: number    
-}
 export class Material {
     vertexShaderModule: GPUShaderModule;
     fragmentShaderModule: GPUShaderModule;

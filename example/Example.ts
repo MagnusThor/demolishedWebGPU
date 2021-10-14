@@ -5,7 +5,7 @@ import { showTextureShader } from "./shaders/wglsl/texture";
 //import { cloudWglsl } from "./shaders/wglsl/cloud";
 import { plasmaShader } from "./shaders/wglsl/plasma";
 
-import { ITexture } from "../src/TextureLoader";
+import { ITexture } from "../src/ITexture";
 import { rectVertexArray } from "./meshes/rect";
 
 

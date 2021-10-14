@@ -1,7 +1,8 @@
 import { Geometry } from "./Geometry";
 import { Material } from "./Material";
 import { Mesh } from "./Mesh";
-import { ITexture, TextureLoader } from "./TextureLoader";
+import { TextureLoader } from "./TextureLoader";
+import { ITexture } from "./ITexture";
 
    
 
@@ -112,11 +113,6 @@ export class Renderer {
                 textureBindingOffset++;
             });
         }
-
-
-
-       console.log(textureBindingOffset,samplers);
-
         this.textures.forEach( (t,i) => {
             const entry:GPUBindGroupEntry = {
                     binding:i+textureBindingOffset,
@@ -175,6 +171,5 @@ export class Renderer {
 
     pause():void{
         this.isPaused = !this.isPaused
-    }
-    
+    }    
 }
