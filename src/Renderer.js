@@ -15,10 +15,6 @@ const TextureLoader_1 = require("./TextureLoader");
 class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
-        this.render = () => {
-            this.draw(performance.now() / 1000);
-            requestAnimationFrame(this.render);
-        };
         this.textures = new Array();
     }
     getDevice(config) {
@@ -57,9 +53,9 @@ class Renderer {
     updateCustomUniform(index, value) {
         this.mesh.uniformBufferArray.set(value, index);
     }
-    initialize(geometry, material, texture, customUniforms) {
+    initialize(geometry, material, texture, customUniforms, samplers) {
         return __awaiter(this, void 0, void 0, function* () {
-            const dpr = devicePixelRatio || 1;
+            const dpr = window.devicePixelRatio || 1;
             const uniforms = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
             if (customUniforms) { // extend uniforms if custom is passed
                 uniforms.set(uniforms, 4);
@@ -75,8 +71,9 @@ class Renderer {
                         buffer: this.mesh.uniformBuffer
                     }
                 }];
-            // add a sampler if there is textures passed 
-            if (this.textures.length > 0) {
+            let textureBindingOffset = (samplers ? samplers.length : 0);
+            // add a default sampler if there is textures passed 
+            if (this.textures.length > 0 && !samplers) {
                 const sampler = this.device.createSampler({
                     addressModeU: 'repeat',
                     addressModeV: 'repeat',
@@ -87,10 +84,23 @@ class Renderer {
                     binding: 1,
                     resource: sampler
                 });
+                textureBindingOffset = 2;
             }
+            else {
+                samplers.forEach((value, index) => {
+                    console.log(index);
+                    const sampler = this.device.createSampler(value);
+                    bindingGroupEntrys.push({
+                        binding: index + 1,
+                        resource: sampler
+                    });
+                    textureBindingOffset++;
+                });
+            }
+            console.log(textureBindingOffset, samplers);
             this.textures.forEach((t, i) => {
                 const entry = {
-                    binding: i + 2,
+                    binding: i + textureBindingOffset,
                     resource: t.createView()
                 };
                 bindingGroupEntrys.push(entry);
@@ -103,7 +113,7 @@ class Renderer {
     }
     draw(time) {
         this.commandEncoder = this.device.createCommandEncoder();
-        const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
+        const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor = {
             colorAttachments: [{
                     loadValue: clearColor,
@@ -112,8 +122,8 @@ class Renderer {
                 }]
         };
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
-        this.mesh.uniformBufferArray.set([time], 3); // time    
-        this.mesh.updateUniforms();
+        this.mesh.setUniforms([time], 3); // time
+        this.mesh.updateUniformBuffer();
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setVertexBuffer(0, this.mesh.geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
@@ -121,11 +131,25 @@ class Renderer {
         passEncoder.endPass();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
-    start(startTime) {
-        throw "not yet implemented";
+    start(t, maxFps = 200) {
+        let startTime = null;
+        let frame = -1;
+        const renderLoop = (timestamp) => {
+            if (!startTime)
+                startTime = timestamp;
+            let segment = Math.floor((timestamp - startTime) / (1000 / maxFps));
+            if (segment > frame) {
+                frame = segment;
+                this.frame = frame;
+                this.draw(timestamp / 1000);
+            }
+            if (!this.isPaused)
+                requestAnimationFrame(renderLoop);
+        };
+        renderLoop(t);
     }
-    stop() {
-        throw "not yet implemented";
+    pause() {
+        this.isPaused = !this.isPaused;
     }
 }
 exports.Renderer = Renderer;

@@ -13,6 +13,7 @@ import { rectVertexArray } from "./meshes/rect";
 import glslang from './libs/glslang';
 import { fractalShader } from "./shaders/glsl/fractal";
 import { cloudShader } from "./shaders/wglsl/cloud";
+import { magadoshShader } from "./shaders/glsl/magadosh";
 
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -22,11 +23,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   /*
         glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
   */
-  const glsl = await glslang();
-  let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
-  const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
+  //const glsl = await glslang();
+  //let compiledShader = glsl.compileGLSL(magadoshShader.fragment as string, "fragment", false);
+  //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
 
-  const material = new Material(device, myMaterial)
+  const material = new Material(device, showTextureShader);
+  //const material = new Material(device, myMaterial)
 
   const geometry = new Geometry(device, rectVertexArray);
 
@@ -41,8 +43,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   ];
 
-  await renderer.initialize(geometry, material, textures)
-  renderer.render();
+  const samplers:Array<GPUSamplerDescriptor> = [{
+      addressModeU: 'repeat',
+      addressModeV: 'repeat',
+      magFilter: 'linear',
+      minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
+  }];
+
+  await renderer.initialize(geometry, material, textures,undefined,samplers)
+    renderer.start(0);
 
 });
 

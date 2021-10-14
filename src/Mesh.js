@@ -8,7 +8,7 @@ class Mesh {
         this.material = material;
         this.uniformBufferArray = uniformBufferArray;
         this.uniformBuffer = this.device.createBuffer({
-            size: 20,
+            size: 40,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
         const layoutEntrys = [
@@ -46,9 +46,12 @@ class Mesh {
         });
     }
     setDimensions(width, height, dpr = 0) {
-        this.uniformBufferArray.set([width, height, dpr], 0);
+        this.setUniforms([width, height, dpr], 0);
     }
-    updateUniforms() {
+    setUniforms(values, offset) {
+        this.uniformBufferArray.set(values, offset); // time 
+    }
+    updateUniformBuffer() {
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
     }
     pipelineDescriptor() {

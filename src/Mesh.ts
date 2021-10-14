@@ -7,7 +7,7 @@ export class Mesh {
     constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, public uniformBufferArray: Float32Array, numOfTextures: number = 0) {
 
         this.uniformBuffer = this.device.createBuffer({
-            size: 20,
+            size: 40,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
 
@@ -38,7 +38,6 @@ export class Mesh {
                 })
             }
         }
-
         this.bindGroupLayout = this.device.createBindGroupLayout({
             entries: layoutEntrys
         });
@@ -48,9 +47,12 @@ export class Mesh {
         });
     }
     setDimensions(width: number, height: number, dpr: number = 0): void {
-        this.uniformBufferArray.set([width, height, dpr], 0);
+        this.setUniforms([width, height, dpr], 0);
     }
-    updateUniforms() {
+    setUniforms(values:any,offset:number){
+        this.uniformBufferArray.set(values, offset); // time 
+    }
+    updateUniformBuffer() {
         this.device.queue.writeBuffer(
             this.uniformBuffer,
             0,
@@ -86,4 +88,5 @@ export class Mesh {
         };
         return pipelineDescriptor;
     }
+
 }

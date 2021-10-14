@@ -67,7 +67,6 @@ Below you find an example of a plasma written in wglsl, as you see there are eno
 
 See example/shaders for futher detils.
 
-
     
       let MAX_ITER: i32 = 20;
       let TAU: f32 = 7.28318530718;
@@ -118,10 +117,11 @@ See example/shaders for futher detils.
 
 # How to use WebGPU 
 
-WebGPU is at the moment an experimental API so in order to try demolishedWebGPU follow this insytructions 
+WebGPU is at the moment an experimental API so in order to try demolishedWebGPU follow this instructions. 
 
-Enabling via about://flags #
-To experiment with WebGPU locally, without an origin trial token, enable the #enable-unsafe-webgpu flag in about://flags.
+Enabling via `about://flags`
+
+To experiment with WebGPU locally, without an origin trial token, enable the `#enable-unsafe-webgpu` flag in `about://flags`.
 
 
 

@@ -5,8 +5,6 @@ import { ITexture, TextureLoader } from "./TextureLoader";
 
    
 
-
-
 export class Renderer {
     adapter: GPUAdapter;
     device: GPUDevice;
@@ -23,6 +21,8 @@ export class Renderer {
     mesh: Mesh;
 
     textures: Array<GPUTexture>;
+    frame: number;
+    isPaused: any;
 
     constructor(public canvas: HTMLCanvasElement) {
         this.textures = new Array<GPUTexture>();
@@ -61,17 +61,14 @@ export class Renderer {
         this.mesh.uniformBufferArray.set(value,index)
     }
   
-    async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array): Promise<void> {
-
-
-        const dpr = devicePixelRatio || 1;
-
+    async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
+        const dpr = window.devicePixelRatio || 1;
         const uniforms = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
 
         if(customUniforms){ // extend uniforms if custom is passed
                 uniforms.set(uniforms,4)
         }
-
+        
         for(let i = 0 ; i < texture.length;i++){
             this.textures.push(await TextureLoader.createTexture(this.device,texture[i]));            
         }     
@@ -87,8 +84,10 @@ export class Renderer {
             }
         }];        
 
-        // add a sampler if there is textures passed 
-        if(this.textures.length >0){
+        let textureBindingOffset = (samplers ? samplers.length : 0) 
+
+        // add a default sampler if there is textures passed 
+        if(this.textures.length >0 &&  !samplers){
             const sampler = this.device.createSampler({
                 addressModeU: 'repeat',
                 addressModeV: 'repeat',
@@ -100,11 +99,27 @@ export class Renderer {
                 binding:1,
                 resource: sampler
             });
+            textureBindingOffset = 2;
+        }else{
+            
+            samplers.forEach( (value,index) => {
+                console.log(index);
+                const sampler = this.device.createSampler(value);
+                bindingGroupEntrys.push({
+                    binding:index+1,
+                    resource: sampler
+                });
+                textureBindingOffset++;
+            });
         }
+
+
+
+       console.log(textureBindingOffset,samplers);
 
         this.textures.forEach( (t,i) => {
             const entry:GPUBindGroupEntry = {
-                    binding:i+2,
+                    binding:i+textureBindingOffset,
                     resource: t.createView()
             }
             bindingGroupEntrys.push(entry);     
@@ -118,7 +133,7 @@ export class Renderer {
 
     draw(time: number) {
         this.commandEncoder = this.device.createCommandEncoder();
-        const clearColor = { r: 0.0, g: 0.5, b: 1.0, a: 1.0 };
+        const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [{
                 loadValue: clearColor,
@@ -128,10 +143,10 @@ export class Renderer {
         };
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
 
-        this.mesh.uniformBufferArray.set([time], 3); // time    
-        
-        this.mesh.updateUniforms();
-
+       
+        this.mesh.setUniforms([time],3) // time
+        this.mesh.updateUniformBuffer();
+       
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setVertexBuffer(0, this.mesh.geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
@@ -139,17 +154,27 @@ export class Renderer {
         passEncoder.endPass();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
+   
 
-    render = () => {
-        this.draw(performance.now() / 1000);
-        requestAnimationFrame(this.render);
-    };
-
-    start(startTime:number):void{
-        throw "not yet implemented";
+    start(t: number, maxFps: number = 200): void {
+        let startTime = null;
+        let frame = -1;
+        const renderLoop = (timestamp: number) => {
+            if (!startTime) startTime = timestamp;
+            let segment = Math.floor((timestamp - startTime) / (1000 / maxFps));
+            if (segment > frame) {
+                frame = segment;
+                this.frame = frame;
+                this.draw(timestamp / 1000);
+            }
+            if(!this.isPaused)
+                requestAnimationFrame(renderLoop);
+        };
+        renderLoop(t);
     }
-    stop():void{
-        throw "not yet implemented";
+
+    pause():void{
+        this.isPaused = !this.isPaused
     }
     
 }

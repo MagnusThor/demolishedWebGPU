@@ -1,6 +1,7 @@
 export interface ITexture {
     key:string
-    path:string
+    path:string,
+    sampler?:any;
 }
 
 export class TextureLoader {
