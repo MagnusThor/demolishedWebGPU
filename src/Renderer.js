@@ -10,12 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Renderer = void 0;
-const Mesh_1 = require("./Mesh");
-const TextureLoader_1 = require("./TextureLoader");
 class Renderer {
+    //uniforms: Float32Array;
     constructor(canvas) {
         this.canvas = canvas;
-        this.textures = new Array();
+        //  this.textures = new Array<GPUTexture>();
     }
     getDevice(config) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -50,63 +49,21 @@ class Renderer {
             return this.device;
         });
     }
-    updateCustomUniform(index, value) {
-        this.mesh.uniformBufferArray.set(value, index);
-    }
-    initialize(geometry, material, texture, customUniforms, samplers) {
+    // updateCustomUniform(index:number,value:Float32Array){
+    //     this.scene.mesh.uniformBufferArray.set(value,index)
+    // }
+    //async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
+    addScene(scene) {
         return __awaiter(this, void 0, void 0, function* () {
-            const dpr = window.devicePixelRatio || 1;
-            const uniforms = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
-            if (customUniforms) { // extend uniforms if custom is passed
-                uniforms.set(uniforms, 4);
-            }
-            for (let i = 0; i < texture.length; i++) {
-                this.textures.push(yield TextureLoader_1.TextureLoader.createTexture(this.device, texture[i]));
-            }
-            this.mesh = new Mesh_1.Mesh(this.device, geometry, material, uniforms, texture.length);
-            this.renderPipeline = this.device.createRenderPipeline(this.mesh.pipelineDescriptor());
-            const bindingGroupEntrys = [{
-                    binding: 0,
-                    resource: {
-                        buffer: this.mesh.uniformBuffer
-                    }
-                }];
-            let textureBindingOffset = (samplers ? samplers.length : 0);
-            // add a default sampler if there is textures passed 
-            if (this.textures.length > 0 && !samplers) {
-                const sampler = this.device.createSampler({
-                    addressModeU: 'repeat',
-                    addressModeV: 'repeat',
-                    magFilter: 'linear',
-                    minFilter: 'nearest'
-                });
-                bindingGroupEntrys.push({
-                    binding: 1,
-                    resource: sampler
-                });
-                textureBindingOffset = 2;
-            }
-            else {
-                samplers.forEach((value, index) => {
-                    console.log(index);
-                    const sampler = this.device.createSampler(value);
-                    bindingGroupEntrys.push({
-                        binding: index + 1,
-                        resource: sampler
-                    });
-                    textureBindingOffset++;
-                });
-            }
-            this.textures.forEach((t, i) => {
-                const entry = {
-                    binding: i + textureBindingOffset,
-                    resource: t.createView()
-                };
-                bindingGroupEntrys.push(entry);
-            });
+            this.scene = scene;
+            // if(scene.customUniforms){ // extend uniforms if custom is passeds
+            //         uniforms.set(uniforms,4)
+            // }        
+            //  const mesh = scene.getMesh();
+            this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
             this.bindingGroup = this.device.createBindGroup({
                 layout: this.renderPipeline.getBindGroupLayout(0),
-                entries: bindingGroupEntrys,
+                entries: scene.bindingGroupEntrys,
             });
         });
     }
@@ -121,12 +78,14 @@ class Renderer {
                 }]
         };
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
-        this.mesh.setUniforms([time], 3); // time
-        this.mesh.updateUniformBuffer();
+        this.scene.setUniforms([time], 3); // time
+        this.scene.updateUniformBuffer();
         passEncoder.setPipeline(this.renderPipeline);
-        passEncoder.setVertexBuffer(0, this.mesh.geometry.vertexBuffer);
+        passEncoder.setVertexBuffer(0, this.scene.getMesh().geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
-        passEncoder.draw(6, 1, 0, 0);
+        passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
+        passEncoder.drawIndexed(6, 1);
+        //passEncoder.draw(6, 1, 0, 0);
         passEncoder.endPass();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }

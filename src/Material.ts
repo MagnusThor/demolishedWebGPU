@@ -18,6 +18,8 @@ fn main_vertex(input: VertexInput) -> VertexOutput {
 }`;
 
 
+
+
 export class Material {
     vertexShaderModule: GPUShaderModule;
     fragmentShaderModule: GPUShaderModule;

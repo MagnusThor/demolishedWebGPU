@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultWglslVertex = exports.TextureLoader = exports.Renderer = exports.Mesh = exports.Geometry = void 0;
+exports.defaultWglslVertex = exports.TextureLoader = exports.Renderer = exports.Mesh = exports.VERTEXType = exports.Geometry = void 0;
 var Geometry_1 = require("./src/Geometry");
 Object.defineProperty(exports, "Geometry", { enumerable: true, get: function () { return Geometry_1.Geometry; } });
+Object.defineProperty(exports, "VERTEXType", { enumerable: true, get: function () { return Geometry_1.VERTEXType; } });
 var Mesh_1 = require("./src/Mesh");
 Object.defineProperty(exports, "Mesh", { enumerable: true, get: function () { return Mesh_1.Mesh; } });
 var Renderer_1 = require("./src/Renderer");

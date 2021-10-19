@@ -1,4 +1,4 @@
-export {Geometry} from './src/Geometry'
+export {Geometry,VERTEXType} from './src/Geometry'
 export {Mesh} from './src/Mesh'
 export {Renderer} from './src/Renderer'
 export {ITexture} from './src/ITexture'

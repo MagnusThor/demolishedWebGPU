@@ -1,18 +1,50 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Geometry = void 0;
+exports.Geometry = exports.DefaultIndicies = exports.VERTEXType = void 0;
+var VERTEXType;
+(function (VERTEXType) {
+    VERTEXType[VERTEXType["xyz"] = 3] = "xyz";
+    VERTEXType[VERTEXType["xyzw"] = 4] = "xyzw";
+    VERTEXType[VERTEXType["xyzrgba"] = 7] = "xyzrgba";
+    VERTEXType[VERTEXType["xyzwrgba"] = 8] = "xyzwrgba";
+})(VERTEXType = exports.VERTEXType || (exports.VERTEXType = {}));
+exports.DefaultIndicies = new Uint16Array([0, 1, 2, 3, 4, 5]);
+// let createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
+//     let desc = {
+//         size: (arr.byteLength + 3) & ~3,
+//         usage,
+//         mappedAtCreation: true
+//     };
+//     let buffer = this.device.createBuffer(desc);
+//     const writeArray =
+//         arr instanceof Uint16Array
+//             ? new Uint16Array(buffer.getMappedRange())
+//             : new Float32Array(buffer.getMappedRange());
+//     writeArray.set(arr);
+//     buffer.unmap();
+//     return buffer;
+//};
 class Geometry {
-    constructor(device, vertices) {
+    constructor(device, model) {
         this.device = device;
-        this.vertices = vertices;
-        this.vertexBuffer = this.device.createBuffer({
-            size: vertices.byteLength,
-            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        this.model = model;
+        this.vertexBuffer = this.createBuffer(model.vertices, GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, model.verticesType);
+        this.indexBuffer = this.createBuffer(model.indicies, GPUBufferUsage.INDEX, 3);
+        this.numOfVerticles = model.vertices.length / model.verticesType;
+    }
+    createBuffer(arr, usage, vertexSize) {
+        let desc = {
+            size: (arr.byteLength + vertexSize) & ~vertexSize,
+            usage,
             mappedAtCreation: true
-        });
-        this.numOfVerticles = vertices.length / 4;
-        new Float32Array(this.vertexBuffer.getMappedRange()).set(vertices);
-        this.vertexBuffer.unmap();
+        };
+        let buffer = this.device.createBuffer(desc);
+        const writeArray = arr instanceof Uint16Array
+            ? new Uint16Array(buffer.getMappedRange())
+            : new Float32Array(buffer.getMappedRange());
+        writeArray.set(arr);
+        buffer.unmap();
+        return buffer;
     }
     vertexBufferLayout(shaderLocation) {
         const vertexBufferLayout = {
@@ -21,7 +53,7 @@ class Geometry {
                     offset: 0,
                     format: 'float32x2'
                 }],
-            arrayStride: 32,
+            arrayStride: 4 * this.model.verticesType,
             stepMode: 'vertex'
         };
         return vertexBufferLayout;

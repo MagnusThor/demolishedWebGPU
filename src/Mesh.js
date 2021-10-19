@@ -2,15 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mesh = void 0;
 class Mesh {
-    constructor(device, geometry, material, uniformBufferArray, numOfTextures = 0) {
+    constructor(device, geometry, material, numOfTextures = 0) {
         this.device = device;
         this.geometry = geometry;
         this.material = material;
-        this.uniformBufferArray = uniformBufferArray;
-        this.uniformBuffer = this.device.createBuffer({
-            size: 40,
-            usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
-        });
         const layoutEntrys = [
             {
                 binding: 0,
@@ -44,15 +39,6 @@ class Mesh {
         this.pipelineLayout = this.device.createPipelineLayout({
             bindGroupLayouts: [this.bindGroupLayout],
         });
-    }
-    setDimensions(width, height, dpr = 0) {
-        this.setUniforms([width, height, dpr], 0);
-    }
-    setUniforms(values, offset) {
-        this.uniformBufferArray.set(values, offset); // time 
-    }
-    updateUniformBuffer() {
-        this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
     }
     pipelineDescriptor() {
         const pipelineDescriptor = {

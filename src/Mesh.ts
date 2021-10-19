@@ -1,17 +1,15 @@
 import { Geometry } from "./Geometry";
 import { Material } from "./Material";
+
+
+
 export class Mesh {
-    uniformBuffer: GPUBuffer;
+ 
     private bindGroupLayout: GPUBindGroupLayout;
     pipelineLayout: GPUPipelineLayout;
-    constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, public uniformBufferArray: Float32Array, numOfTextures: number = 0) {
+    constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, numOfTextures: number = 0) {
 
-        this.uniformBuffer = this.device.createBuffer({
-            size: 40,
-            usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
-        });
-
-        const layoutEntrys: Array<GPUBindGroupLayoutEntry> = [
+       const layoutEntrys: Array<GPUBindGroupLayoutEntry> = [
             { // uniforms is manadory
                 binding: 0,
                 visibility: window.GPUShaderStage.FRAGMENT,
@@ -46,21 +44,7 @@ export class Mesh {
             bindGroupLayouts: [this.bindGroupLayout],
         });
     }
-    setDimensions(width: number, height: number, dpr: number = 0): void {
-        this.setUniforms([width, height, dpr], 0);
-    }
-    setUniforms(values:any,offset:number){
-        this.uniformBufferArray.set(values, offset); // time 
-    }
-    updateUniformBuffer() {
-        this.device.queue.writeBuffer(
-            this.uniformBuffer,
-            0,
-            this.uniformBufferArray.buffer,
-            this.uniformBufferArray.byteOffset,
-            this.uniformBufferArray.byteLength
-        );
-    }
+   
     pipelineDescriptor(): GPURenderPipelineDescriptor {
         const pipelineDescriptor: GPURenderPipelineDescriptor = {
             vertex: {
