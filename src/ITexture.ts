@@ -1,5 +1,14 @@
 export interface ITexture {
-    key: string;
-    path: string;
-    sampler?: any;
+    key: string
+    source: string
+    sampler?: any
+    type: TextureType
+  
+}
+
+export enum TextureType{
+    image = 0,
+    video = 1,
+    canvas = 2,
+    mediaStream = 3
 }

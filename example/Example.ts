@@ -5,7 +5,7 @@ import { showTextureShader } from "./shaders/wglsl/texture";
 //import { cloudWglsl } from "./shaders/wglsl/cloud";
 import { plasmaShader } from "./shaders/wglsl/plasma";
 
-import { ITexture } from "../src/ITexture";
+import { ITexture, TextureType } from "../src/ITexture";
 
 
 
@@ -20,25 +20,19 @@ import { Mesh } from "../src/Mesh";
 
 
 document.addEventListener("DOMContentLoaded", async () => {
-
-
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-  
   const renderer = new Renderer(canvas);
   const device = await renderer.getDevice();
   /*
-        glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
+  glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
   */
-  const glsl = await glslang();
-  let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
-  const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
-  //const material = new Material(device, cloudShader);
-  const material = new Material(device, myMaterial);
+  //const glsl = await glslang();
+  //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
+  //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
+  const material = new Material(device, showTextureShader);
+  //const material = new Material(device, myMaterial);
   const geometry = new Geometry(device, rectGeometry);
 
-
-
-  
   const samplers: Array<GPUSamplerDescriptor> = [{
     addressModeU: 'repeat',
     addressModeV: 'repeat',
@@ -46,26 +40,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
   }];
 
-  
-  const textures: Array<ITexture> = [{
-    key: "textureA",
-    path: "assets/channel0.jpg"
-  },
-  {
-    key: "textureB",
-    path: "assets/channel1.jpg"
-  }
+
+  const textures: Array<ITexture> = [
+    //   {
+    //   key: "textureA",
+    //   source: "assets/channel0.jpg",
+    //   type:0
+    // },
+    {
+      key: "textureA",
+      source: "assets/video.webm",
+      type: TextureType.video,
+    },
+
+    {
+      key: "textureB",
+      source: "assets/channel0.jpg",
+      type: TextureType.image
+    },
+
   ];
 
-  const scene = new Scene("example",device,canvas);
-
-  const mesh = new Mesh(device, geometry,material, textures.length);
-
-  scene.addMesh("example",mesh);
-
-  await scene.build(undefined,textures,samplers);
-
-  
+  const scene = new Scene("myScene", device, canvas);
+  await scene.addAssets(textures, samplers);
+  const mesh = new Mesh(device, geometry, material, textures);
+  scene.addMesh("myMesh", mesh);
   await renderer.addScene(scene)
 
 

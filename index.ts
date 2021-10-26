@@ -1,5 +1,6 @@
 export {Geometry,VERTEXType} from './src/Geometry'
 export {Mesh} from './src/Mesh'
+export {Scene} from './src/Scene'
 export {Renderer} from './src/Renderer'
 export {ITexture} from './src/ITexture'
 export {TextureLoader} from './src/TextureLoader'

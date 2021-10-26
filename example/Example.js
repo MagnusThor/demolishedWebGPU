@@ -8,15 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Geometry_1 = require("../src/Geometry");
 const Material_1 = require("../src/Material");
 const Renderer_1 = require("../src/Renderer");
-const glslang_1 = __importDefault(require("./libs/glslang"));
-const fractal_1 = require("./shaders/glsl/fractal");
+const texture_1 = require("./shaders/wglsl/texture");
 const samples_1 = require("./meshes/samples");
 const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
@@ -25,13 +21,13 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     const renderer = new Renderer_1.Renderer(canvas);
     const device = yield renderer.getDevice();
     /*
-          glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
+    glslang compile GLSL - > SPIR-V , in this case an fragmentshader in glsl version 4.5
     */
-    const glsl = yield glslang_1.default();
-    let compiledShader = glsl.compileGLSL(fractal_1.fractalShader.fragment, "fragment", false);
-    const myMaterial = Material_1.Material.createMaterialShader(fractal_1.fractalShader.vertex, compiledShader, "main", "main");
-    //const material = new Material(device, cloudShader);
-    const material = new Material_1.Material(device, myMaterial);
+    //const glsl = await glslang();
+    //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
+    //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
+    const material = new Material_1.Material(device, texture_1.showTextureShader);
+    //const material = new Material(device, myMaterial);
     const geometry = new Geometry_1.Geometry(device, samples_1.rectGeometry);
     const samplers = [{
             addressModeU: 'repeat',
@@ -39,19 +35,27 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
             magFilter: 'linear',
             minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
         }];
-    const textures = [{
+    const textures = [
+        //   {
+        //   key: "textureA",
+        //   source: "assets/channel0.jpg",
+        //   type:0
+        // },
+        {
             key: "textureA",
-            path: "assets/channel0.jpg"
+            source: "assets/video.webm",
+            type: 1,
         },
         {
             key: "textureB",
-            path: "assets/channel1.jpg"
-        }
+            source: "assets/channel0.jpg",
+            type: 0
+        },
     ];
-    const scene = new Scene_1.Scene("example", device, canvas);
-    const mesh = new Mesh_1.Mesh(device, geometry, material, textures.length);
-    scene.addMesh("example", mesh);
-    yield scene.build("example", undefined, textures, samplers);
+    const scene = new Scene_1.Scene("myScene", device, canvas);
+    yield scene.addAssets(textures, samplers);
+    const mesh = new Mesh_1.Mesh(device, geometry, material, textures);
+    scene.addMesh("myMesh", mesh);
     yield renderer.addScene(scene);
     renderer.start(0);
 }));

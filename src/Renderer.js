@@ -13,8 +13,8 @@ exports.Renderer = void 0;
 class Renderer {
     //uniforms: Float32Array;
     constructor(canvas) {
-        this.canvas = canvas;
         //  this.textures = new Array<GPUTexture>();
+        this.canvas = canvas;
     }
     getDevice(config) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -61,20 +61,21 @@ class Renderer {
             // }        
             //  const mesh = scene.getMesh();
             this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
-            this.bindingGroup = this.device.createBindGroup({
-                layout: this.renderPipeline.getBindGroupLayout(0),
-                entries: scene.bindingGroupEntrys,
-            });
         });
     }
     draw(time) {
+        this.bindingGroup = this.device.createBindGroup({
+            layout: this.renderPipeline.getBindGroupLayout(0),
+            entries: this.scene.getBindingGroupEntrys(),
+        });
         this.commandEncoder = this.device.createCommandEncoder();
+        const textureView = this.context.getCurrentTexture().createView();
         const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor = {
             colorAttachments: [{
                     loadValue: clearColor,
                     storeOp: 'store',
-                    view: this.context.getCurrentTexture().createView()
+                    view: textureView
                 }]
         };
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -84,7 +85,7 @@ class Renderer {
         passEncoder.setVertexBuffer(0, this.scene.getMesh().geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
-        passEncoder.drawIndexed(6, 1);
+        passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
         //passEncoder.draw(6, 1, 0, 0);
         passEncoder.endPass();
         this.device.queue.submit([this.commandEncoder.finish()]);

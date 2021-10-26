@@ -18,19 +18,19 @@ class TextureLoader {
      *
      * @static
      * @param {GPUDevice} device
-     * @param {string} src
+     * @param {string} texture
      * @return {*}  {Promise<GPUTexture>}
      * @memberof TextureLoader
      */
-    static createTexture(device, src) {
+    static createImageTexture(device, texture) {
         return __awaiter(this, void 0, void 0, function* () {
             const image = new Image();
-            image.src = src.path;
+            image.src = texture.source;
             yield image.decode();
             const imageBitmap = yield createImageBitmap(image);
             const textureSize = { width: image.width, height: image.height };
-            const texture = device.createTexture({
-                label: src.key,
+            const gpuTexture = device.createTexture({
+                label: texture.key,
                 size: textureSize,
                 dimension: '2d',
                 format: 'rgba8unorm',
@@ -39,10 +39,26 @@ class TextureLoader {
             device.queue.copyExternalImageToTexture({
                 source: imageBitmap
             }, {
-                texture: texture,
+                texture: gpuTexture,
                 mipLevel: 0
             }, textureSize);
-            return texture;
+            return gpuTexture;
+        });
+    }
+    static createVideoTextue(device, texture) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const video = document.createElement("video");
+            video.loop = true;
+            video.autoplay = true;
+            video.muted = true;
+            video.src = texture.source;
+            yield video.play();
+            return video;
+            // const descriptor:GPUExternalTextureDescriptor = {
+            //     source: video
+            // };
+            // const externalTexture =  device.importExternalTexture(descriptor);
+            // return externalTexture;
         });
     }
 }

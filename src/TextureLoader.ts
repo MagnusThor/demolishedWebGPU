@@ -7,18 +7,22 @@ export class TextureLoader {
      *
      * @static
      * @param {GPUDevice} device
-     * @param {string} src
+     * @param {string} texture
      * @return {*}  {Promise<GPUTexture>}
      * @memberof TextureLoader
      */
-    static async createTexture(device: GPUDevice, src: ITexture):Promise<GPUTexture> {
+    static async createImageTexture(device: GPUDevice, texture: ITexture):Promise<GPUTexture> {
+
         const image = new Image();
-        image.src = src.path;
+        image.src = texture.source;
         await image.decode();
+        
         const imageBitmap = await createImageBitmap(image);
         const textureSize = { width: image.width, height: image.height };
-        const texture = device.createTexture({
-            label:src.key,
+
+
+        const gpuTexture = device.createTexture({
+            label:texture.key,
             size: textureSize,
             dimension: '2d',
             format: 'rgba8unorm',
@@ -27,10 +31,32 @@ export class TextureLoader {
         device.queue.copyExternalImageToTexture({
             source: imageBitmap
         }, {
-            texture: texture,
+            texture: gpuTexture,
             mipLevel: 0
         },
         textureSize);
-        return texture;
+
+        return gpuTexture;
+    }
+    static async createVideoTextue(device: GPUDevice , texture:ITexture):Promise<HTMLVideoElement>{
+      
+        const video = document.createElement("video") as HTMLVideoElement;
+
+        video.loop = true;
+        video.autoplay = true;
+        video.muted = true;
+
+        video.src = texture.source;
+
+        await video.play();
+
+        return video;
+    
+        // const descriptor:GPUExternalTextureDescriptor = {
+        //     source: video
+        // };
+        // const externalTexture =  device.importExternalTexture(descriptor);
+        // return externalTexture;
+
     }
 }

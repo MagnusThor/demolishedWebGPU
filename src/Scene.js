@@ -9,8 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Scene = void 0;
+exports.Scene = exports.TextureCache = void 0;
 const TextureLoader_1 = require("./TextureLoader");
+class TextureCache {
+    constructor() {
+        this.entities = new Map();
+    }
+}
+exports.TextureCache = TextureCache;
 class Scene {
     constructor(key, device, canvas) {
         this.key = key;
@@ -20,14 +26,13 @@ class Scene {
         this.textures = new Array();
         this.bindingGroupEntrys = new Array();
         const dpr = window.devicePixelRatio || 1;
-        const uniforms = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
         this.uniformBuffer = this.device.createBuffer({
             size: 40,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
-        this.uniformBufferArray = uniforms;
+        this.uniformBufferArray = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
+        ;
         this.updateUniformBuffer();
-        // this.setUniforms(uniforms,0);
     }
     getMesh(index = 0) {
         return Array.from(this.meshes.values())[index];
@@ -41,10 +46,52 @@ class Scene {
     updateUniformBuffer() {
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
     }
-    build(key, customUniforms, textures, samplers) {
+    getBindingGroupEntrys() {
+        const bindingGroupEntrys = [];
+        bindingGroupEntrys.push({
+            binding: 0,
+            resource: {
+                buffer: this.uniformBuffer
+            }
+        });
+        const sampler = this.device.createSampler({
+            addressModeU: 'repeat',
+            addressModeV: 'repeat',
+            magFilter: 'linear',
+            minFilter: 'nearest'
+        });
+        // add the a sampler
+        bindingGroupEntrys.push({
+            binding: 1,
+            resource: sampler
+        });
+        this.textures.forEach((t, i) => {
+            let entry;
+            if (t.type === 0) {
+                entry = {
+                    binding: i + 2,
+                    resource: t.data.createView()
+                };
+            }
+            else {
+                entry = {
+                    binding: i + 2,
+                    resource: this.device.importExternalTexture({ source: t.data }),
+                };
+            }
+            bindingGroupEntrys.push(entry);
+        });
+        return bindingGroupEntrys;
+    }
+    addAssets(textures, samplers) {
         return __awaiter(this, void 0, void 0, function* () {
             for (let i = 0; i < textures.length; i++) {
-                this.textures.push(yield TextureLoader_1.TextureLoader.createTexture(this.device, textures[i]));
+                const texture = textures[i];
+                if (texture.type == 0) {
+                    this.textures.push({ type: 0, data: yield TextureLoader_1.TextureLoader.createImageTexture(this.device, texture) });
+                }
+                else
+                    this.textures.push({ type: 1, data: yield TextureLoader_1.TextureLoader.createVideoTextue(this.device, texture) });
             }
             this.bindingGroupEntrys = [{
                     binding: 0,
@@ -53,7 +100,6 @@ class Scene {
                     }
                 }];
             let textureBindingOffset = (samplers ? samplers.length : 0);
-            // add a default sampler if there is textures passed 
             if (this.textures.length > 0 && !samplers) {
                 const sampler = this.device.createSampler({
                     addressModeU: 'repeat',
@@ -78,10 +124,19 @@ class Scene {
                 });
             }
             this.textures.forEach((t, i) => {
-                const entry = {
-                    binding: i + textureBindingOffset,
-                    resource: t.createView()
-                };
+                let entry;
+                if (t.type === 0) {
+                    entry = {
+                        binding: i + textureBindingOffset,
+                        resource: t.data.createView()
+                    };
+                }
+                else {
+                    entry = {
+                        binding: i + textureBindingOffset,
+                        resource: this.device.importExternalTexture({ source: t.data })
+                    };
+                }
                 this.bindingGroupEntrys.push(entry);
             });
         });

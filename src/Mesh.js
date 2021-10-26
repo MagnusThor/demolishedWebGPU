@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mesh = void 0;
 class Mesh {
-    constructor(device, geometry, material, numOfTextures = 0) {
+    constructor(device, geometry, material, textures) {
         this.device = device;
         this.geometry = geometry;
         this.material = material;
@@ -15,7 +15,7 @@ class Mesh {
                 }
             }
         ];
-        if (numOfTextures > 0) {
+        if (textures.length > 0) {
             layoutEntrys.push({
                 binding: 1,
                 visibility: window.GPUShaderStage.FRAGMENT,
@@ -23,14 +23,23 @@ class Mesh {
                     type: "filtering"
                 }
             });
-            for (let i = 0; i < numOfTextures; i++) {
-                layoutEntrys.push({
-                    binding: 2 + i,
-                    visibility: window.GPUShaderStage.FRAGMENT,
-                    texture: {
-                        sampleType: "float"
-                    }
-                });
+            for (let i = 0; i < textures.length; i++) {
+                if (textures[i].type === 0) {
+                    layoutEntrys.push({
+                        binding: 2 + i,
+                        visibility: window.GPUShaderStage.FRAGMENT,
+                        texture: {
+                            sampleType: "float"
+                        }
+                    });
+                }
+                else {
+                    layoutEntrys.push({
+                        binding: 2 + i,
+                        visibility: window.GPUShaderStage.FRAGMENT,
+                        externalTexture: {}
+                    });
+                }
             }
         }
         this.bindGroupLayout = this.device.createBindGroupLayout({

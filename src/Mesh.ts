@@ -1,13 +1,13 @@
+import { ITexture } from "..";
 import { Geometry } from "./Geometry";
 import { Material } from "./Material";
-
-
 
 export class Mesh {
  
     private bindGroupLayout: GPUBindGroupLayout;
     pipelineLayout: GPUPipelineLayout;
-    constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, numOfTextures: number = 0) {
+    constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, textures?: Array<ITexture>) {
+
 
        const layoutEntrys: Array<GPUBindGroupLayoutEntry> = [
             { // uniforms is manadory
@@ -18,7 +18,7 @@ export class Mesh {
                 }
             }
         ];
-        if (numOfTextures > 0) {
+        if (textures.length > 0) {
             layoutEntrys.push({ // sampler
                 binding: 1,
                 visibility: window.GPUShaderStage.FRAGMENT,
@@ -26,14 +26,23 @@ export class Mesh {
                     type: "filtering"
                 }
             });
-            for (let i = 0; i < numOfTextures; i++) {
-                layoutEntrys.push({ // 1-n texture bindings
-                    binding: 2 + i,
-                    visibility: window.GPUShaderStage.FRAGMENT,
-                    texture: {
-                        sampleType: "float"
-                    }
-                })
+            for (let i = 0; i < textures.length; i++) {
+                if(textures[i].type === 0){
+                    layoutEntrys.push({ // 1-n texture bindings
+                        binding: 2 + i,
+                        visibility: window.GPUShaderStage.FRAGMENT,
+                        texture: {
+                            sampleType: "float"
+                        }
+                    })
+                }else{
+                    layoutEntrys.push({ // 1-n texture bindings
+                        binding: 2 + i,
+                        visibility: window.GPUShaderStage.FRAGMENT,
+                        externalTexture:{ }
+                    })
+                }
+                
             }
         }
         this.bindGroupLayout = this.device.createBindGroupLayout({
