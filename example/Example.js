@@ -13,6 +13,7 @@ const Geometry_1 = require("../src/Geometry");
 const Material_1 = require("../src/Material");
 const Renderer_1 = require("../src/Renderer");
 const texture_1 = require("./shaders/wglsl/texture");
+const ITexture_1 = require("../src/ITexture");
 const samples_1 = require("./meshes/samples");
 const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
@@ -44,12 +45,12 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
         {
             key: "textureA",
             source: "assets/video.webm",
-            type: 1,
+            type: ITexture_1.TextureType.video,
         },
         {
             key: "textureB",
             source: "assets/channel0.jpg",
-            type: 0
+            type: ITexture_1.TextureType.image
         },
     ];
     const scene = new Scene_1.Scene("myScene", device, canvas);

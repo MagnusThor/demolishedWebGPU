@@ -63,8 +63,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const scene = new Scene("myScene", device, canvas);
   await scene.addAssets(textures, samplers);
+  
   const mesh = new Mesh(device, geometry, material, textures);
+
   scene.addMesh("myMesh", mesh);
+  
   await renderer.addScene(scene)
 
 

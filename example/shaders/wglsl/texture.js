@@ -21,9 +21,16 @@ exports.showTextureShader = {
   };  
 
   fn main(fragCoord: vec2<f32>) -> vec4<f32> {
-    // display texture 
-    return  textureSampleLevel(textureA, linearSampler, fragCoord);
-    //return vec4<f32>(1.0,0.0,0.0,1.0);//textureSample(textureB, linearSampler, fragCoord);
+    var texColor:vec4<f32> = textureSampleLevel(textureA, linearSampler, -fragCoord);
+    var backColor:vec4<f32> = textureSample(textureB, linearSampler, -fragCoord);
+    let t = 0.05;
+    var k:vec2<f32> = vec2<f32>(texColor.g - texColor.r,texColor.g - texColor.b);
+    if(k.x > t && k.y > t){
+        texColor = backColor;
+    };
+   return texColor; 
+    //return textureSampleLevel(textureA, linearSampler, -fragCoord);
+    //return textureSample(textureB, linearSampler, fragCoord);
   }
   [[stage(fragment)]]
   fn main_fragment(in: VertexOutput) -> [[location(0)]] vec4<f32> {      

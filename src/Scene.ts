@@ -3,17 +3,17 @@ import { Mesh } from "./Mesh";
 import { TextureLoader } from "./TextureLoader";
 
 
-export class TextureCache{
-    entities:Map<string,any>
-    constructor(){
-        this.entities = new Map<string,any>();
+export class TextureCache {
+    entities: Map<string, any>
+    constructor() {
+        this.entities = new Map<string, any>();
     }
 }
 
 export class Scene {
 
     meshes: Map<string, Mesh>;
-    textures: Array<{type:number,data: GPUTexture | HTMLVideoElement | HTMLImageElement}>;
+    textures: Array<{ type: number, data: GPUTexture | HTMLVideoElement | HTMLImageElement }>;
     bindingGroupEntrys: Array<GPUBindGroupEntry>;
     uniformBufferArray: Float32Array;
     uniformBuffer: GPUBuffer;
@@ -37,11 +37,11 @@ export class Scene {
         );
     }
     constructor(public key: string, public device: GPUDevice, public canvas: HTMLCanvasElement) {
-        
+
         this.meshes = new Map<string, Mesh>();
-        this.textures = new Array<{type:number,data: GPUTexture | HTMLVideoElement | HTMLImageElement}>();    
+        this.textures = new Array<{ type: number, data: GPUTexture | HTMLVideoElement | HTMLImageElement }>();
         this.bindingGroupEntrys = new Array<GPUBindGroupEntry>();
-        
+
         const dpr = window.devicePixelRatio || 1;
         this.uniformBuffer = this.device.createBuffer({
             size: 40,
@@ -51,37 +51,37 @@ export class Scene {
         this.updateUniformBuffer();
     }
 
-    getBindingGroupEntrys():Array<GPUBindGroupEntry>{
-        const bindingGroupEntrys:Array<GPUBindGroupEntry> = [];
+    getBindingGroupEntrys(): Array<GPUBindGroupEntry> {
+        const bindingGroupEntrys: Array<GPUBindGroupEntry> = [];
         bindingGroupEntrys.push({
             binding: 0,
             resource: {
                 buffer: this.uniformBuffer
             }
-        });        
+        });
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             magFilter: 'linear',
             minFilter: 'nearest'
-        });        
+        });
         // add the a sampler
         bindingGroupEntrys.push({
             binding: 1,
             resource: sampler
         });
         this.textures.forEach((t, i) => {
-            let entry: GPUBindGroupEntry ;
-            if(t.type === 0){                
-                entry= {
+            let entry: GPUBindGroupEntry;
+            if (t.type === 0) {
+                entry = {
                     binding: i + 2,
                     resource: (t.data as GPUTexture).createView()
                 }
-            }else{
+            } else {
                 entry = {
                     binding: i + 2,
-                    resource: this.device.importExternalTexture({source:t.data as HTMLVideoElement}),
-                    
+                    resource: this.device.importExternalTexture({ source: t.data as HTMLVideoElement }),
+
                 };
             }
             bindingGroupEntrys.push(entry);
@@ -91,13 +91,13 @@ export class Scene {
 
     async addAssets(textures?: Array<ITexture>, samplers?: Array<GPUSamplerDescriptor>) {
 
-        
+
         for (let i = 0; i < textures.length; i++) {
-            const texture =  textures[i];
-            if(texture.type == 0){
-                this.textures.push({type:0,data:await TextureLoader.createImageTexture(this.device,texture)});
-            }else
-                this.textures.push({type:1,data:await TextureLoader.createVideoTextue(this.device,texture)});           
+            const texture = textures[i];
+            if (texture.type == 0) {
+                this.textures.push({ type: 0, data: await TextureLoader.createImageTexture(this.device, texture) });
+            } else
+                this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
         }
         this.bindingGroupEntrys = [{
             binding: 0,
@@ -130,26 +130,26 @@ export class Scene {
             });
         }
         this.textures.forEach((t, i) => {
-            let entry: GPUBindGroupEntry ;
-            if(t.type === 0){                
-                entry= {
+            let entry: GPUBindGroupEntry;
+            if (t.type === 0) {
+                entry = {
                     binding: i + textureBindingOffset,
                     resource: (t.data as GPUTexture).createView()
                 }
-            }else{
-                
+            } else {
+
                 entry = {
                     binding: i + textureBindingOffset,
-                    resource: this.device.importExternalTexture({source:t.data as HTMLVideoElement})
+                    resource: this.device.importExternalTexture({ source: t.data as HTMLVideoElement })
                 };
             }
             this.bindingGroupEntrys.push(entry);
         });
 
-       
+
     }
 
-    addMesh(key: string, mesh: Mesh) {
+    addMesh(key: string, mesh: Mesh): void {
         this.meshes.set(key, mesh);
     }
     removeMesh(key: string): boolean {
