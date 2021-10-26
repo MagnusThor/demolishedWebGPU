@@ -19,6 +19,7 @@ const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const canvas = document.querySelector('canvas');
+    const ms = yield navigator.mediaDevices.getUserMedia({ video: true, audio: false });
     const renderer = new Renderer_1.Renderer(canvas);
     const device = yield renderer.getDevice();
     /*
@@ -44,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
         // },
         {
             key: "textureA",
-            source: "assets/video.webm",
+            source: ms,
             type: ITexture_1.TextureType.video,
         },
         {

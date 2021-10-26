@@ -1,6 +1,6 @@
 export interface ITexture {
     key: string
-    source: string
+    source: string |MediaStream
     sampler?: any
     type: TextureType
   

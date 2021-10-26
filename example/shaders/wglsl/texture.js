@@ -11,8 +11,8 @@ exports.showTextureShader = {
   };
   [[group(0), binding(0)]] var<uniform> uniforms: Uniforms;
   [[group(0), binding(1)]] var linearSampler: sampler;
-  [[group(0), binding(2)]] var textureA: texture_external;
-  [[group(0), binding(3)]] var textureB: texture_2d<f32>;
+  [[group(0), binding(2)]] var textureA: texture_external; 
+  [[group(0), binding(3)]] var textureB: texture_2d<f32>; 
   
      
   struct VertexOutput {

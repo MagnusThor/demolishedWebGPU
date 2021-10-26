@@ -21,6 +21,13 @@ import { Mesh } from "../src/Mesh";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+
+
+
+  const ms = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+
+
+
   const renderer = new Renderer(canvas);
   const device = await renderer.getDevice();
   /*
@@ -49,7 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // },
     {
       key: "textureA",
-      source: "assets/video.webm",
+      source: ms,//;"assets/video.webm",
       type: TextureType.video,
     },
 
@@ -67,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const mesh = new Mesh(device, geometry, material, textures);
 
   scene.addMesh("myMesh", mesh);
-  
+
   await renderer.addScene(scene)
 
 
