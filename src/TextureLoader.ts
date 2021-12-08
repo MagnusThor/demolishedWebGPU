@@ -4,7 +4,7 @@ export class TextureLoader {
     }
     /**
      * Load and create an GPUTexture from an Image 
-     *
+     * 
      * @static
      * @param {GPUDevice} device
      * @param {string} texture

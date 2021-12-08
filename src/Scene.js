@@ -54,6 +54,7 @@ class Scene {
                 buffer: this.uniformBuffer
             }
         });
+        // todo: Cache the samples passed + default sampler ( linearSampler)
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
@@ -100,7 +101,7 @@ class Scene {
                     }
                 }];
             let textureBindingOffset = (samplers ? samplers.length : 0);
-            if (this.textures.length > 0 && !samplers) {
+            if (textures.length > 0 && !samplers) {
                 const sampler = this.device.createSampler({
                     addressModeU: 'repeat',
                     addressModeV: 'repeat',

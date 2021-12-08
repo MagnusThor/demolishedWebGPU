@@ -16,6 +16,21 @@ This an early version, but the following features will is available
 As in demolishedRenderer the goal is to keep the *engine* tiny, and its written mainly for a demo-scene purpose, but as demolishedRenderer 
 you can use in graphics/rendering itense webapplications. 
 
+
+# Classes
+
+TBD
+
+...
+## Mesh
+...
+## Material
+...
+## Scene
+...
+## Render
+...
+
 # Example 
 
 Se exaple/Example.ts for futher details.
@@ -100,7 +115,7 @@ See example/shaders for futher detils.
       }
       
     
-## Use GLSL to compile into SPIR-V
+## Use glslang to compile into SPIR-V
 
     const glsl = await glslang();
     let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);    

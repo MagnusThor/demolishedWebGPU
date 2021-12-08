@@ -6,10 +6,6 @@ import { showTextureShader } from "./shaders/wglsl/texture";
 import { plasmaShader } from "./shaders/wglsl/plasma";
 
 import { ITexture, TextureType } from "../src/ITexture";
-
-
-
-
 import glslang from './libs/glslang';
 import { fractalShader } from "./shaders/glsl/fractal";
 import { cloudShader } from "./shaders/wglsl/cloud";
@@ -22,11 +18,7 @@ import { Mesh } from "../src/Mesh";
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
 
-
-
-  const ms = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
-
-
+//  const ms = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
 
   const renderer = new Renderer(canvas);
   const device = await renderer.getDevice();
@@ -36,7 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //const glsl = await glslang();
   //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
   //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
-  const material = new Material(device, showTextureShader);
+  const material = new Material(device, showTextureShader);  
   //const material = new Material(device, myMaterial);
   const geometry = new Geometry(device, rectGeometry);
 
@@ -46,17 +38,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     magFilter: 'linear',
     minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
   }];
-
-
   const textures: Array<ITexture> = [
     //   {
     //   key: "textureA",
     //   source: "assets/channel0.jpg",
     //   type:0
     // },
+    
     {
       key: "textureA",
-      source: ms,//;"assets/video.webm",
+      source: "assets/video.webm", // ms 
       type: TextureType.video,
     },
 
@@ -69,9 +60,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   ];
 
   const scene = new Scene("myScene", device, canvas);
-  await scene.addAssets(textures, samplers);
+  await scene.addAssets(textures);
   
-  const mesh = new Mesh(device, geometry, material, textures);
+  const mesh = new Mesh(device, geometry, material,[textures[0],textures[1]]); // [textures[0],textures[1]]
 
   scene.addMesh("myMesh", mesh);
 

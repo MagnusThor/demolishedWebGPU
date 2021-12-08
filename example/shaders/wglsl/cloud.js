@@ -130,9 +130,9 @@ return vec4<f32>(result,1.0);
 
 }
   
-  [[stage(fragment)]]
+[[stage(fragment)]]
   fn main_fragment(in: VertexOutput) -> [[location(0)]] vec4<f32> {
-    let x = u.resolution; // need to use all inputs
-    return main(in.uv);
-}`
+      let x = u.resolution; // need to use all inputs
+      return main(in.uv);
+  }`
 };

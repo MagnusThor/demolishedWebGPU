@@ -1,7 +1,7 @@
 import { defaultWglslVertex } from "../../../src/Material";
 import { IMaterialShader } from "../../../src/IMaterialShader";
 
-export const cloudShader:IMaterialShader = {
+export const cloudShader: IMaterialShader = {
   vertex: defaultWglslVertex,
   fragment:/* wgsl */ `
   [[block]] struct Uniforms {
@@ -129,11 +129,11 @@ return vec4<f32>(result,1.0);
 
 }
   
-  [[stage(fragment)]]
+[[stage(fragment)]]
   fn main_fragment(in: VertexOutput) -> [[location(0)]] vec4<f32> {
-    let x = u.resolution; // need to use all inputs
-    return main(in.uv);
-}`
+      let x = u.resolution; // need to use all inputs
+      return main(in.uv);
+  }`
 
 
 };
