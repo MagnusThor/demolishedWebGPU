@@ -39,7 +39,9 @@ class Renderer {
                 if (!entry) {
                     throw "Cannot initalize WebGPU ";
                 }
-                this.adapter = yield entry.requestAdapter();
+                this.adapter = yield entry.requestAdapter({
+                    powerPreference: "high-performance",
+                });
                 this.device = yield this.adapter.requestDevice();
                 this.queue = this.device.queue;
             }

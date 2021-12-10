@@ -51,14 +51,13 @@ class TextureLoader {
             video.loop = true;
             video.autoplay = true;
             video.muted = true;
-            video.src = texture.source;
+            if (texture.source instanceof MediaStream) {
+                video.srcObject = texture.source;
+            }
+            else
+                video.src = texture.source;
             yield video.play();
             return video;
-            // const descriptor:GPUExternalTextureDescriptor = {
-            //     source: video
-            // };
-            // const externalTexture =  device.importExternalTexture(descriptor);
-            // return externalTexture;
         });
     }
 }

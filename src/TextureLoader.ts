@@ -4,7 +4,7 @@ export class TextureLoader {
     }
     /**
      * Load and create an GPUTexture from an Image 
-     *
+     * 
      * @static
      * @param {GPUDevice} device
      * @param {string} texture
@@ -14,7 +14,7 @@ export class TextureLoader {
     static async createImageTexture(device: GPUDevice, texture: ITexture):Promise<GPUTexture> {
 
         const image = new Image();
-        image.src = texture.source;
+        image.src = texture.source as string;
         await image.decode();
         
         const imageBitmap = await createImageBitmap(image);
@@ -41,22 +41,17 @@ export class TextureLoader {
     static async createVideoTextue(device: GPUDevice , texture:ITexture):Promise<HTMLVideoElement>{
       
         const video = document.createElement("video") as HTMLVideoElement;
-
         video.loop = true;
         video.autoplay = true;
         video.muted = true;
-
-        video.src = texture.source;
+        if(texture.source instanceof MediaStream){
+            video.srcObject =texture.source;
+        }else
+             video.src = texture.source as string;
 
         await video.play();
 
-        return video;
-    
-        // const descriptor:GPUExternalTextureDescriptor = {
-        //     source: video
-        // };
-        // const externalTexture =  device.importExternalTexture(descriptor);
-        // return externalTexture;
-
+        return video;   
+        
     }
 }

@@ -6,6 +6,7 @@ class Mesh {
         this.device = device;
         this.geometry = geometry;
         this.material = material;
+        this.isEnables = true;
         const layoutEntrys = [
             {
                 binding: 0,
@@ -23,7 +24,7 @@ class Mesh {
                     type: "filtering"
                 }
             });
-            for (let i = 0; i < textures.length; i++) {
+            for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if (textures[i].type === 0) {
                     layoutEntrys.push({
                         binding: 2 + i,
@@ -33,7 +34,7 @@ class Mesh {
                         }
                     });
                 }
-                else {
+                else { //  external texture ( video )
                     layoutEntrys.push({
                         binding: 2 + i,
                         visibility: window.GPUShaderStage.FRAGMENT,

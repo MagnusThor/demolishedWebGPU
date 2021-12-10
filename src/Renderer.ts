@@ -43,7 +43,9 @@ export class Renderer {
             if (!entry) {
                 throw "Cannot initalize WebGPU ";
             }
-            this.adapter = await entry.requestAdapter();
+            this.adapter = await entry.requestAdapter({
+                powerPreference:"high-performance",
+            });
             this.device = await this.adapter.requestDevice();
             this.queue = this.device.queue;
         } catch (e) {
@@ -59,21 +61,15 @@ export class Renderer {
   
     //async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
         
-        async addScene(scene:Scene): Promise<void> {
-        
+    async addScene(scene:Scene): Promise<void> {
         this.scene = scene;
         // if(scene.customUniforms){ // extend uniforms if custom is passeds
         //         uniforms.set(uniforms,4)
         // }        
-        
       //  const mesh = scene.getMesh();
         this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
-  
     }  
-
-    
     draw(time: number) { 
-
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
             entries:this.scene.getBindingGroupEntrys(),
@@ -92,14 +88,17 @@ export class Renderer {
                 view: textureView
             }]
         };
-        const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
+
         this.scene.setUniforms([time],3) // time
-        this.scene.updateUniformBuffer();       
+        this.scene.updateUniformBuffer();      
+
+        const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
+
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setVertexBuffer(0, this.scene.getMesh().geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
-         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
+        passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
 
         //passEncoder.draw(6, 1, 0, 0);
         
@@ -117,10 +116,10 @@ export class Renderer {
             if (segment > frame) {
                 frame = segment;
                 this.frame = frame;
-                this.draw(timestamp / 1000);
+                if(!this.isPaused)
+                    this.draw(timestamp / 1000);
             }
-            if(!this.isPaused)
-                requestAnimationFrame(renderLoop);
+            requestAnimationFrame(renderLoop);
         };
         renderLoop(t);
     }

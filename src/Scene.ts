@@ -59,12 +59,14 @@ export class Scene {
                 buffer: this.uniformBuffer
             }
         });
+        // todo: Cache the samples passed + default sampler ( linearSampler)
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             magFilter: 'linear',
             minFilter: 'nearest'
         });
+        
         // add the a sampler
         bindingGroupEntrys.push({
             binding: 1,
@@ -81,7 +83,6 @@ export class Scene {
                 entry = {
                     binding: i + 2,
                     resource: this.device.importExternalTexture({ source: t.data as HTMLVideoElement }),
-
                 };
             }
             bindingGroupEntrys.push(entry);
@@ -106,7 +107,7 @@ export class Scene {
             }
         }];
         let textureBindingOffset = (samplers ? samplers.length : 0)
-        if (this.textures.length > 0 && !samplers) {
+        if (textures.length > 0 && !samplers) {
             const sampler = this.device.createSampler({
                 addressModeU: 'repeat',
                 addressModeV: 'repeat',

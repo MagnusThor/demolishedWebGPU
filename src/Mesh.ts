@@ -3,11 +3,12 @@ import { Geometry } from "./Geometry";
 import { Material } from "./Material";
 
 export class Mesh {
- 
+
+    isEnables: boolean = true;
+    
     private bindGroupLayout: GPUBindGroupLayout;
     pipelineLayout: GPUPipelineLayout;
     constructor(public device: GPUDevice, public geometry: Geometry, public material: Material, textures?: Array<ITexture>) {
-
 
        const layoutEntrys: Array<GPUBindGroupLayoutEntry> = [
             { // uniforms is manadory
@@ -26,17 +27,17 @@ export class Mesh {
                     type: "filtering"
                 }
             });
-            for (let i = 0; i < textures.length; i++) {
+            for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if(textures[i].type === 0){
-                    layoutEntrys.push({ // 1-n texture bindings
+                    layoutEntrys.push({ 
                         binding: 2 + i,
                         visibility: window.GPUShaderStage.FRAGMENT,
                         texture: {
                             sampleType: "float"
                         }
                     })
-                }else{
-                    layoutEntrys.push({ // 1-n texture bindings
+                }else{//  external texture ( video )
+                    layoutEntrys.push({ 
                         binding: 2 + i,
                         visibility: window.GPUShaderStage.FRAGMENT,
                         externalTexture:{ }
@@ -60,7 +61,6 @@ export class Mesh {
                 module: this.material.vertexShaderModule,
                 entryPoint: this.material.shader.vertexEntryPoint || 'main_vertex',
                 buffers: [this.geometry.vertexBufferLayout(0)]
-
             },
             fragment: {
                 module: this.material.fragmentShaderModule,
