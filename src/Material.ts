@@ -2,13 +2,14 @@ import { IMaterialShader } from "./IMaterialShader";
 
 export const defaultWglslVertex = /* wgsl */ `  
 struct VertexInput {
-  [[location(0)]] pos: vec2<f32>;
+  @location(0) pos: vec2<f32>
 };  
 struct VertexOutput {
-  [[builtin(position)]] pos: vec4<f32>;
-  [[location(0)]] uv: vec2<f32>;
+  @builtin(position) pos: vec4<f32>,
+  @location(0) uv: vec2<f32>
 };  
-[[stage(vertex)]]
+
+@vertex
 fn main_vertex(input: VertexInput) -> VertexOutput {
   var output: VertexOutput;
   var pos: vec2<f32> = input.pos * 2.0 - 1.0;
