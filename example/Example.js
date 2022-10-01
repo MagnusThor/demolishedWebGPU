@@ -12,9 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Geometry_1 = require("../src/Geometry");
 const Material_1 = require("../src/Material");
 const Renderer_1 = require("../src/Renderer");
-const texture_1 = require("./shaders/wglsl/texture");
+const redColorShader_1 = require("./shaders/wglsl/redColorShader");
 const ITexture_1 = require("../src/ITexture");
-const samples_1 = require("./meshes/samples");
+const Rectangle_1 = require("./meshes/Rectangle");
 const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
@@ -28,9 +28,9 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     //const glsl = await glslang();
     //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
     //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
-    const material = new Material_1.Material(device, texture_1.showTextureShader);
+    const material = new Material_1.Material(device, redColorShader_1.redColorShader);
     //const material = new Material(device, myMaterial);
-    const geometry = new Geometry_1.Geometry(device, samples_1.rectGeometry);
+    const geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
     const samplers = [{
             addressModeU: 'repeat',
             addressModeV: 'repeat',
@@ -38,11 +38,6 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
             minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
         }];
     const textures = [
-        //   {
-        //   key: "textureA",
-        //   source: "assets/channel0.jpg",
-        //   type:0
-        // },
         {
             key: "textureA",
             source: "assets/video.webm",
@@ -54,9 +49,9 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
             type: ITexture_1.TextureType.image
         },
     ];
+    const mesh = new Mesh_1.Mesh(device, geometry, material, [textures[0], textures[1]]);
     const scene = new Scene_1.Scene("myScene", device, canvas);
     yield scene.addAssets(textures);
-    const mesh = new Mesh_1.Mesh(device, geometry, material, [textures[0], textures[1]]); // [textures[0],textures[1]]
     scene.addMesh("myMesh", mesh);
     yield renderer.addScene(scene);
     renderer.start(0);
