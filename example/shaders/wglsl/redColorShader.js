@@ -12,6 +12,8 @@ exports.redColorShader = {
   };
 
   @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+
+  
      
   struct VertexOutput {
     @builtin(position) pos: vec4<f32>,

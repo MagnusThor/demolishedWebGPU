@@ -18,6 +18,18 @@ class TextureCache {
 }
 exports.TextureCache = TextureCache;
 class Scene {
+    getMesh(index = 0) {
+        return Array.from(this.meshes.values())[index];
+    }
+    setDimensions(width, height, dpr = 0) {
+        this.setUniforms([width, height, dpr], 0);
+    }
+    setUniforms(values, offset) {
+        this.uniformBufferArray.set(values, offset); // time 
+    }
+    updateUniformBuffer() {
+        this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
+    }
     constructor(key, device, canvas) {
         this.key = key;
         this.device = device;
@@ -33,18 +45,6 @@ class Scene {
         this.uniformBufferArray = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
         ;
         this.updateUniformBuffer();
-    }
-    getMesh(index = 0) {
-        return Array.from(this.meshes.values())[index];
-    }
-    setDimensions(width, height, dpr = 0) {
-        this.setUniforms([width, height, dpr], 0);
-    }
-    setUniforms(values, offset) {
-        this.uniformBufferArray.set(values, offset); // time 
-    }
-    updateUniformBuffer() {
-        this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
     }
     getBindingGroupEntrys() {
         const bindingGroupEntrys = [];

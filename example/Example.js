@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     const textures = [
         {
             key: "textureA",
-            source: "assets/video.webm",
+            source: "assets/video.webm", // ms 
             type: ITexture_1.TextureType.video,
         },
         {

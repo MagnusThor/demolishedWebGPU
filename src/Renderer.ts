@@ -27,7 +27,7 @@ export class Renderer {
         const device = await this.initializeAPI();
         if (device) {
             this.context = this.canvas.getContext('webgpu');
-            const presentationFormat = this.context.getPreferredFormat(this.adapter);
+            const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
             const canvasConfig: GPUCanvasConfiguration = config || {
                 device: this.device,
                 format: presentationFormat,// 'bgra8unorm',
@@ -83,7 +83,7 @@ export class Renderer {
         const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [{
-                loadValue: clearColor,
+                loadOp: 'clear',
                 storeOp: 'store',
                 view: textureView
             }]
@@ -102,7 +102,8 @@ export class Renderer {
 
         //passEncoder.draw(6, 1, 0, 0);
         
-        passEncoder.endPass();
+        passEncoder.end();
+        
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
    

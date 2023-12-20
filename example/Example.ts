@@ -11,8 +11,10 @@ import { Scene } from "../src/Scene";
 import { Mesh } from "../src/Mesh";
 
 
+
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+
 
 //  const ms = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
 

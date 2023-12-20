@@ -7,4 +7,4 @@ var TextureType;
     TextureType[TextureType["video"] = 1] = "video";
     TextureType[TextureType["canvas"] = 2] = "canvas";
     TextureType[TextureType["mediaStream"] = 3] = "mediaStream";
-})(TextureType = exports.TextureType || (exports.TextureType = {}));
+})(TextureType || (exports.TextureType = TextureType = {}));

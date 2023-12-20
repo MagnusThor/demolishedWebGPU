@@ -21,10 +21,10 @@ class Renderer {
             const device = yield this.initializeAPI();
             if (device) {
                 this.context = this.canvas.getContext('webgpu');
-                const presentationFormat = this.context.getPreferredFormat(this.adapter);
+                const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
                 const canvasConfig = config || {
                     device: this.device,
-                    format: presentationFormat,
+                    format: presentationFormat, // 'bgra8unorm',
                     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
                 };
                 this.context.configure(canvasConfig);
@@ -75,7 +75,7 @@ class Renderer {
         const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor = {
             colorAttachments: [{
-                    loadValue: clearColor,
+                    loadOp: 'clear',
                     storeOp: 'store',
                     view: textureView
                 }]
@@ -89,7 +89,7 @@ class Renderer {
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
         //passEncoder.draw(6, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
     start(t, maxFps = 200) {

@@ -7,7 +7,7 @@ var VERTEXType;
     VERTEXType[VERTEXType["xyzw"] = 4] = "xyzw";
     VERTEXType[VERTEXType["xyzrgba"] = 7] = "xyzrgba";
     VERTEXType[VERTEXType["xyzwrgba"] = 8] = "xyzwrgba";
-})(VERTEXType = exports.VERTEXType || (exports.VERTEXType = {}));
+})(VERTEXType || (exports.VERTEXType = VERTEXType = {}));
 exports.DefaultIndicies = new Uint16Array([0, 1, 2, 3, 4, 5]);
 // let createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
 //     let desc = {
@@ -25,13 +25,6 @@ exports.DefaultIndicies = new Uint16Array([0, 1, 2, 3, 4, 5]);
 //     return buffer;
 //};
 class Geometry {
-    constructor(device, model) {
-        this.device = device;
-        this.model = model;
-        this.vertexBuffer = this.createBuffer(model.vertices, GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, model.verticesType);
-        this.indexBuffer = this.createBuffer(model.indicies, GPUBufferUsage.INDEX, 3);
-        this.numOfVerticles = model.vertices.length / model.verticesType;
-    }
     createBuffer(arr, usage, vertexSize) {
         let desc = {
             size: (arr.byteLength + vertexSize) & ~vertexSize,
@@ -45,6 +38,13 @@ class Geometry {
         writeArray.set(arr);
         buffer.unmap();
         return buffer;
+    }
+    constructor(device, model) {
+        this.device = device;
+        this.model = model;
+        this.vertexBuffer = this.createBuffer(model.vertices, GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST, model.verticesType);
+        this.indexBuffer = this.createBuffer(model.indicies, GPUBufferUsage.INDEX, 3);
+        this.numOfVerticles = model.vertices.length / model.verticesType;
     }
     vertexBufferLayout(shaderLocation) {
         const vertexBufferLayout = {
