@@ -9,6 +9,8 @@ import glslang from './libs/glslang';
 import { rectGeometry } from "./meshes/Rectangle";
 import { Scene } from "../src/Scene";
 import { Mesh } from "../src/Mesh";
+import { mandelbrotFractal } from "./shaders/wglsl/mandelbrotFractal";
+import { raymarchShader } from "./shaders/wglsl/raymarchShader";
 
 
 
@@ -27,7 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //let compiledShader = glsl.compileGLSL(fractalShader.fragment as string, "fragment", false);
   //const myMaterial = Material.createMaterialShader(fractalShader.vertex, compiledShader, "main", "main");
 
-  const material = new Material(device, redColorShader);
+  const material = new Material(device, raymarchShader);
     
   //const material = new Material(device, myMaterial);
   const geometry = new Geometry(device, rectGeometry);
