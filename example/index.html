@@ -6,26 +6,30 @@
         html {
             margin: 0;
             padding: 0;
+            background: #000;
+            overflow: hidden;
         }
+
         canvas {
-            position:absolute;
-            top:0;
-            left: 0;
+           
             width: 100vw;
-            height: 100vh;
+            height: calc((9/16)*100vw);
         }
-        #error{
-            position: absolute;
-            bottom: 0px;
-            width: 100%;
-            min-height: 200px;
-            z-index: 1000;
+
+        div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
     </style>
 </head>
+
 <body>
-    <canvas width="1280" height="720"></canvas>
-    <div id="error"></div>    
+    <div>
+        <canvas width="850" height="450"></canvas>
+    </div>
     <script src="build/src-bundle.js"></script>
 </body>
+
 </html>

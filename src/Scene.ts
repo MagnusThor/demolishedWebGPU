@@ -49,7 +49,7 @@ export class Scene {
         });
         this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0]);
 
-        console.log([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0])
+        console.log([this.canvas.width, this.canvas.height, dpr, 0])
 
         this.updateUniformBuffer();
     }

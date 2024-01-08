@@ -49,7 +49,6 @@ export class Renderer {
             this.device = await this.adapter.requestDevice();
             this.queue = this.device.queue;
         } catch (e) {
-
             throw "Cannot initalize WebGPU ";
         }
         return this.device;
@@ -79,8 +78,6 @@ export class Renderer {
 
         const textureView = this.context.getCurrentTexture().createView();
 
-
-        const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [{
                 loadOp: 'clear',
@@ -100,7 +97,6 @@ export class Renderer {
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
 
-        //passEncoder.draw(6, 1, 0, 0);
         
         passEncoder.end();
         
