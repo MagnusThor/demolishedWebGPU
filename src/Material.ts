@@ -1,6 +1,6 @@
 import { IMaterialShader } from "./IMaterialShader";
 
-export const defaultWglslVertex = /* wgsl */ `  
+export const defaultWglslVertex = /* glsl */ `  
 struct VertexInput {
   @location(0) pos: vec2<f32>
 };  
@@ -32,11 +32,11 @@ export class Material {
             code: shader.fragment
         });
     }
-    static createMaterialShader(spirvVert:Uint32Array,spirvFrag:Uint32Array,vertexEntryPoint:string,fragmentEntryPoint):IMaterialShader {
+    static createMaterialShader(vertex:Uint32Array,fragment:Uint32Array,vertexEntryPoint:string,fragmentEntryPoint):IMaterialShader {
         const material:IMaterialShader = {
-            fragment: spirvFrag,
+            fragment: fragment,
             fragmentEntryPoint: fragmentEntryPoint,
-            vertex:spirvVert,
+            vertex:vertex,
             vertexEntryPoint: vertexEntryPoint
         } 
         return material;

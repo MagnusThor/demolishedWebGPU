@@ -51,17 +51,9 @@ class Renderer {
             return this.device;
         });
     }
-    // updateCustomUniform(index:number,value:Float32Array){
-    //     this.scene.mesh.uniformBufferArray.set(value,index)
-    // }
-    //async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
     addScene(scene) {
         return __awaiter(this, void 0, void 0, function* () {
             this.scene = scene;
-            // if(scene.customUniforms){ // extend uniforms if custom is passeds
-            //         uniforms.set(uniforms,4)
-            // }        
-            //  const mesh = scene.getMesh();
             this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
         });
     }
@@ -76,7 +68,8 @@ class Renderer {
             colorAttachments: [{
                     loadOp: 'clear',
                     storeOp: 'store',
-                    view: textureView
+                    view: textureView,
+                    clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                 }]
         };
         this.scene.setUniforms([time], 3); // time
@@ -90,7 +83,7 @@ class Renderer {
         passEncoder.end();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
-    start(t, maxFps = 200) {
+    start(t, maxFps = 200, onFrame) {
         let startTime = null;
         let frame = -1;
         const renderLoop = (timestamp) => {
@@ -102,6 +95,8 @@ class Renderer {
                 this.frame = frame;
                 if (!this.isPaused)
                     this.draw(timestamp / 1000);
+                if (onFrame)
+                    onFrame(frame);
             }
             requestAnimationFrame(renderLoop);
         };

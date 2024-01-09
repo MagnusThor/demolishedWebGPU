@@ -26,7 +26,8 @@
   "license": "MIT",
   "dependencies": {
     "@webgpu/types": "^0.1.40",
-    "webgpu": "^0.1.16"
+    "webgpu": "^0.1.16",
+    "yy-fps": "^2.0.1"
   },
   "devDependencies": {
     "stanford-dragon": "^1.1.1",

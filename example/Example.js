@@ -17,8 +17,10 @@ const Rectangle_1 = require("./meshes/Rectangle");
 const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
 const raymarchShader_1 = require("./shaders/wglsl/raymarchShader");
+const yy_fps_1 = require("yy-fps");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const canvas = document.querySelector('canvas');
+    const fps = new yy_fps_1.FPS();
     const renderer = new Renderer_1.Renderer(canvas);
     const device = yield renderer.getDevice();
     const scene = new Scene_1.Scene("myScene", device, canvas);
@@ -46,5 +48,7 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     yield scene.addAssets(textures);
     scene.addMesh("myMesh", mesh);
     yield renderer.addScene(scene);
-    renderer.start(0);
+    renderer.start(0, 200, (frameNo) => {
+        fps.frame();
+    });
 }));

@@ -9,14 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Scene = exports.TextureCache = void 0;
+exports.Scene = void 0;
 const TextureLoader_1 = require("./TextureLoader");
-class TextureCache {
-    constructor() {
-        this.entities = new Map();
-    }
-}
-exports.TextureCache = TextureCache;
 class Scene {
     getMesh(index = 0) {
         return Array.from(this.meshes.values())[index];
@@ -43,7 +37,6 @@ class Scene {
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
         this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0]);
-        console.log([this.canvas.width, this.canvas.height, dpr, 0]);
         this.updateUniformBuffer();
     }
     getBindingGroupEntrys() {
@@ -54,14 +47,14 @@ class Scene {
                 buffer: this.uniformBuffer
             }
         });
-        // todo: Cache the samples passed + default sampler ( linearSampler)
+        // todo: cache the samplers passed + default sampler ( linearSampler)
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             magFilter: 'linear',
             minFilter: 'nearest'
         });
-        // add the a sampler
+        // add the GPUSampler
         bindingGroupEntrys.push({
             binding: 1,
             resource: sampler

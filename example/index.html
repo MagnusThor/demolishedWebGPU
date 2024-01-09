@@ -10,23 +10,24 @@
             overflow: hidden;
         }
 
-        canvas {
-           
-            width: 100vw;
-            height: calc((9/16)*100vw);
-        }
+        
 
-        div {
+        #render-result {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
         }
+        #render-result canvas {
+           
+           width: 100vw;
+           height: calc((9/16)*100vw);
+       }
     </style>
 </head>
 
 <body>
-    <div>
+    <div id="render-result">
         <canvas width="850" height="450"></canvas>
     </div>
     <script src="build/src-bundle.js"></script>

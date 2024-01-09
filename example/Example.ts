@@ -7,8 +7,12 @@ import { Scene } from "../src/Scene";
 import { Mesh } from "../src/Mesh";
 import { raymarchShader } from "./shaders/wglsl/raymarchShader";
 
+import { FPS } from 'yy-fps'
+
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+
+  const fps = new FPS()
 
   const renderer = new Renderer(canvas);
   const device = await renderer.getDevice();
@@ -47,7 +51,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await renderer.addScene(scene)
 
-  renderer.start(0);
+  renderer.start(0,200,(frameNo) => {
+    fps.frame();
+  });
 
 });
 

@@ -95,26 +95,29 @@ export const raymarchShader: IMaterialShader = {
     
     fn mainImage(pos: vec2<f32>) -> vec4<f32> {
 
-        /*
-        let x = pos.x * inner_width * 0.5;
-        let y = pos.y * inner_height * 0.5;
-        */
-
         let fragCoord:vec2<f32> = vec2<f32>(pos.x * uniforms.resolution.x * 0.5,
             pos.y * uniforms.resolution.y * 0.5
             );
-
+       
         let uv: vec2<f32> = fragCoord.xy / uniforms.resolution.xy - 0.5;
 
         let time: f32 = (uniforms.time * 0.25);
-        let anim: f32 = 1.1; // + 0.5 * smoothstep(-0.3, 0.3, cos(0.1 * uniforms.time));
+        let anim: f32 = 1.1 + 0.5 * smoothstep(-0.3, 0.3, cos(0.1 * uniforms.time));
     
         var tot: vec3<f32> = vec3<f32>(0.);
 
         let ii: i32 = 1;
         let jj: i32 = 1;
+        let AA: i32 = 2;
         
-        let p: vec2<f32> = (2. * fragCoord.xy - uniforms.resolution.xy) / uniforms.resolution.y;
+        //    vec2 q = fragCoord.xy+vec2(float(ii),float(jj))/float(AA);
+        //vec2 p = (2.0*q-iResolution.xy)/iResolution.y;
+
+        let q: vec2<f32> = fragCoord.xy + vec2<f32>(f32(ii), f32(jj)) / f32(AA);
+        let p: vec2<f32> = (2. * q - uniforms.resolution.xy) / uniforms.resolution.y;
+
+
+       // let p: vec2<f32> = (2. *q fragCoord.xy - uniforms.resolution.xy) / uniforms.resolution.y;
 
         let ro: vec3<f32> = vec3<f32>(2.8 * cos(0.1 + 0.33 * time), 0.4 + 0.3 * cos(0.37 * time), 2.8 * cos(0.5 + 0.35 * time));
         let ta: vec3<f32> = vec3<f32>(1.9 * cos(1.2 + 0.41 * time), 0.4 + 0.1 * cos(0.27 * time), 1.9 * cos(2. + 0.38 * time));
@@ -124,7 +127,9 @@ export const raymarchShader: IMaterialShader = {
         let cu: vec3<f32> = normalize(cross(cw, cp));
         let cv: vec3<f32> = normalize(cross(cu, cw));
         let rd: vec3<f32> = normalize(p.x * cu + p.y * cv + 2. * cw);
+
         tot = tot + render(ro, rd, anim);
+
         return vec4<f32>(tot, 1.);
        
  
@@ -134,8 +139,6 @@ export const raymarchShader: IMaterialShader = {
     fn main_fragment(in: VertexOutput) -> @location(0) vec4<f32> {      
         return mainImage(in.uv);
     }
-    
-
 
     `
 };

@@ -29,11 +29,11 @@ class Material {
             code: shader.fragment
         });
     }
-    static createMaterialShader(spirvVert, spirvFrag, vertexEntryPoint, fragmentEntryPoint) {
+    static createMaterialShader(vertex, fragment, vertexEntryPoint, fragmentEntryPoint) {
         const material = {
-            fragment: spirvFrag,
+            fragment: fragment,
             fragmentEntryPoint: fragmentEntryPoint,
-            vertex: spirvVert,
+            vertex: vertex,
             vertexEntryPoint: vertexEntryPoint
         };
         return material;

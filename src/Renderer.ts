@@ -53,19 +53,11 @@ export class Renderer {
         }
         return this.device;
     }
-
-    // updateCustomUniform(index:number,value:Float32Array){
-    //     this.scene.mesh.uniformBufferArray.set(value,index)
-    // }
-  
-    //async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
-        
+    
+    
     async addScene(scene:Scene): Promise<void> {
         this.scene = scene;
-        // if(scene.customUniforms){ // extend uniforms if custom is passeds
-        //         uniforms.set(uniforms,4)
-        // }        
-      //  const mesh = scene.getMesh();
+ 
         this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
     }  
     draw(time: number) { 
@@ -73,16 +65,14 @@ export class Renderer {
             layout: this.renderPipeline.getBindGroupLayout(0),
             entries:this.scene.getBindingGroupEntrys(),
         });
-
         this.commandEncoder = this.device.createCommandEncoder();
-
         const textureView = this.context.getCurrentTexture().createView();
-
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [{
                 loadOp: 'clear',
                 storeOp: 'store',
-                view: textureView
+                view: textureView,
+                clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
             }]
         };
 
@@ -104,7 +94,7 @@ export class Renderer {
     }
    
 
-    start(t: number, maxFps: number = 200): void {
+    start(t: number, maxFps: number = 200,onFrame?:(frame:number)=> void): void {
         let startTime = null;
         let frame = -1;
         const renderLoop = (timestamp: number) => {
@@ -115,6 +105,7 @@ export class Renderer {
                 this.frame = frame;
                 if(!this.isPaused)
                     this.draw(timestamp / 1000);
+                if(onFrame) onFrame(frame);
             }
             requestAnimationFrame(renderLoop);
         };
