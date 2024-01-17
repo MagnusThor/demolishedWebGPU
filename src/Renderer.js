@@ -86,15 +86,15 @@ class Renderer {
     start(t, maxFps = 200, onFrame) {
         let startTime = null;
         let frame = -1;
-        const renderLoop = (timestamp) => {
+        const renderLoop = (ts) => {
             if (!startTime)
-                startTime = timestamp;
-            let segment = Math.floor((timestamp - startTime) / (1000 / maxFps));
+                startTime = ts;
+            let segment = Math.floor((ts - startTime) / (1000 / maxFps));
             if (segment > frame) {
                 frame = segment;
                 this.frame = frame;
                 if (!this.isPaused)
-                    this.draw(timestamp / 1000);
+                    this.draw(ts / 1000);
                 if (onFrame)
                     onFrame(frame);
             }

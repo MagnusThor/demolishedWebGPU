@@ -91,14 +91,10 @@ exports.raymarchShader = {
         return sqrt(col);
     } 
     
-    
-
-    
     fn mainImage(pos: vec2<f32>) -> vec4<f32> {
 
         let fragCoord:vec2<f32> = vec2<f32>(pos.x * uniforms.resolution.x * 0.5,
-            pos.y * uniforms.resolution.y * 0.5
-            );
+            pos.y * uniforms.resolution.y * 0.5);
        
         let uv: vec2<f32> = fragCoord.xy / uniforms.resolution.xy - 0.5;
 
@@ -111,17 +107,17 @@ exports.raymarchShader = {
         let jj: i32 = 1;
         let AA: i32 = 2;
         
-        //    vec2 q = fragCoord.xy+vec2(float(ii),float(jj))/float(AA);
+        //vec2 q = fragCoord.xy+vec2(float(ii),float(jj))/float(AA);
         //vec2 p = (2.0*q-iResolution.xy)/iResolution.y;
 
         let q: vec2<f32> = fragCoord.xy + vec2<f32>(f32(ii), f32(jj)) / f32(AA);
         let p: vec2<f32> = (2. * q - uniforms.resolution.xy) / uniforms.resolution.y;
 
-
-       // let p: vec2<f32> = (2. *q fragCoord.xy - uniforms.resolution.xy) / uniforms.resolution.y;
+        // let p: vec2<f32> = (2. *q fragCoord.xy - uniforms.resolution.xy) / uniforms.resolution.y;
 
         let ro: vec3<f32> = vec3<f32>(2.8 * cos(0.1 + 0.33 * time), 0.4 + 0.3 * cos(0.37 * time), 2.8 * cos(0.5 + 0.35 * time));
         let ta: vec3<f32> = vec3<f32>(1.9 * cos(1.2 + 0.41 * time), 0.4 + 0.1 * cos(0.27 * time), 1.9 * cos(2. + 0.38 * time));
+        
         let roll: f32 = 0.2 * cos(0.1 * time);
         let cw: vec3<f32> = normalize(ta - ro);
         let cp: vec3<f32> = vec3<f32>(sin(roll), cos(roll), 0.);

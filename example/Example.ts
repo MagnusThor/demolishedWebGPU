@@ -8,6 +8,7 @@ import { Mesh } from "../src/Mesh";
 import { raymarchShader } from "./shaders/wglsl/raymarchShader";
 
 import { FPS } from 'yy-fps'
+import { fullSpectrumCyberShader } from "./shaders/wglsl/fullSpectrumCyberShader";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -18,30 +19,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   const device = await renderer.getDevice();
 
   const scene = new Scene("myScene", device, canvas);
-  const material = new Material(device, raymarchShader);    
+  
+  //const material = new Material(device, raymarchShader);    
+  const material = new Material(device, fullSpectrumCyberShader);    
+
   const geometry = new Geometry(device, rectGeometry);
  
   const textures: Array<ITexture> = [
     {
       key: "iChannel0",
-      source: "assets/video.webm", // ms 
-      type: TextureType.video,
+      source: "assets/channel0.jpg", // ms 
+      type: TextureType.IMAGE,
     },
 
     {
       key: "iChannel1",
-      source: "assets/channel0.jpg",
-      type: TextureType.image
+      source: "assets/channel1.jpg",
+      type: TextureType.IMAGE
     },
   ];
 
-  //  const samplers: Array<GPUSamplerDescriptor> = [{
-  //   addressModeU: 'repeat',
-  //   addressModeV: 'repeat',
-  //   magFilter: 'linear',
-  //   minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
-  // }];
-
+    //  const samplers: Array<GPUSamplerDescriptor> = [{
+    //   addressModeU: 'repeat',
+    //   addressModeV: 'repeat',
+    //   magFilter: 'linear',
+    //   minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
+    // }];
 
   const mesh = new Mesh(device, geometry, material,[textures[0],textures[1]]); 
   

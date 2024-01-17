@@ -97,14 +97,14 @@ export class Renderer {
     start(t: number, maxFps: number = 200,onFrame?:(frame:number)=> void): void {
         let startTime = null;
         let frame = -1;
-        const renderLoop = (timestamp: number) => {
-            if (!startTime) startTime = timestamp;
-            let segment = Math.floor((timestamp - startTime) / (1000 / maxFps));
+        const renderLoop = (ts: number) => {
+            if (!startTime) startTime = ts;
+            let segment = Math.floor((ts - startTime) / (1000 / maxFps));
             if (segment > frame) {
                 frame = segment;
                 this.frame = frame;
                 if(!this.isPaused)
-                    this.draw(timestamp / 1000);
+                    this.draw(ts / 1000);
                 if(onFrame) onFrame(frame);
             }
             requestAnimationFrame(renderLoop);

@@ -16,26 +16,27 @@ const ITexture_1 = require("../src/ITexture");
 const Rectangle_1 = require("./meshes/Rectangle");
 const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
-const raymarchShader_1 = require("./shaders/wglsl/raymarchShader");
 const yy_fps_1 = require("yy-fps");
+const fullSpectrumCyberShader_1 = require("./shaders/wglsl/fullSpectrumCyberShader");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const canvas = document.querySelector('canvas');
     const fps = new yy_fps_1.FPS();
     const renderer = new Renderer_1.Renderer(canvas);
     const device = yield renderer.getDevice();
     const scene = new Scene_1.Scene("myScene", device, canvas);
-    const material = new Material_1.Material(device, raymarchShader_1.raymarchShader);
+    //const material = new Material(device, raymarchShader);    
+    const material = new Material_1.Material(device, fullSpectrumCyberShader_1.fullSpectrumCyberShader);
     const geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
     const textures = [
         {
             key: "iChannel0",
-            source: "assets/video.webm", // ms 
-            type: ITexture_1.TextureType.video,
+            source: "assets/channel0.jpg", // ms 
+            type: ITexture_1.TextureType.IMAGE,
         },
         {
             key: "iChannel1",
-            source: "assets/channel0.jpg",
-            type: ITexture_1.TextureType.image
+            source: "assets/channel1.jpg",
+            type: ITexture_1.TextureType.IMAGE
         },
     ];
     //  const samplers: Array<GPUSamplerDescriptor> = [{
