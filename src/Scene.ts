@@ -52,6 +52,7 @@ export class Scene {
             size: 40,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
+        
         this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0]);
 
         this.updateUniformBuffer();

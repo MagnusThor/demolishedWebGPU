@@ -91,12 +91,11 @@ exports.raymarchShader = {
         return sqrt(col);
     } 
     
-    fn mainImage(pos: vec2<f32>) -> vec4<f32> {
+    fn mainImage(fragCoord: vec4<f32>) -> vec4<f32> {
 
-        let fragCoord:vec2<f32> = vec2<f32>(pos.x * uniforms.resolution.x * 0.5,
-            pos.y * uniforms.resolution.y * 0.5);
+   
        
-        let uv: vec2<f32> = fragCoord.xy / uniforms.resolution.xy - 0.5;
+        let uv: vec2<f32> = fragCoord.xy / uniforms.resolution.xy ;
 
         let time: f32 = (uniforms.time * 0.25);
         let anim: f32 = 1.1 + 0.5 * smoothstep(-0.3, 0.3, cos(0.1 * uniforms.time));
@@ -111,6 +110,7 @@ exports.raymarchShader = {
         //vec2 p = (2.0*q-iResolution.xy)/iResolution.y;
 
         let q: vec2<f32> = fragCoord.xy + vec2<f32>(f32(ii), f32(jj)) / f32(AA);
+
         let p: vec2<f32> = (2. * q - uniforms.resolution.xy) / uniforms.resolution.y;
 
         // let p: vec2<f32> = (2. *q fragCoord.xy - uniforms.resolution.xy) / uniforms.resolution.y;
@@ -134,7 +134,7 @@ exports.raymarchShader = {
   
     @fragment
     fn main_fragment(in: VertexOutput) -> @location(0) vec4<f32> {      
-        return mainImage(in.uv);
+        return mainImage(in.pos);
     }
 
     `

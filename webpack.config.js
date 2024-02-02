@@ -4,8 +4,8 @@ module.exports = {
     mode:"development", 
     watch: false,
     entry: {
-      "src": './example/Example.js',
-    //  "mesh": './example/TestMesh.js'
+      "frag": './example/Example.js',
+      "comp": './example/ExampleCompute.js'
     },
     output: {
       path: __dirname + '/example/build',
