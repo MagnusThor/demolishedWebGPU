@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.prismBreakShader = void 0;
-const Material_1 = require("../../src/Material");
+const Material_1 = require("../../../src/Material");
 exports.prismBreakShader = {
     vertex: Material_1.defaultWglslVertex,
     fragment: /* glsl */ `

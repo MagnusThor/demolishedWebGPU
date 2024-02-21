@@ -61,6 +61,7 @@ export class Renderer {
         this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
     }  
     draw(time: number) { 
+        
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
             entries:this.scene.getBindingGroupEntrys(),
