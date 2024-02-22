@@ -9,102 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MyRenderer = exports.MyComputeShader = exports.PassBuilder = exports.Uniforms = exports.PassBase = void 0;
-class PassBase {
-    constructor(device) {
-    }
-}
-exports.PassBase = PassBase;
-class Uniforms {
-    constructor(device, canvas) {
-        this.device = device;
-        this.uniformBuffer = this.device.createBuffer({
-            size: 40,
-            usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
-        });
-        this.uniformBufferArray = new Float32Array([canvas.width, canvas.height, 0, 1.0]);
-    }
-    bindingGroupEntry(index) {
-        return { binding: 1, resource: { buffer: this.uniformBuffer } };
-    }
-    setUniforms(values, offset) {
-        this.uniformBufferArray.set(values, offset); // time 
-    }
-    updateUniformBuffer() {
-        this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
-    }
-}
-exports.Uniforms = Uniforms;
-class PassBuilder extends PassBase {
-    constructor(device, canvas) {
-        super(device);
-        this.canvas = canvas;
-        this.device = device;
-    }
-    getRenderPiplelineBindingGroupLayout(uniformBuffer, sampler) {
-        const bindingGroupEntrys = [];
-        bindingGroupEntrys.push({
-            binding: 0,
-            resource: {
-                buffer: uniformBuffer
-            }
-        });
-        // todo: cache the samplers passed + default sampler ( linearSampler)
-        const defaultSampler = this.device.createSampler({
-            addressModeU: 'repeat',
-            addressModeV: 'repeat',
-            magFilter: 'linear',
-            minFilter: 'nearest'
-        });
-        // add the GPUSampler
-        bindingGroupEntrys.push({
-            binding: 1,
-            resource: sampler || defaultSampler
-        });
-        return bindingGroupEntrys;
-    }
-    createComputePipeline(computeShader) {
-        const bindGroupLayout = this.device.createBindGroupLayout({
-            entries: [
-                { binding: 0,
-                    visibility: GPUShaderStage.COMPUTE,
-                    storageTexture: {
-                        access: "write-only",
-                        format: "bgra8unorm",
-                        viewDimension: "2d"
-                    },
-                },
-                { binding: 1, visibility: GPUShaderStage.COMPUTE,
-                    buffer: {
-                        type: "uniform"
-                    }
-                }
-            ],
-        });
-        const pipeline = this.device.createComputePipeline({
-            layout: this.device.createPipelineLayout({
-                bindGroupLayouts: [bindGroupLayout],
-            }),
-            compute: {
-                module: computeShader.shaderModule,
-                entryPoint: 'main',
-            },
-        });
-        return pipeline;
-    }
-}
-exports.PassBuilder = PassBuilder;
-class MyComputeShader {
-    constructor(device, computeShaderCode) {
-        this.device = device;
-        this.shaderModule = this.device.createShaderModule({ code: computeShaderCode });
-    }
-}
-exports.MyComputeShader = MyComputeShader;
+exports.MyRenderer = void 0;
+const MyComputeShader_1 = require("./MyComputeShader");
+const PassBuilder_1 = require("./PassBuilder");
+const Uniforms_1 = require("./Uniforms");
 class MyRenderer {
+    // computeBuffer: GPUTexture;
+    // computeBufferView: GPUTextureView;
     constructor(canvas) {
         this.canvas = canvas;
-        this.passBacklog = new Map();
+        this.computePassbacklog = new Map();
     }
     init() {
         var _a;
@@ -129,74 +43,67 @@ class MyRenderer {
                 usage: GPUTextureUsage.TEXTURE_BINDING |
                     GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
             });
-            this.passBuilder = new PassBuilder(device, this.canvas);
-            this.context = context;
+            this.cumputePassBuilder = new PassBuilder_1.PassBuilder(device, this.canvas);
             this.device = device;
-            this.createAssets();
+            this.context = context;
+            const samplerDescriptor = {
+                addressModeU: "repeat",
+                addressModeV: "repeat",
+                magFilter: "linear",
+                minFilter: "nearest",
+                mipmapFilter: "nearest",
+                maxAnisotropy: 1
+            };
+            this.renderSampler = this.device.createSampler(samplerDescriptor);
         });
     }
     createRenderPipeline(uniformBuffer, material, geometry) {
         const bindingGroupEntrys = [];
-        bindingGroupEntrys.push({
-            binding: 0,
-            resource: {
-                buffer: uniformBuffer
-            }
-        });
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             magFilter: 'linear',
             minFilter: 'nearest'
         });
-        // add the GPUSampler
         bindingGroupEntrys.push({
-            binding: 1,
+            binding: 0,
             resource: sampler
-        });
-        bindingGroupEntrys.push({
+        }, {
             binding: 1,
-            resource: this.compueBufferView
+            resource: {
+                buffer: uniformBuffer
+            }
+        });
+        const layout = new Array();
+        layout.push({
+            binding: 0,
+            visibility: GPUShaderStage.FRAGMENT,
+            sampler: {}
+        }, {
+            binding: 1,
+            visibility: GPUShaderStage.FRAGMENT,
+            buffer: {
+                type: "uniform"
+            }
+        });
+        const computesPasses = Array.from(this.computePassbacklog.values());
+        computesPasses.forEach((pass, i) => {
+            bindingGroupEntrys.push({
+                binding: 2 + i,
+                resource: pass.bufferView
+            });
+            layout.push({
+                binding: 2 + i,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {}
+            });
         });
         const screen_bind_group_layout = this.device.createBindGroupLayout({
-            entries: [
-                {
-                    binding: 0,
-                    visibility: GPUShaderStage.FRAGMENT,
-                    sampler: {}
-                },
-                {
-                    binding: 1,
-                    visibility: GPUShaderStage.FRAGMENT,
-                    texture: {}
-                },
-                {
-                    binding: 2,
-                    visibility: GPUShaderStage.FRAGMENT,
-                    buffer: {
-                        type: "uniform"
-                    }
-                },
-            ]
+            entries: layout
         });
         this.screen_bind_group = this.device.createBindGroup({
             layout: screen_bind_group_layout,
-            entries: [
-                {
-                    binding: 0,
-                    resource: this.sampler
-                },
-                {
-                    binding: 1,
-                    resource: this.compueBufferView
-                },
-                {
-                    binding: 2,
-                    resource: {
-                        buffer: uniformBuffer
-                    }
-                }
-            ]
+            entries: bindingGroupEntrys
         });
         const screen_pipeline_layout = this.device.createPipelineLayout({
             bindGroupLayouts: [screen_bind_group_layout]
@@ -222,7 +129,7 @@ class MyRenderer {
         return this.device.createRenderPipeline(pipelineDescriptor);
     }
     createAssets() {
-        this.computeBuffer = this.device.createTexture({
+        const buffer = this.device.createTexture({
             size: {
                 width: this.canvas.width,
                 height: this.canvas.height,
@@ -230,30 +137,36 @@ class MyRenderer {
             format: "bgra8unorm",
             usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
         });
-        this.compueBufferView = this.computeBuffer.createView();
-        const samplerDescriptor = {
-            addressModeU: "repeat",
-            addressModeV: "repeat",
-            magFilter: "linear",
-            minFilter: "nearest",
-            mipmapFilter: "nearest",
-            maxAnisotropy: 1
+        return { buffer, bufferView: buffer.createView() };
+    }
+    createBuffer(arr, usage, vertexSize) {
+        let bufferDescriptor = {
+            size: (arr.byteLength + vertexSize) & ~vertexSize,
+            usage,
+            mappedAtCreation: true
         };
-        this.sampler = this.device.createSampler(samplerDescriptor);
+        let buffer = this.device.createBuffer(bufferDescriptor);
+        const writeArray = arr instanceof Uint16Array
+            ? new Uint16Array(buffer.getMappedRange())
+            : new Float32Array(buffer.getMappedRange());
+        writeArray.set(arr);
+        buffer.unmap();
+        return buffer;
     }
     addRenderPass(material, geometry) {
-        // set up the renderpipleline
-        let uniforms = new Uniforms(this.device, this.canvas);
+        let uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
         this.renderPipleline = this.createRenderPipeline(uniforms.uniformBuffer, material, geometry);
         this.geometry = geometry;
     }
-    addComputePass(label, compteShaderCode) {
-        const shaderModule = new MyComputeShader(this.device, compteShaderCode);
-        const computePipeline = this.passBuilder.createComputePipeline(shaderModule);
-        const uniforms = new Uniforms(this.device, this.canvas);
+    addComputeRenderPass(label, compteShaderCode) {
+        const shaderModule = new MyComputeShader_1.MyComputeShader(this.device, compteShaderCode);
+        const computePipeline = this.cumputePassBuilder.createComputePipeline(shaderModule);
+        const uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
+        const assets = this.createAssets();
         const bindingGroupEntrys = [];
-        bindingGroupEntrys.push({ binding: 0,
-            resource: this.compueBufferView
+        bindingGroupEntrys.push({
+            binding: 0,
+            resource: assets.bufferView
         });
         bindingGroupEntrys.push({
             binding: 1,
@@ -265,28 +178,30 @@ class MyRenderer {
             layout: computePipeline.getBindGroupLayout(0),
             entries: bindingGroupEntrys
         });
-        this.passBacklog.set(0, {
+        this.computePassbacklog.set(0, {
             label: label,
             pipleline: computePipeline,
-            uniforms: new Uniforms(this.device, this.canvas),
-            bindGroup: bindGroup
+            uniforms: uniforms,
+            bindGroup: bindGroup,
+            buffer: assets.buffer,
+            bufferView: assets.bufferView
         });
     }
     update(ts) {
-        const pass = this.passBacklog.get(0);
-        pass.uniforms.setUniforms([ts], 3); // time        
-        pass.uniforms.updateUniformBuffer();
-        const encoder = this.device.createCommandEncoder({ label: `Ecoder for ${pass.label} ` });
-        const computePass = encoder.beginComputePass();
-        computePass.setPipeline(pass.pipleline);
-        computePass.setBindGroup(0, pass.bindGroup);
-        computePass.dispatchWorkgroups(Math.floor((this.canvas.width + 7) / 8), Math.floor((this.canvas.height + 7) / 8), 1);
-        computePass.end();
-        const textureView = this.context.getCurrentTexture().createView();
+        const encoder = this.device.createCommandEncoder();
+        this.computePassbacklog.forEach(pass => {
+            pass.uniforms.setUniforms([ts], 3); // time        
+            pass.uniforms.updateUniformBuffer();
+            const computePass = encoder.beginComputePass();
+            computePass.setPipeline(pass.pipleline);
+            computePass.setBindGroup(0, pass.bindGroup);
+            computePass.dispatchWorkgroups(Math.floor((this.canvas.width + 7) / 8), Math.floor((this.canvas.height + 7) / 8), 1);
+            computePass.end();
+        });
         const renderpass = encoder.beginRenderPass({
             colorAttachments: [{
-                    view: textureView,
-                    clearValue: { r: 0.5, g: 0.0, b: 0.25, a: 1.0 },
+                    view: this.context.getCurrentTexture().createView(),
+                    clearValue: { r: 0.0, g: 0, b: 0.0, a: 1 },
                     loadOp: "clear",
                     storeOp: "store"
                 }]
@@ -294,8 +209,7 @@ class MyRenderer {
         renderpass.setPipeline(this.renderPipleline);
         renderpass.setVertexBuffer(0, this.geometry.vertexBuffer);
         renderpass.setBindGroup(0, this.screen_bind_group);
-        renderpass.setIndexBuffer(this.geometry.indexBuffer, 'uint16');
-        renderpass.drawIndexed(this.geometry.numOfVerticles, 1);
+        renderpass.draw(6, 1, 0, 0);
         renderpass.end();
         this.device.queue.submit([encoder.finish()]);
     }
@@ -308,7 +222,7 @@ class MyRenderer {
             let segment = Math.floor((ts - startTime) / (1000 / maxFps));
             if (segment > frame) {
                 frame = segment;
-                this.frame = frame;
+                this.frameCount = frame;
                 if (!this.isPaused)
                     this.update(ts / 1000);
                 if (onFrame)

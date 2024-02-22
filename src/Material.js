@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Material = exports.defaultWglslVertex = void 0;
 exports.defaultWglslVertex = `  
+
 struct VertexInput {
   @location(0) pos: vec2<f32>,
   @builtin(vertex_index) index : u32
 };  
+
 struct VertexOutput {
   @builtin(position) pos: vec4<f32>,
   @location(0) uv: vec2<f32>,

@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const scene = new Scene("myScene", device, canvas);
   
   const material = new Material(device, raymarchShader);    
-  //const material = new Material(device, fullSpectrumCyberShader);    
 
   const geometry = new Geometry(device, rectGeometry);
  

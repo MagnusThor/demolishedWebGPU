@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     const device = yield renderer.getDevice();
     const scene = new Scene_1.Scene("myScene", device, canvas);
     const material = new Material_1.Material(device, raymarchShader_1.raymarchShader);
-    //const material = new Material(device, fullSpectrumCyberShader);    
     const geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
     const textures = [
         {

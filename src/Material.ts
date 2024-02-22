@@ -1,10 +1,12 @@
 import { IMaterialShader } from "./IMaterialShader";
 
 export const defaultWglslVertex = /* glsl */ `  
+
 struct VertexInput {
   @location(0) pos: vec2<f32>,
   @builtin(vertex_index) index : u32
 };  
+
 struct VertexOutput {
   @builtin(position) pos: vec4<f32>,
   @location(0) uv: vec2<f32>,
