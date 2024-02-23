@@ -7,8 +7,8 @@ export interface ITexture {
 }
 
 export enum TextureType{
-    image = 0,
-    video = 1,
-    canvas = 2,
-    mediaStream = 3
+    IMAGE = 0,
+    VIDEO = 1,
+    CANVAS = 2,
+    MEDIASTREAM = 3
 }

@@ -3,17 +3,22 @@ import { Mesh } from "./Mesh";
 import { TextureLoader } from "./TextureLoader";
 
 
-export class TextureCache {
-    entities: Map<string, any>
-    constructor() {
-        this.entities = new Map<string, any>();
-    }
+// export class TextureCache {
+//     entities: Map<string, any>
+//     constructor() {
+//         this.entities = new Map<string, any>();
+//     }
+// }
+
+export interface ITextureData {
+    type: number
+     data: GPUTexture | HTMLVideoElement | HTMLImageElement 
 }
 
 export class Scene {
 
     meshes: Map<string, Mesh>;
-    textures: Array<{ type: number, data: GPUTexture | HTMLVideoElement | HTMLImageElement }>;
+    textures: Array<ITextureData>;
     bindingGroupEntrys: Array<GPUBindGroupEntry>;
     uniformBufferArray: Float32Array;
     uniformBuffer: GPUBuffer;
@@ -24,7 +29,7 @@ export class Scene {
     setDimensions(width: number, height: number, dpr: number = 0): void {
         this.setUniforms([width, height, dpr], 0);
     }
-    setUniforms(values: any, offset: number) {
+    setUniforms(values: ArrayLike<number>, offset: number) {
         this.uniformBufferArray.set(values, offset); // time 
     }
     updateUniformBuffer() {
@@ -39,7 +44,7 @@ export class Scene {
     constructor(public key: string, public device: GPUDevice, public canvas: HTMLCanvasElement) {
 
         this.meshes = new Map<string, Mesh>();
-        this.textures = new Array<{ type: number, data: GPUTexture | HTMLVideoElement | HTMLImageElement }>();
+        this.textures = new Array<ITextureData>();
         this.bindingGroupEntrys = new Array<GPUBindGroupEntry>();
 
         const dpr = window.devicePixelRatio || 1;
@@ -47,7 +52,9 @@ export class Scene {
             size: 40,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
-        this.uniformBufferArray = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);;
+        
+        this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0]);
+
         this.updateUniformBuffer();
     }
 
@@ -59,7 +66,7 @@ export class Scene {
                 buffer: this.uniformBuffer
             }
         });
-        // todo: Cache the samples passed + default sampler ( linearSampler)
+        // todo: cache the samplers passed + default sampler ( linearSampler)
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
@@ -67,11 +74,12 @@ export class Scene {
             minFilter: 'nearest'
         });
         
-        // add the a sampler
+        // add the GPUSampler
         bindingGroupEntrys.push({
             binding: 1,
             resource: sampler
         });
+        
         this.textures.forEach((t, i) => {
             let entry: GPUBindGroupEntry;
             if (t.type === 0) {

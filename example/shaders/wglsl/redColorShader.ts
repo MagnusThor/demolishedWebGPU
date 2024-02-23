@@ -10,12 +10,15 @@ export const redColorShader:IMaterialShader = {
     time: f32
   };
 
-  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+  @group(0) @binding(0) var screen_sampler : sampler;
+  @group(0) @binding(1) var color_buffer : texture_2d<f32>;
+  @group(0) @binding(2) var<uniform> uniforms: Uniforms;
+
      
   struct VertexOutput {
     @builtin(position) pos: vec4<f32>,
     @location(0) uv: vec2<f32>
-  };  åänza
+  };  
 
   fn main(fragCoord: vec2<f32>) -> vec4<f32> {
     var col: vec3<f32> = vec3<f32>(1.0,0.0,0.0); 

@@ -9,31 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Scene = exports.TextureCache = void 0;
+exports.Scene = void 0;
 const TextureLoader_1 = require("./TextureLoader");
-class TextureCache {
-    constructor() {
-        this.entities = new Map();
-    }
-}
-exports.TextureCache = TextureCache;
 class Scene {
-    constructor(key, device, canvas) {
-        this.key = key;
-        this.device = device;
-        this.canvas = canvas;
-        this.meshes = new Map();
-        this.textures = new Array();
-        this.bindingGroupEntrys = new Array();
-        const dpr = window.devicePixelRatio || 1;
-        this.uniformBuffer = this.device.createBuffer({
-            size: 40,
-            usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
-        });
-        this.uniformBufferArray = new Float32Array([this.canvas.width * dpr, this.canvas.height * dpr, dpr, 0]);
-        ;
-        this.updateUniformBuffer();
-    }
     getMesh(index = 0) {
         return Array.from(this.meshes.values())[index];
     }
@@ -46,6 +24,21 @@ class Scene {
     updateUniformBuffer() {
         this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBufferArray.buffer, this.uniformBufferArray.byteOffset, this.uniformBufferArray.byteLength);
     }
+    constructor(key, device, canvas) {
+        this.key = key;
+        this.device = device;
+        this.canvas = canvas;
+        this.meshes = new Map();
+        this.textures = new Array();
+        this.bindingGroupEntrys = new Array();
+        const dpr = window.devicePixelRatio || 1;
+        this.uniformBuffer = this.device.createBuffer({
+            size: 40,
+            usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
+        });
+        this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0]);
+        this.updateUniformBuffer();
+    }
     getBindingGroupEntrys() {
         const bindingGroupEntrys = [];
         bindingGroupEntrys.push({
@@ -54,14 +47,14 @@ class Scene {
                 buffer: this.uniformBuffer
             }
         });
-        // todo: Cache the samples passed + default sampler ( linearSampler)
+        // todo: cache the samplers passed + default sampler ( linearSampler)
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             magFilter: 'linear',
             minFilter: 'nearest'
         });
-        // add the a sampler
+        // add the GPUSampler
         bindingGroupEntrys.push({
             binding: 1,
             resource: sampler

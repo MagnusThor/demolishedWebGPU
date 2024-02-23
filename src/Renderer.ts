@@ -27,7 +27,7 @@ export class Renderer {
         const device = await this.initializeAPI();
         if (device) {
             this.context = this.canvas.getContext('webgpu');
-            const presentationFormat = this.context.getPreferredFormat(this.adapter);
+            const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
             const canvasConfig: GPUCanvasConfiguration = config || {
                 device: this.device,
                 format: presentationFormat,// 'bgra8unorm',
@@ -49,43 +49,31 @@ export class Renderer {
             this.device = await this.adapter.requestDevice();
             this.queue = this.device.queue;
         } catch (e) {
-
             throw "Cannot initalize WebGPU ";
         }
         return this.device;
     }
-
-    // updateCustomUniform(index:number,value:Float32Array){
-    //     this.scene.mesh.uniformBufferArray.set(value,index)
-    // }
-  
-    //async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
-        
+    
+    
     async addScene(scene:Scene): Promise<void> {
         this.scene = scene;
-        // if(scene.customUniforms){ // extend uniforms if custom is passeds
-        //         uniforms.set(uniforms,4)
-        // }        
-      //  const mesh = scene.getMesh();
+ 
         this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
     }  
     draw(time: number) { 
+        
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
             entries:this.scene.getBindingGroupEntrys(),
         });
-
         this.commandEncoder = this.device.createCommandEncoder();
-
         const textureView = this.context.getCurrentTexture().createView();
-
-
-        const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [{
-                loadValue: clearColor,
+                loadOp: 'clear',
                 storeOp: 'store',
-                view: textureView
+                view: textureView,
+                clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
             }]
         };
 
@@ -100,24 +88,25 @@ export class Renderer {
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
 
-        //passEncoder.draw(6, 1, 0, 0);
         
-        passEncoder.endPass();
+        passEncoder.end();
+        
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
    
 
-    start(t: number, maxFps: number = 200): void {
+    start(t: number, maxFps: number = 200,onFrame?:(frame:number)=> void): void {
         let startTime = null;
         let frame = -1;
-        const renderLoop = (timestamp: number) => {
-            if (!startTime) startTime = timestamp;
-            let segment = Math.floor((timestamp - startTime) / (1000 / maxFps));
+        const renderLoop = (ts: number) => {
+            if (!startTime) startTime = ts;
+            let segment = Math.floor((ts - startTime) / (1000 / maxFps));
             if (segment > frame) {
                 frame = segment;
                 this.frame = frame;
                 if(!this.isPaused)
-                    this.draw(timestamp / 1000);
+                    this.draw(ts / 1000);
+                if(onFrame) onFrame(frame);
             }
             requestAnimationFrame(renderLoop);
         };

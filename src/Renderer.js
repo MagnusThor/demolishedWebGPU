@@ -21,10 +21,10 @@ class Renderer {
             const device = yield this.initializeAPI();
             if (device) {
                 this.context = this.canvas.getContext('webgpu');
-                const presentationFormat = this.context.getPreferredFormat(this.adapter);
+                const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
                 const canvasConfig = config || {
                     device: this.device,
-                    format: presentationFormat,
+                    format: presentationFormat, // 'bgra8unorm',
                     usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
                 };
                 this.context.configure(canvasConfig);
@@ -51,17 +51,9 @@ class Renderer {
             return this.device;
         });
     }
-    // updateCustomUniform(index:number,value:Float32Array){
-    //     this.scene.mesh.uniformBufferArray.set(value,index)
-    // }
-    //async initialize(geometry:Geometry,material:Material,texture?:Array<ITexture>,customUniforms?:Float32Array,samplers?:Array<GPUSamplerDescriptor>): Promise<void> {
     addScene(scene) {
         return __awaiter(this, void 0, void 0, function* () {
             this.scene = scene;
-            // if(scene.customUniforms){ // extend uniforms if custom is passeds
-            //         uniforms.set(uniforms,4)
-            // }        
-            //  const mesh = scene.getMesh();
             this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
         });
     }
@@ -72,12 +64,12 @@ class Renderer {
         });
         this.commandEncoder = this.device.createCommandEncoder();
         const textureView = this.context.getCurrentTexture().createView();
-        const clearColor = { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
         const renderPassDescriptor = {
             colorAttachments: [{
-                    loadValue: clearColor,
+                    loadOp: 'clear',
                     storeOp: 'store',
-                    view: textureView
+                    view: textureView,
+                    clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                 }]
         };
         this.scene.setUniforms([time], 3); // time
@@ -88,22 +80,23 @@ class Renderer {
         passEncoder.setBindGroup(0, this.bindingGroup);
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
-        //passEncoder.draw(6, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
         this.device.queue.submit([this.commandEncoder.finish()]);
     }
-    start(t, maxFps = 200) {
+    start(t, maxFps = 200, onFrame) {
         let startTime = null;
         let frame = -1;
-        const renderLoop = (timestamp) => {
+        const renderLoop = (ts) => {
             if (!startTime)
-                startTime = timestamp;
-            let segment = Math.floor((timestamp - startTime) / (1000 / maxFps));
+                startTime = ts;
+            let segment = Math.floor((ts - startTime) / (1000 / maxFps));
             if (segment > frame) {
                 frame = segment;
                 this.frame = frame;
                 if (!this.isPaused)
-                    this.draw(timestamp / 1000);
+                    this.draw(ts / 1000);
+                if (onFrame)
+                    onFrame(frame);
             }
             requestAnimationFrame(renderLoop);
         };
