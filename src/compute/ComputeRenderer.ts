@@ -1,7 +1,10 @@
 
 import { rectGeometry } from "../../example/meshes/Rectangle";
 import { Geometry } from "../Geometry";
+import { ITexture } from "../ITexture";
 import { Material } from "../Material";
+import { ITextureData } from "../Scene";
+import { TextureLoader } from "../TextureLoader";
 import { IPass } from "./IPass";
 import { PassBuilder } from "./PassBuilder";
 import { Uniforms } from "./Uniforms";
@@ -18,7 +21,7 @@ export class ComputeRenderer {
     renderPipleline: GPURenderPipeline;
     renderSampler: GPUSampler;
 
-    cumputePassBuilder: PassBuilder;
+    computePassBuilder: PassBuilder;
 
     frameCount: number;
     isPaused: any;
@@ -26,12 +29,14 @@ export class ComputeRenderer {
     screen_bind_group: GPUBindGroup;
 
     geometry: Geometry;
+    textures: Array<ITextureData>;
 
     // computeBuffer: GPUTexture;
     // computeBufferView: GPUTextureView;
     constructor(public canvas: HTMLCanvasElement
     ) {
         this.computePassbacklog = new Map<string, IPass>();
+        this.textures = new Array<ITextureData>();
     }
 
     async init() {
@@ -59,7 +64,7 @@ export class ComputeRenderer {
             usage: GPUTextureUsage.TEXTURE_BINDING |
                 GPUTextureUsage.STORAGE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT,
         });
-        this.cumputePassBuilder = new PassBuilder(device, this.canvas);
+        this.computePassBuilder = new PassBuilder(device, this.canvas);
         this.device = device;
         this.context = context;
 
@@ -112,6 +117,7 @@ export class ComputeRenderer {
             }
         });
 
+        
         const computesPasses = Array.from(this.computePassbacklog.values());
         computesPasses.forEach((pass, i) => {
             bindingGroupEntrys.push({
@@ -126,6 +132,8 @@ export class ComputeRenderer {
                     texture: {}
                 });
         });
+
+
 
 
         const screen_bind_group_layout = this.device.createBindGroupLayout({
@@ -201,26 +209,76 @@ export class ComputeRenderer {
 
     }
 
-    addComputeRenderPass(label: string, computeShaderCode: string) {
+    
+    async addComputeRenderPass(label: string, computeShaderCode: string,
+        textures?: Array<ITexture>, samplers?: Array<GPUSamplerDescriptor>
+        ) {
+
+        if(samplers) throw "Samplers not yet implememted, using default binding 2"
+        
         const shaderModule =  this.device.createShaderModule(
             { code: computeShaderCode });
-          
-        const computePipeline = this.cumputePassBuilder.createComputePipeline(shaderModule);
+       
         const uniforms = new Uniforms(this.device, this.canvas);
+
+        for (let i = 0; i < textures.length; i++) {
+            const texture = textures[i];
+            if (texture.type == 0) {
+                this.textures.push({ type: 0, data: await TextureLoader.createImageTexture(this.device, texture) });
+            } else
+                this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
+       
+        }
+      
+        const computePipeline = this.computePassBuilder.createComputePipeline(shaderModule,
+            this.textures);
 
         const assets = this.createAssets();
         const bindingGroupEntrys: Array<GPUBindGroupEntry> = [];
 
+        const sampler = this.device.createSampler({
+            addressModeU: 'repeat',
+            addressModeV: 'repeat',
+            magFilter: 'linear',
+            minFilter: 'nearest'
+        });
+
+
         bindingGroupEntrys.push({
             binding: 0,
             resource: assets.bufferView
-        });
-        bindingGroupEntrys.push({
+        },{
             binding: 1,
             resource: {
                 buffer: uniforms.uniformBuffer
             }
+        },{
+
+            binding:2,
+            resource: sampler
+           }
+        
+        );
+        // add the bindings for the textures and samplers.
+        const offset = bindingGroupEntrys.length;
+
+        this.textures.forEach((t, i) => {
+            let entry: GPUBindGroupEntry;
+            if (t.type === 0) {
+                entry = {
+                    binding: i + offset,
+                    resource: (t.data as GPUTexture).createView()
+                }
+            } else {
+                entry = {
+                    binding: i + 2,
+                    resource: this.device.importExternalTexture({ source: t.data as HTMLVideoElement }),
+                };
+            }
+            bindingGroupEntrys.push(entry);
         });
+
+
         const bindGroup = this.device.createBindGroup({
             layout: computePipeline.getBindGroupLayout(0),
             entries: bindingGroupEntrys

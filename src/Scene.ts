@@ -108,6 +108,7 @@ export class Scene {
             } else
                 this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
         }
+        
         this.bindingGroupEntrys = [{
             binding: 0,
             resource: {

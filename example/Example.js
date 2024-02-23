@@ -38,12 +38,6 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
             type: ITexture_1.TextureType.IMAGE
         },
     ];
-    //  const samplers: Array<GPUSamplerDescriptor> = [{
-    //   addressModeU: 'repeat',
-    //   addressModeV: 'repeat',
-    //   magFilter: 'linear',
-    //   minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
-    // }];
     const mesh = new Mesh_1.Mesh(device, geometry, material, [textures[0], textures[1]]);
     yield scene.addAssets(textures);
     scene.addMesh("myMesh", mesh);

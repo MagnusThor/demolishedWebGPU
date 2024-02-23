@@ -26,25 +26,52 @@ class PassBuilder {
         });
         return bindingGroupEntrys;
     }
-    createComputePipeline(computeShader) {
-        const bindGroupLayout = this.device.createBindGroupLayout({
-            entries: [
-                {
-                    binding: 0,
-                    visibility: GPUShaderStage.COMPUTE,
-                    storageTexture: {
-                        access: "write-only",
-                        format: "bgra8unorm",
-                        viewDimension: "2d"
-                    },
-                },
-                {
-                    binding: 1, visibility: GPUShaderStage.COMPUTE,
-                    buffer: {
-                        type: "uniform"
-                    }
+    createComputePipeline(computeShader, textures) {
+        const bindGroupLayoutEntries = new Array();
+        bindGroupLayoutEntries.push({
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE,
+            storageTexture: {
+                access: "write-only",
+                format: "bgra8unorm",
+                viewDimension: "2d"
+            },
+        }, {
+            binding: 1, visibility: GPUShaderStage.COMPUTE,
+            buffer: {
+                type: "uniform"
+            }
+        });
+        // deal with the textures and samplers
+        if (textures.length > 0) {
+            bindGroupLayoutEntries.push({
+                binding: 2,
+                visibility: window.GPUShaderStage.COMPUTE,
+                sampler: {
+                    type: "filtering"
                 }
-            ],
+            });
+            for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
+                if (textures[i].type === 0) {
+                    bindGroupLayoutEntries.push({
+                        binding: 3 + i,
+                        visibility: window.GPUShaderStage.COMPUTE,
+                        texture: {
+                            sampleType: "float"
+                        }
+                    });
+                }
+                else {
+                    bindGroupLayoutEntries.push({
+                        binding: 3 + i,
+                        visibility: window.GPUShaderStage.COMPUTE,
+                        externalTexture: {}
+                    });
+                }
+            }
+        }
+        const bindGroupLayout = this.device.createBindGroupLayout({
+            entries: bindGroupLayoutEntries
         });
         const pipeline = this.device.createComputePipeline({
             layout: this.device.createPipelineLayout({

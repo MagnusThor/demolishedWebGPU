@@ -45,6 +45,7 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
 
   @group(0) @binding(0) var screen_sampler : sampler;
   @group(0) @binding(1) var<uniform> uniforms: Uniforms;
+  
   @group(0) @binding(2) var color_buffer : texture_2d<f32>;
      
   struct VertexOutput {
