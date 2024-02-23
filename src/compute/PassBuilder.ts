@@ -1,19 +1,17 @@
-import { IMyShaderModule } from "./IMyShaderModule";
 import { IPassBuilder } from "./IPassBuilder";
 import { PassBase } from "./PassBase";
 
 
-export class PassBuilder extends PassBase implements IPassBuilder {
+export class PassBuilder implements IPassBuilder {
 
     pipelineLayout: GPUPipelineLayout;
+    bindGroup: GPUBindGroup;
 
     device: GPUDevice;
     constructor(device: GPUDevice, public canvas: HTMLCanvasElement) {
-        super(device);
         this.device = device;
     }
-    bindGroup: GPUBindGroup;
-
+  
 
     getRenderPiplelineBindingGroupLayout(
         uniformBuffer: GPUBuffer, sampler?: GPUSampler
@@ -27,7 +25,6 @@ export class PassBuilder extends PassBase implements IPassBuilder {
             }
         });
 
-        // todo: cache the samplers passed + default sampler ( linearSampler)
         const defaultSampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
@@ -35,19 +32,14 @@ export class PassBuilder extends PassBase implements IPassBuilder {
             minFilter: 'nearest'
         });
 
-        // add the GPUSampler
         bindingGroupEntrys.push({
             binding: 1,
             resource: sampler || defaultSampler
         });
-
         return bindingGroupEntrys;
-
-
     }
 
-
-    createComputePipeline(computeShader: IMyShaderModule): GPUComputePipeline {
+    createComputePipeline(computeShader: GPUShaderModule): GPUComputePipeline {
 
         const bindGroupLayout = this.device.createBindGroupLayout({
             entries: [
@@ -73,7 +65,7 @@ export class PassBuilder extends PassBase implements IPassBuilder {
                 bindGroupLayouts: [bindGroupLayout],
             }),
             compute: {
-                module: computeShader.shaderModule,
+                module: computeShader,
                 entryPoint: 'main',
             },
         });

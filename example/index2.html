@@ -18,18 +18,32 @@
             justify-content: center;
             height: 100vh;
         }
-        /* #render-result canvas {
+       #render-result canvas {
            
            width: 100vw;
            height: calc((9/16)*100vw);
-       } */
+       } 
+       header{
+        top:0;
+        width: 100vw;
+        height: 2rem;
+        position: absolute;
+        z-index: 1000;
+        background-color: rgba(255,255,255,0.1);
+        color: rgba(0,0,0);
+        padding: 0.5rem;
+       }
     </style>
 </head>
 
 <body>
     <div id="render-result">
-        <canvas width="800" height="450"></canvas>
+        <canvas width="1280" height="720"></canvas>
     </div>
+    <header>
+        Rendering using WebGPU Computeshader + Fragmentshader. Rendering using a WebGPU Fragmentshader see.
+        <a href="index.html">Example 1</a>
+    </header>
     <script src="build/comp-bundle.js"></script>
 </body>
 

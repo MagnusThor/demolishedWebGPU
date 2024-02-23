@@ -1,10 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PassBuilder = void 0;
-const PassBase_1 = require("./PassBase");
-class PassBuilder extends PassBase_1.PassBase {
+class PassBuilder {
     constructor(device, canvas) {
-        super(device);
         this.canvas = canvas;
         this.device = device;
     }
@@ -16,14 +14,12 @@ class PassBuilder extends PassBase_1.PassBase {
                 buffer: uniformBuffer
             }
         });
-        // todo: cache the samplers passed + default sampler ( linearSampler)
         const defaultSampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
             magFilter: 'linear',
             minFilter: 'nearest'
         });
-        // add the GPUSampler
         bindingGroupEntrys.push({
             binding: 1,
             resource: sampler || defaultSampler
@@ -55,7 +51,7 @@ class PassBuilder extends PassBase_1.PassBase {
                 bindGroupLayouts: [bindGroupLayout],
             }),
             compute: {
-                module: computeShader.shaderModule,
+                module: computeShader,
                 entryPoint: 'main',
             },
         });

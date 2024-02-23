@@ -38,13 +38,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   ];
 
-    //  const samplers: Array<GPUSamplerDescriptor> = [{
-    //   addressModeU: 'repeat',
-    //   addressModeV: 'repeat',
-    //   magFilter: 'linear',
-    //   minFilter: 'nearest' // linear sampler, binding 2, as uniforms is bound to 1    
-    // }];
-
   const mesh = new Mesh(device, geometry, material,[textures[0],textures[1]]); 
   
   await scene.addAssets(textures);

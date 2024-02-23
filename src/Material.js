@@ -18,26 +18,9 @@ fn main_vertex(input:VertexInput) -> VertexOutput {
 
     var output: VertexOutput;
 
-
     var pos: vec2<f32> = input.pos * 2.0 - 1.0;
     output.pos = vec4<f32>(pos, 0.0, 1.0);
     output.uv = pos;
-
-
-    // var vtx = array<vec3<f32>, 6>(
-    //   vec3<f32>(-1.0,  1.0, 0.0),
-    //   vec3<f32>(-1.0, -1.0, 0.0),
-    //   vec3<f32>( 1.0, -1.0, 0.0),
-    //   vec3<f32>( 1.0,  1.0, 0.0),
-    //   vec3<f32>(-1.0,  1.0, 0.0),
-    //   vec3<f32>( 1.0, -1.0, 0.0),
-    // );
-
-     // var uv:vec2<f32> = vec2<f32>(vtx[i].x,vtx[i].y);
-
-      // var pos = 2.0 * uv - vec2<f32>(1.0);
-      // output.pos =   vec4<f32>(pos.xy,1., 1.0) ;
-      // output.uv = vec2<f32>(0.);
 
   return output;
 }`;

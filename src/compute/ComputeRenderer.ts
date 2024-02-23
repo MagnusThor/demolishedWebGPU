@@ -1,18 +1,18 @@
 
+import { rectGeometry } from "../../example/meshes/Rectangle";
 import { Geometry } from "../Geometry";
 import { Material } from "../Material";
 import { IPass } from "./IPass";
-import { MyComputeShader } from "./MyComputeShader";
 import { PassBuilder } from "./PassBuilder";
 import { Uniforms } from "./Uniforms";
 
 
-export class MyRenderer {
+export class ComputeRenderer {
 
     context: GPUCanvasContext;
     device: GPUDevice;
 
-    computePassbacklog: Map<number, IPass>;
+    computePassbacklog: Map<string, IPass>;
 
     renderTarget: GPUTexture;
     renderPipleline: GPURenderPipeline;
@@ -31,7 +31,7 @@ export class MyRenderer {
     // computeBufferView: GPUTextureView;
     constructor(public canvas: HTMLCanvasElement
     ) {
-        this.computePassbacklog = new Map<number, IPass>();
+        this.computePassbacklog = new Map<string, IPass>();
     }
 
     async init() {
@@ -72,11 +72,12 @@ export class MyRenderer {
             maxAnisotropy: 1
         };
         this.renderSampler = this.device.createSampler(samplerDescriptor);
+        this.geometry = new Geometry(device,rectGeometry);
 
     }
 
 
-    createRenderPipeline(uniformBuffer: GPUBuffer, material: Material, geometry: Geometry): GPURenderPipeline {
+    createRenderPipeline(uniformBuffer: GPUBuffer, material: Material): GPURenderPipeline {
 
         const bindingGroupEntrys: Array<GPUBindGroupEntry> = [];
 
@@ -142,7 +143,7 @@ export class MyRenderer {
             vertex: {
                 module: material.vertexShaderModule,
                 entryPoint: material.shader.vertexEntryPoint || 'main_vertex',
-                buffers: [geometry.vertexBufferLayout(0)]
+                buffers: [this.geometry.vertexBufferLayout(0)]
             },
             fragment: {
                 module: material.fragmentShaderModule,
@@ -173,6 +174,8 @@ export class MyRenderer {
             }
         );
         return { buffer, bufferView: buffer.createView() };
+
+
     }
 
     createBuffer(arr: Float32Array | Uint16Array, usage: number, vertexSize: number) {
@@ -191,16 +194,17 @@ export class MyRenderer {
     }
 
 
-    addRenderPass(material: Material,geometry:Geometry) {
+    addRenderPass(material: Material) {
         let uniforms = new Uniforms(this.device, this.canvas);
         this.renderPipleline = this.createRenderPipeline(uniforms.uniformBuffer,
-            material, geometry);
+            material);
 
-        this.geometry = geometry; 
     }
 
-    addComputeRenderPass(label: string, compteShaderCode: string) {
-        const shaderModule = new MyComputeShader(this.device, compteShaderCode);
+    addComputeRenderPass(label: string, computeShaderCode: string) {
+        const shaderModule =  this.device.createShaderModule(
+            { code: computeShaderCode });
+          
         const computePipeline = this.cumputePassBuilder.createComputePipeline(shaderModule);
         const uniforms = new Uniforms(this.device, this.canvas);
 
@@ -221,8 +225,8 @@ export class MyRenderer {
             layout: computePipeline.getBindGroupLayout(0),
             entries: bindingGroupEntrys
         });
-
-        this.computePassbacklog.set(0, {
+    
+        this.computePassbacklog.set(label, {
             label: label,
             pipleline: computePipeline,
             uniforms: uniforms,
@@ -238,12 +242,12 @@ export class MyRenderer {
         const encoder = this.device.createCommandEncoder();
 
         this.computePassbacklog.forEach(pass => {
-            pass.uniforms.setUniforms([ts], 3); // time        
+            pass.uniforms.setUniforms([ts], 3);        
             pass.uniforms.updateUniformBuffer();
             const computePass = encoder.beginComputePass();
-            computePass.setPipeline(pass.pipleline);
-            computePass.setBindGroup(0, pass.bindGroup);
-            computePass.dispatchWorkgroups(Math.floor((this.canvas.width + 7) / 8), Math.floor((this.canvas.height + 7) / 8), 1);
+                computePass.setPipeline(pass.pipleline);
+                computePass.setBindGroup(0, pass.bindGroup);
+                computePass.dispatchWorkgroups(Math.floor((this.canvas.width + 7) / 8), Math.floor((this.canvas.height + 7) / 8), 1);
             computePass.end();
         });
 

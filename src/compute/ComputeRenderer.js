@@ -9,11 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MyRenderer = void 0;
-const MyComputeShader_1 = require("./MyComputeShader");
+exports.ComputeRenderer = void 0;
+const Rectangle_1 = require("../../example/meshes/Rectangle");
+const Geometry_1 = require("../Geometry");
 const PassBuilder_1 = require("./PassBuilder");
 const Uniforms_1 = require("./Uniforms");
-class MyRenderer {
+class ComputeRenderer {
     // computeBuffer: GPUTexture;
     // computeBufferView: GPUTextureView;
     constructor(canvas) {
@@ -55,9 +56,10 @@ class MyRenderer {
                 maxAnisotropy: 1
             };
             this.renderSampler = this.device.createSampler(samplerDescriptor);
+            this.geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
         });
     }
-    createRenderPipeline(uniformBuffer, material, geometry) {
+    createRenderPipeline(uniformBuffer, material) {
         const bindingGroupEntrys = [];
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
@@ -112,7 +114,7 @@ class MyRenderer {
             vertex: {
                 module: material.vertexShaderModule,
                 entryPoint: material.shader.vertexEntryPoint || 'main_vertex',
-                buffers: [geometry.vertexBufferLayout(0)]
+                buffers: [this.geometry.vertexBufferLayout(0)]
             },
             fragment: {
                 module: material.fragmentShaderModule,
@@ -153,13 +155,12 @@ class MyRenderer {
         buffer.unmap();
         return buffer;
     }
-    addRenderPass(material, geometry) {
+    addRenderPass(material) {
         let uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
-        this.renderPipleline = this.createRenderPipeline(uniforms.uniformBuffer, material, geometry);
-        this.geometry = geometry;
+        this.renderPipleline = this.createRenderPipeline(uniforms.uniformBuffer, material);
     }
-    addComputeRenderPass(label, compteShaderCode) {
-        const shaderModule = new MyComputeShader_1.MyComputeShader(this.device, compteShaderCode);
+    addComputeRenderPass(label, computeShaderCode) {
+        const shaderModule = this.device.createShaderModule({ code: computeShaderCode });
         const computePipeline = this.cumputePassBuilder.createComputePipeline(shaderModule);
         const uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
         const assets = this.createAssets();
@@ -178,7 +179,7 @@ class MyRenderer {
             layout: computePipeline.getBindGroupLayout(0),
             entries: bindingGroupEntrys
         });
-        this.computePassbacklog.set(0, {
+        this.computePassbacklog.set(label, {
             label: label,
             pipleline: computePipeline,
             uniforms: uniforms,
@@ -190,7 +191,7 @@ class MyRenderer {
     update(ts) {
         const encoder = this.device.createCommandEncoder();
         this.computePassbacklog.forEach(pass => {
-            pass.uniforms.setUniforms([ts], 3); // time        
+            pass.uniforms.setUniforms([ts], 3);
             pass.uniforms.updateUniformBuffer();
             const computePass = encoder.beginComputePass();
             computePass.setPipeline(pass.pipleline);
@@ -236,4 +237,4 @@ class MyRenderer {
         this.isPaused = !this.isPaused;
     }
 }
-exports.MyRenderer = MyRenderer;
+exports.ComputeRenderer = ComputeRenderer;
