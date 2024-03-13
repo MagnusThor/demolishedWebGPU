@@ -19,14 +19,9 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     const textures = [
         {
             key: "iChannel0",
-            source: "assets/channel0.jpg", // ms 
+            source: "assets/noise.png", // ms 
             type: ITexture_1.TextureType.IMAGE,
-        },
-        {
-            key: "iChannel1",
-            source: "assets/channel1.jpg",
-            type: ITexture_1.TextureType.IMAGE
-        },
+        }
     ];
     const fps = new yy_fps_1.FPS();
     const renderer = new ComputeRenderer_1.ComputeRenderer(document.querySelector("canvas"));

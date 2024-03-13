@@ -1,16 +1,16 @@
-import { IMaterialShader } from "../../../src/IMaterialShader";
-import { defaultWglslVertex } from "../../../src/Material";
-
-export const prismBreakShader: IMaterialShader = {
-    vertex: defaultWglslVertex,
-    fragment: /* glsl */ `
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.prismBreakComputeShader = void 0;
+exports.prismBreakComputeShader = 
+/* glsl */ `
     
     struct Uniforms {
       resolution: vec3<f32>,
       time: f32
     };
 
-    @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+    @group(0) @binding(0) var outputTexture: texture_storage_2d<bgra8unorm, write>;
+    @group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
 	// @group(0) @binding(1) var linearSampler: sampler;
   	// @group(0) @binding(2) var iChannel0: texture_2d<f32>; 
@@ -186,16 +186,15 @@ fn castRay2(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
 
 
 
-	fn mainImage(invocation_id: vec4<f32>) -> vec4<f32> {
+@compute @workgroup_size(8,8,1) fn main(
+    @builtin(global_invocation_id) id : vec3u
+  )  {
 
-        glFragCoord = invocation_id.xy;
-
-        let R: vec2<f32> = uniforms.resolution.xy;
-        let y_inverted_location = vec2<i32>(i32(invocation_id.x), i32(R.y) - i32(invocation_id.y));
-        let location = vec2<i32>(i32(invocation_id.x), i32(invocation_id.y));
+        let resolution = textureDimensions(outputTexture);
         
         var fragColor: vec4<f32>;
-        var fragCoord = vec2<f32>(f32(location.x), f32(location.y) );
+
+        var fragCoord = vec2<f32>(f32(id.x), f32(id.y) );
     
         if (uniforms.time > 32.) { ef = 0; }
         let blend: f32 = min(2. * abs(sin(0.1 * uniforms.time * 3.1415 / 3.2)), 1.);
@@ -296,26 +295,14 @@ fn castRay2(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
     
 
 
+        let outcolor = vec4f(col.rgb, 1);   
 
-        fragColor = vec4<f32>(col,1.0);
 
-        return fragColor;
+       // fragColor = vec4<f32>(col,1.0);
+
+        textureStore(outputTexture, id.xy, outcolor);
+    
 
 	}
 
-
-	struct VertexOutput {		
-        @builtin(position) pos: vec4<f32>,
-        @location(0) uv: vec2<f32>,
-    };  
-
-
-
-@fragment
-fn main_fragment(in: VertexOutput) -> @location(0) vec4<f32> {      
-
-	return mainImage(in.pos);
-	
-}
-
-`};
+`;

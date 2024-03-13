@@ -163,6 +163,8 @@ class ComputeRenderer {
     }
     addComputeRenderPass(label, computeShaderCode, textures, samplers) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (samplers)
+                throw "Samplers not yet implememted, using default binding 2";
             const shaderModule = this.device.createShaderModule({ code: computeShaderCode });
             const uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
             for (let i = 0; i < textures.length; i++) {

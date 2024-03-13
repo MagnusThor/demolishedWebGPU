@@ -5,10 +5,9 @@ import { ITexture, TextureType } from "../src/ITexture";
 import { rectGeometry } from "./meshes/Rectangle";
 import { Scene } from "../src/Scene";
 import { Mesh } from "../src/Mesh";
-import { raymarchShader } from "./shaders/wglsl/raymarchShader";
 
 import { FPS } from 'yy-fps'
-import { fullSpectrumCyberShader } from "./shaders/wglsl/fullSpectrumCyberShader";
+import { prismBreakShader } from "./shaders/wglsl/prismBreakShader";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -20,7 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const scene = new Scene("myScene", device, canvas);
   
-  const material = new Material(device, raymarchShader);    
+  const material = new Material(device, prismBreakShader);    
 
   const geometry = new Geometry(device, rectGeometry);
  

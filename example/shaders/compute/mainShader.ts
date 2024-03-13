@@ -54,16 +54,10 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   };  
 
   fn main(fragCoord: vec2<f32>) -> vec4<f32> {
-  
-    return textureSample(color_buffer, screen_sampler, fragCoord);
-  
-  
+    return textureSample(color_buffer, screen_sampler, fragCoord);  
   }
   @fragment
   fn main_fragment(@location(0) TexCoord : vec2<f32>) -> @location(0) vec4<f32> {
     return textureSample(color_buffer, screen_sampler, TexCoord);
-  }
-
-  `
-};
-
+  }`
+}

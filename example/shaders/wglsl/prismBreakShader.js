@@ -189,10 +189,7 @@ fn castRay2(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
 
 	fn mainImage(invocation_id: vec4<f32>) -> vec4<f32> {
 
-
         glFragCoord = invocation_id.xy;
-       
-
 
         let R: vec2<f32> = uniforms.resolution.xy;
         let y_inverted_location = vec2<i32>(i32(invocation_id.x), i32(R.y) - i32(invocation_id.y));
