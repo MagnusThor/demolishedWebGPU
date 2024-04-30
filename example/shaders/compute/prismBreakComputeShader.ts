@@ -117,8 +117,9 @@ fn softshadow(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
 	var h: f32 = 0.;
 
 	for (var i: i32 = 0; i < 23; i = i + 1) {
-		if (t > 20.) {		continue;
- }
+		if (t > 20.) {		
+            continue;
+        }
 		h = map(ro + rd * t) + 0.003 * rand1(glFragCoord.xy + uniforms.time);
 		sh = min(sh, 4. * h / t);
 		t = t + (h);

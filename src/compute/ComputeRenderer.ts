@@ -206,7 +206,6 @@ export class ComputeRenderer {
         let uniforms = new Uniforms(this.device, this.canvas);
         this.renderPipleline = this.createRenderPipeline(uniforms.uniformBuffer,
             material);
-
     }
 
     
@@ -227,7 +226,6 @@ export class ComputeRenderer {
                 this.textures.push({ type: 0, data: await TextureLoader.createImageTexture(this.device, texture) });
             } else
                 this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
-       
         }
       
         const computePipeline = this.computePassBuilder.createComputePipeline(shaderModule,
@@ -243,7 +241,6 @@ export class ComputeRenderer {
             minFilter: 'nearest'
         });
 
-
         bindingGroupEntrys.push({
             binding: 0,
             resource: assets.bufferView
@@ -253,7 +250,6 @@ export class ComputeRenderer {
                 buffer: uniforms.uniformBuffer
             }
         },{
-
             binding:2,
             resource: sampler
            }
@@ -292,7 +288,6 @@ export class ComputeRenderer {
             buffer: assets.buffer,
             bufferView: assets.bufferView
         });
-
     }
 
     update(ts: number) {

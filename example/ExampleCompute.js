@@ -18,7 +18,7 @@ const ITexture_1 = require("../src/ITexture");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const textures = [
         {
-            key: "iChannel0",
+            key: "iChannel1",
             source: "assets/noise.png", // ms 
             type: ITexture_1.TextureType.IMAGE,
         }
