@@ -10,6 +10,7 @@ struct VertexInput {
 struct VertexOutput {
   @builtin(position) pos: vec4<f32>,
   @location(0) uv: vec2<f32>,
+  @location(1) fragCoord: vec2<f32>
 };  
 
 @vertex
@@ -20,6 +21,8 @@ fn main_vertex(input:VertexInput) -> VertexOutput {
     var pos: vec2<f32> = input.pos * 2.0 - 1.0;
     output.pos = vec4<f32>(pos, 0.0, 1.0);
     output.uv = pos;
+    output.fragCoord = vec2<f32>((pos.x + 1.0) / 2.0, (1.0 - pos.y) / 2.0); 
+
 
   return output;
 }`;

@@ -47,10 +47,9 @@ exports.raymarchShader = {
         let e: vec2<f32> = vec2<f32>(1., -1.) * precis;
         return normalize(e.xyy * map(pos + e.xyy, s) + e.yyx * map(pos + e.yyx, s) + e.yxy * map(pos + e.yxy, s) + e.xxx * map(pos + e.xxx, s));
     } 
-    
-    
-
+  
     fn trace(ro: vec3<f32>, rd: vec3<f32>, s: f32) -> f32 {
+  
         var maxd: f32 = 30.;
         var t: f32 = 0.01;
     
@@ -92,8 +91,6 @@ exports.raymarchShader = {
     } 
     
     fn mainImage(fragCoord: vec4<f32>) -> vec4<f32> {
-
-   
        
         let uv: vec2<f32> = fragCoord.xy / uniforms.resolution.xy ;
 

@@ -7,12 +7,9 @@ exports.computeRaymarchShader = `
             resolution: vec3<f32>,
             time: f32
         };
-
-   
        
         @group(0) @binding(0) var outputTexture: texture_storage_2d<bgra8unorm, write>;
         @group(0) @binding(1) var<uniform> uniforms: Uniforms;
-
 
         var<workgroup> orb: vec4<f32>;
 
@@ -43,10 +40,9 @@ exports.computeRaymarchShader = `
             let e: vec2<f32> = vec2<f32>(1., -1.) * precis;
             return normalize(e.xyy * map(pos + e.xyy, s) + e.yyx * map(pos + e.yyx, s) + e.yxy * map(pos + e.yxy, s) + e.xxx * map(pos + e.xxx, s));
         } 
-        
-        
     
         fn trace(ro: vec3<f32>, rd: vec3<f32>, s: f32) -> f32 {
+
             var maxd: f32 = 30.;
             var t: f32 = 0.01;
         
@@ -86,6 +82,8 @@ exports.computeRaymarchShader = `
             }
             return sqrt(col);
         } 
+
+         
         
        
       @compute @workgroup_size(8,8,1) fn main(
@@ -99,11 +97,9 @@ exports.computeRaymarchShader = `
         let uv: vec2<f32> = vec2<f32>(f32(fragCoord.x),f32(fragCoord.y)) / vec2<f32>(f32(resolution.x),f32(resolution.y));
 
         let time: f32 = (uniforms.time * 0.25);
-        let anim: f32 = 1.1 + 0.5 * smoothstep(-0.3, 0.3, cos(0.1 * time));
-    
+        let anim: f32 = 1.1 + 0.5 * smoothstep(-0.3, 0.3, cos(0.1 * time));    
 
         let q: vec2<f32> = (vec2<f32>(f32(fragCoord.x), f32(fragCoord.y)) + vec2<f32>(1.0, 1.0)) / 2.0;
-
 
         let p: vec2<f32> = (2. * q - vec2<f32>(resolution.xy)) / f32(resolution.y);
 

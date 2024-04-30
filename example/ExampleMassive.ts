@@ -8,6 +8,7 @@ import { Mesh } from "../src/Mesh";
 
 import { FPS } from 'yy-fps'
 import { prismBreakShader } from "./shaders/wglsl/prismBreakShader";
+import { flamesShader } from "./shaders/wglsl/flamesShader";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -19,14 +20,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const scene = new Scene("myScene", device, canvas);
   
-  const material = new Material(device, prismBreakShader);    
+  const material = new Material(device, flamesShader);    
 
   const geometry = new Geometry(device, rectGeometry);
  
   const textures: Array<ITexture> = [
     {
       key: "iChannel0",
-      source: "assets/channel0.jpg", // ms 
+      source: "assets/noise2  .png", // ms 
       type: TextureType.IMAGE,
     },
 

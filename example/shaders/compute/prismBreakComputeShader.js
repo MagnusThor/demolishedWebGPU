@@ -1,17 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prismBreakShader = void 0;
-const Material_1 = require("../../../src/Material");
-exports.prismBreakShader = {
-    vertex: Material_1.defaultWglslVertex,
-    fragment: /* glsl */ `
+exports.prismBreakComputeShader = void 0;
+exports.prismBreakComputeShader = 
+/* glsl */ `
     
     struct Uniforms {
       resolution: vec3<f32>,
       time: f32
     };
 
-    @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+    @group(0) @binding(0) var outputTexture: texture_storage_2d<bgra8unorm, write>;
+    @group(0) @binding(1) var<uniform> uniforms: Uniforms;
 
 	// @group(0) @binding(1) var linearSampler: sampler;
   	// @group(0) @binding(2) var iChannel0: texture_2d<f32>; 
@@ -118,8 +117,9 @@ fn softshadow(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
 	var h: f32 = 0.;
 
 	for (var i: i32 = 0; i < 23; i = i + 1) {
-		if (t > 20.) {		continue;
- }
+		if (t > 20.) {		
+            continue;
+        }
 		h = map(ro + rd * t) + 0.003 * rand1(glFragCoord.xy + uniforms.time);
 		sh = min(sh, 4. * h / t);
 		t = t + (h);
@@ -187,74 +187,54 @@ fn castRay2(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
 
 
 
-	fn mainImage(invocation_id: vec4<f32>) -> vec4<f32> {
+@compute @workgroup_size(8,8,1) fn main(
+    @builtin(global_invocation_id) id : vec3u
+  )  {
 
-        glFragCoord = invocation_id.xy;
-
-        let R: vec2<f32> = uniforms.resolution.xy;
-        let y_inverted_location = vec2<i32>(i32(invocation_id.x), i32(R.y) - i32(invocation_id.y));
-        let location = vec2<i32>(i32(invocation_id.x), i32(invocation_id.y));
+        let resolution = textureDimensions(outputTexture);
         
         var fragColor: vec4<f32>;
-        var fragCoord = vec2<f32>(f32(location.x), f32(location.y) );
+
+        var fragCoord = vec2<f32>(f32(id.x), f32(id.y) );
     
-        if (uniforms.time > 32.) { 
-            ef = 0; 
-        }
-        
+        if (uniforms.time > 32.) { ef = 0; }
         let blend: f32 = min(2. * abs(sin(0.1 * uniforms.time * 3.1415 / 3.2)), 1.);
-        
         var uv: vec2<f32>;
         
         var p: vec2<f32> = vec2<f32>(0.);
 
         if (ef == 1 || ef == 3) {
-
             uv.x = 1. + (((glFragCoord.x - sin(uniforms.time) * glFragCoord.y - uniforms.resolution.x / 2.) % (uniforms.resolution.x / 4. * (-1.5 * blend + 0.501) + uniforms.resolution.x / 4.)) - 1. * glFragCoord.x) / uniforms.resolution.x;
             uv.y = 1. + (((glFragCoord.y + sin(uniforms.time) * glFragCoord.x - uniforms.resolution.y / 2.) % (uniforms.resolution.y / 4. * (-1.5 * blend + 0.501) + uniforms.resolution.y / 4.)) - 1. * glFragCoord.y) / uniforms.resolution.y;
-        
         }
         if (ef == 0 || ef == 2) {
-
             uv.x = 1. + (((glFragCoord.x - uniforms.resolution.x / 2.) % (uniforms.resolution.x / 4. * (-1.5 * blend + 0.501) + uniforms.resolution.x / 4.)) - 1. * glFragCoord.x) / uniforms.resolution.x;
             uv.y = 1. - glFragCoord.y / uniforms.resolution.y;
         }
         p = (1. - uv) * 2. - 1.;
         if (ef == 4) {
-            
             var uvxy = uv.xy;
-
-            uvxy = glFragCoord.xy / uniforms.resolution.xy;
-            uv.x = uvxy.x;
-            uv.y = uvxy.y;
-
+        uvxy = glFragCoord.xy / uniforms.resolution.xy;
+        uv.x = uvxy.x;
+        uv.y = uvxy.y;
             p = uv * 2. - 1.;
-
         }
-        
         p.x = p.x * (uniforms.resolution.x / uniforms.resolution.y);
-
         let theta: f32 = sin(uniforms.time * 0.1) * 6.28;
         let x: f32 = 3. * cos(theta);
         let z: f32 = 3. * sin(theta);
-
         var ro: vec3<f32>;
-        
-        if (ef == 0 || ef == 2) {  ro = vec3<f32>(x * 2., 2. + 2. * sin((uniforms.time + 37.) * 0.15), z * 1.4); }
+        if (ef == 0 || ef == 2) { ro = vec3<f32>(x * 2., 2. + 2. * sin((uniforms.time + 37.) * 0.15), z * 1.4); }
         if (ef == 1) { ro = vec3<f32>(x * 0.2 + 1., 4., 0.6 * z - 3.); }
         if (ef == 4) { ro = vec3<f32>(0., 0.3 + 0.1 * uniforms.time, 0.001); }
         if (ef == 3) { ro = vec3<f32>(0., 36. - 0.24 * uniforms.time, 0.001); }
-        
         let cw: vec3<f32> = normalize(vec3<f32>(0., 0.25, 0.) - ro);
-        
         let cp: vec3<f32> = vec3<f32>(0., 1., 0.);
         let cu: vec3<f32> = normalize(cross(cw, cp));
         let cv: vec3<f32> = normalize(cross(cu, cw));
         let rd: vec3<f32> = normalize(p.x * cu + p.y * cv + 7.5 * cw);
-
         var col: vec3<f32> = vec3<f32>(0.);
         var t: f32 = castRay(ro, rd, 12.);
-
         if (t >= 12.) { t = 12.; }
         let pos: vec3<f32> = ro + rd * t;
         let nor: vec3<f32> = calcNormal(pos);
@@ -316,27 +296,14 @@ fn castRay2(ro: vec3<f32>, rd: vec3<f32>) -> f32 {
     
 
 
+        let outcolor = vec4f(col.rgb, 1);   
 
-        fragColor = vec4<f32>(col,1.0);
 
-        return fragColor;
+       // fragColor = vec4<f32>(col,1.0);
+
+        textureStore(outputTexture, id.xy, outcolor);
+    
 
 	}
 
-
-	struct VertexOutput {		
-        @builtin(position) pos: vec4<f32>,
-        @location(0) uv: vec2<f32>,
-    };  
-
-
-
-@fragment
-fn main_fragment(in: VertexOutput) -> @location(0) vec4<f32> {      
-
-	return mainImage(in.pos);
-	
-}
-
-`
-};
+`;

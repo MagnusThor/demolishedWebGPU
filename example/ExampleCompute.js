@@ -14,11 +14,19 @@ const yy_fps_1 = require("yy-fps");
 const Material_1 = require("../src/Material");
 const mainShader_1 = require("./shaders/compute/mainShader");
 const ComputeRenderer_1 = require("../src/compute/ComputeRenderer");
+const ITexture_1 = require("../src/ITexture");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
+    const textures = [
+        {
+            key: "iChannel1",
+            source: "assets/noise.png", // ms 
+            type: ITexture_1.TextureType.IMAGE,
+        }
+    ];
     const fps = new yy_fps_1.FPS();
     const renderer = new ComputeRenderer_1.ComputeRenderer(document.querySelector("canvas"));
     yield renderer.init();
-    renderer.addComputeRenderPass("iChannel0", computeRaymarchShader_1.computeRaymarchShader);
+    yield renderer.addComputeRenderPass("iChannel0", computeRaymarchShader_1.computeRaymarchShader, textures);
     const material = new Material_1.Material(renderer.device, mainShader_1.mainShader);
     renderer.addRenderPass(material);
     renderer.start(0, 200, (frame) => {
