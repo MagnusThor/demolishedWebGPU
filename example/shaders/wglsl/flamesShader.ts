@@ -13,7 +13,8 @@ export const flamesShader: IMaterialShader = {
    
 	struct Uniforms {
 		resolution: vec3<f32>,
-		time: f32
+		time: f32,
+		mouse: vec4<f32>
 	  };
 	
 	  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
@@ -94,7 +95,7 @@ export const flamesShader: IMaterialShader = {
 
 	fn mainImage(invocation_id: vec2<f32>) -> vec4<f32> {
 
-		let mouse: vec4<f32> =  vec4<f32>(0.0,0.0,0.0,0.);
+		let mouse: vec4<f32> = uniforms.mouse;
 	
 		let R: vec2<f32> = uniforms.resolution.xy;
 		let y_inverted_location = vec2<i32>(i32(invocation_id.x), i32(R.y) - i32(invocation_id.y));
@@ -106,7 +107,9 @@ export const flamesShader: IMaterialShader = {
 		let q: vec2<f32> = fragCoord.xy / uniforms.resolution.xy;
 		let p: vec2<f32> = (-1. + 2. * q) * vec2<f32>(uniforms.resolution.x / uniforms.resolution.y, 1.);
 		var mo: vec2<f32> = mouse.xy / uniforms.resolution.xy;
-		if (mouse.w <= 0.00001) { mo = vec2<f32>(0.); }
+		
+		//if (mouse.w <= 0.00001) { mo = vec2<f32>(0.); }
+
 		let an: f32 = -0.07 * uniforms.time + 3. * mo.x;
 		var ro: vec3<f32> = 4.5 * normalize(vec3<f32>(cos(an), 0.5, sin(an)));
 		ro.y = ro.y + (1.);

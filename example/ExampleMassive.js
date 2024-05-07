@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     const textures = [
         {
             key: "iChannel0",
-            source: "assets/noise2  .png", // ms 
+            source: "assets/noise2.png", // ms 
             type: ITexture_1.TextureType.IMAGE,
         },
         {

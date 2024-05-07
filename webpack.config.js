@@ -6,7 +6,7 @@ module.exports = {
     entry: {
       "frag": './example/Example.js',
       "comp": './example/ExampleCompute.js',
-      "massive": "./example/ExampleMassive.js"
+      "flames": "./example/ExampleMassive.js"
     },
     output: {
       path: __dirname + '/example/build',

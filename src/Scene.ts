@@ -23,6 +23,8 @@ export class Scene {
     uniformBufferArray: Float32Array;
     uniformBuffer: GPUBuffer;
 
+    mouse: { x: number; y: number; z: number; a: number; };
+
     getMesh(index: number = 0): Mesh {
         return Array.from(this.meshes.values())[index];
     }
@@ -30,7 +32,8 @@ export class Scene {
         this.setUniforms([width, height, dpr], 0);
     }
     setUniforms(values: ArrayLike<number>, offset: number) {
-        this.uniformBufferArray.set(values, offset); // time 
+        this.uniformBufferArray.set(values, offset); 
+    
     }
     updateUniformBuffer() {
         this.device.queue.writeBuffer(
@@ -49,12 +52,26 @@ export class Scene {
 
         const dpr = window.devicePixelRatio || 1;
         this.uniformBuffer = this.device.createBuffer({
-            size: 40,
+            size: 60,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST,
         });
-        
-        this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0]);
 
+        this.uniformBufferArray = new Float32Array([this.canvas.width, this.canvas.height, 0, 1.0,0,0,0,0,0]);
+
+
+        canvas.addEventListener("mousemove",(evt:MouseEvent) => {
+          //  if(evt.button){
+                const rect = canvas.getBoundingClientRect();
+                const x = evt.clientX - rect.left;
+                const y = evt.clientY - rect.top;
+                //this.mouse = {x: x, y: y,z: evt.button,a:0};
+                this.setUniforms([x,y,evt.button,0],4) // time
+               // this.updateUniformBuffer();
+            //    console.log([x,y,evt.button,0]);
+           // }
+        });
+        
+  
         this.updateUniformBuffer();
     }
 

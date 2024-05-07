@@ -5,7 +5,7 @@ class Uniforms {
     constructor(device, canvas) {
         this.device = device;
         this.uniformBuffer = this.device.createBuffer({
-            size: 40,
+            size: 32,
             usage: window.GPUBufferUsage.UNIFORM | window.GPUBufferUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
         });
         this.uniformBufferArray = new Float32Array([canvas.width, canvas.height, 0, 1]);

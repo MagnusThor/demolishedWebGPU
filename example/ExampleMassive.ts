@@ -5,9 +5,7 @@ import { ITexture, TextureType } from "../src/ITexture";
 import { rectGeometry } from "./meshes/Rectangle";
 import { Scene } from "../src/Scene";
 import { Mesh } from "../src/Mesh";
-
 import { FPS } from 'yy-fps'
-import { prismBreakShader } from "./shaders/wglsl/prismBreakShader";
 import { flamesShader } from "./shaders/wglsl/flamesShader";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -24,10 +22,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const geometry = new Geometry(device, rectGeometry);
  
+
   const textures: Array<ITexture> = [
     {
       key: "iChannel0",
-      source: "assets/noise2  .png", // ms 
+      source: "assets/noise2.png", // ms 
       type: TextureType.IMAGE,
     },
 
