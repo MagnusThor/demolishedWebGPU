@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Uniforms = void 0;
 class Uniforms {
+    static initialize(w, h) {
+        return new Float32Array([w, h, 0, 1.0, 0, 0, 0, 0, 0]);
+    }
     constructor(device, canvas) {
         this.device = device;
         this.uniformBuffer = this.device.createBuffer({

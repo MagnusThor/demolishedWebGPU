@@ -9,20 +9,15 @@ export class Renderer {
     commandEncoder: GPUCommandEncoder;
     renderPipeline: GPURenderPipeline;
 
-
     frame: number;
     isPaused: boolean;
     scene: Scene;
     bindingGroup: GPUBindGroup;
-    //uniforms: Float32Array;
-
+    textureView: GPUTextureView;
+   
     constructor(public canvas: HTMLCanvasElement) {
-      //  this.textures = new Array<GPUTexture>();
-
-
     }
     async getDevice(config?:GPUCanvasConfiguration): Promise<GPUDevice> {
-
        
         const device = await this.initializeAPI();
         if (device) {
@@ -53,32 +48,39 @@ export class Renderer {
         }
         return this.device;
     }
-    
-    
     async addScene(scene:Scene): Promise<void> {
         this.scene = scene;
- 
         this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
+        this.textureView = this.context.getCurrentTexture().createView();
+        let entities = this.scene.getBindingGroupEntrys();
+
+        entities.push({
+            binding: entities.length,
+            resource: this.textureView,            
+        });
+
     }  
     draw(time: number) { 
-        
+
+        this.scene.setUniforms([time],3) // time
+        this.scene.updateUniformBuffer();   
+
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
             entries:this.scene.getBindingGroupEntrys(),
         });
+
         this.commandEncoder = this.device.createCommandEncoder();
-        const textureView = this.context.getCurrentTexture().createView();
+        this.textureView = this.context.getCurrentTexture().createView();
+        
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [{
                 loadOp: 'clear',
                 storeOp: 'store',
-                view: textureView,
+                view: this.textureView,
                 clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
             }]
         };
-
-        this.scene.setUniforms([time],3) // time
-        this.scene.updateUniformBuffer();      
 
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
 
@@ -87,7 +89,6 @@ export class Renderer {
         passEncoder.setBindGroup(0, this.bindingGroup);
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
-
         
         passEncoder.end();
         
@@ -95,23 +96,33 @@ export class Renderer {
     }
    
 
-    start(t: number, maxFps: number = 200,onFrame?:(frame:number)=> void): void {
+    start(t: number, maxFps: number = 200, onFrame?: (frame?: number, deltaTime?: number) => void): void {
         let startTime = null;
-        let frame = -1;
+        let lastFrameTime = null; // Track the timestamp of the previous frame
+        this.frame = -1;
+        
         const renderLoop = (ts: number) => {
-            if (!startTime) startTime = ts;
-            let segment = Math.floor((ts - startTime) / (1000 / maxFps));
-            if (segment > frame) {
-                frame = segment;
-                this.frame = frame;
-                if(!this.isPaused)
-                    this.draw(ts / 1000);
-                if(onFrame) onFrame(frame);
+            if (!startTime) {
+                startTime = ts;
+                lastFrameTime = ts; 
             }
+            const deltaTime = (ts - lastFrameTime) ;
+            let segment = Math.floor((ts - startTime) / (1000 / maxFps));
+            if (segment > this.frame) {
+                this.frame = segment;
+                if (!this.isPaused)
+                    this.draw(ts / 1000);
+                if (onFrame) onFrame(this.frame, deltaTime); // Pass deltaTime to the callback
+                this.scene.setUniforms([this.frame], 8);
+            }
+    
+            lastFrameTime = ts; // Update lastFrameTime
             requestAnimationFrame(renderLoop);
         };
+    
         renderLoop(t);
     }
+    
 
     pause():void{
         this.isPaused = !this.isPaused

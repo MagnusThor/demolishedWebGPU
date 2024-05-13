@@ -4,9 +4,6 @@ import { Material } from "../src/Material";
 import { mainShader } from "./shaders/compute/mainShader";
 import { ComputeRenderer } from "../src/compute/ComputeRenderer";
 import { ITexture, TextureType } from "../src/ITexture";
-import { computeElevatedShader } from "./shaders/compute/computeElevated";
-import { computeedStubShader } from "./shaders/compute/computeStubShader";
-import { computeTreeFractal } from "./shaders/compute/computeTreeFractal";
 
 document.addEventListener("DOMContentLoaded", async () => {
    

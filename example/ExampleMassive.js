@@ -17,19 +17,19 @@ const Rectangle_1 = require("./meshes/Rectangle");
 const Scene_1 = require("../src/Scene");
 const Mesh_1 = require("../src/Mesh");
 const yy_fps_1 = require("yy-fps");
-const flamesShader_1 = require("./shaders/wglsl/flamesShader");
+const raytracedRollingBallShader_1 = require("./shaders/wglsl/raytracedRollingBallShader");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const canvas = document.querySelector('canvas');
     const fps = new yy_fps_1.FPS();
     const renderer = new Renderer_1.Renderer(canvas);
     const device = yield renderer.getDevice();
     const scene = new Scene_1.Scene("myScene", device, canvas);
-    const material = new Material_1.Material(device, flamesShader_1.flamesShader);
+    const material = new Material_1.Material(device, raytracedRollingBallShader_1.raytracedRollingBallShader);
     const geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
     const textures = [
         {
             key: "iChannel0",
-            source: "assets/noise2.png", // ms 
+            source: "assets/noise.png", // ms 
             type: ITexture_1.TextureType.IMAGE,
         },
         {
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     yield scene.addAssets(textures);
     scene.addMesh("myMesh", mesh);
     yield renderer.addScene(scene);
-    renderer.start(0, 200, (frameNo) => {
+    renderer.start(0, 200, (frameNo, delta) => {
         fps.frame();
     });
 }));

@@ -7,6 +7,8 @@ import { Scene } from "../src/Scene";
 import { Mesh } from "../src/Mesh";
 import { FPS } from 'yy-fps'
 import { flamesShader } from "./shaders/wglsl/flamesShader";
+import { raytracedRollingBallShader } from "./shaders/wglsl/raytracedRollingBallShader";
+
 
 document.addEventListener("DOMContentLoaded", async () => {
   const canvas = document.querySelector('canvas') as HTMLCanvasElement;
@@ -18,15 +20,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const scene = new Scene("myScene", device, canvas);
   
-  const material = new Material(device, flamesShader);    
+  const material = new Material(device, raytracedRollingBallShader);    
 
   const geometry = new Geometry(device, rectGeometry);
  
-
   const textures: Array<ITexture> = [
     {
       key: "iChannel0",
-      source: "assets/noise2.png", // ms 
+      source: "assets/noise.png", // ms 
       type: TextureType.IMAGE,
     },
 
@@ -45,8 +46,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   await renderer.addScene(scene)
 
-  renderer.start(0,200,(frameNo) => {
-    fps.frame();
+  renderer.start(0,200,(frameNo,delta) => {
+
+        fps.frame();
   });
 
 });
