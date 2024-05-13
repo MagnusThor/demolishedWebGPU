@@ -11,9 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Renderer = void 0;
 class Renderer {
-    //uniforms: Float32Array;
     constructor(canvas) {
-        //  this.textures = new Array<GPUTexture>();
         this.canvas = canvas;
     }
     getDevice(config) {
@@ -55,25 +53,31 @@ class Renderer {
         return __awaiter(this, void 0, void 0, function* () {
             this.scene = scene;
             this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
+            this.textureView = this.context.getCurrentTexture().createView();
+            let entities = this.scene.getBindingGroupEntrys();
+            entities.push({
+                binding: entities.length,
+                resource: this.textureView,
+            });
         });
     }
     draw(time) {
+        this.scene.setUniforms([time], 3); // time
+        this.scene.updateUniformBuffer();
         this.bindingGroup = this.device.createBindGroup({
             layout: this.renderPipeline.getBindGroupLayout(0),
             entries: this.scene.getBindingGroupEntrys(),
         });
         this.commandEncoder = this.device.createCommandEncoder();
-        const textureView = this.context.getCurrentTexture().createView();
+        this.textureView = this.context.getCurrentTexture().createView();
         const renderPassDescriptor = {
             colorAttachments: [{
                     loadOp: 'clear',
                     storeOp: 'store',
-                    view: textureView,
+                    view: this.textureView,
                     clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                 }]
         };
-        this.scene.setUniforms([time], 3); // time
-        this.scene.updateUniformBuffer();
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
         passEncoder.setPipeline(this.renderPipeline);
         passEncoder.setVertexBuffer(0, this.scene.getMesh().geometry.vertexBuffer);
@@ -85,19 +89,24 @@ class Renderer {
     }
     start(t, maxFps = 200, onFrame) {
         let startTime = null;
-        let frame = -1;
+        let lastFrameTime = null; // Track the timestamp of the previous frame
+        this.frame = -1;
         const renderLoop = (ts) => {
-            if (!startTime)
+            if (!startTime) {
                 startTime = ts;
+                lastFrameTime = ts;
+            }
+            const deltaTime = (ts - lastFrameTime);
             let segment = Math.floor((ts - startTime) / (1000 / maxFps));
-            if (segment > frame) {
-                frame = segment;
-                this.frame = frame;
+            if (segment > this.frame) {
+                this.frame = segment;
                 if (!this.isPaused)
                     this.draw(ts / 1000);
                 if (onFrame)
-                    onFrame(frame);
+                    onFrame(this.frame, deltaTime); // Pass deltaTime to the callback
+                this.scene.setUniforms([this.frame], 8);
             }
+            lastFrameTime = ts; // Update lastFrameTime
             requestAnimationFrame(renderLoop);
         };
         renderLoop(t);

@@ -14,6 +14,7 @@ struct VertexOutput {
   @location(1) fragCoord: vec2<f32>
 };  
 
+
 @vertex
 fn main_vertex(input:VertexInput) -> VertexOutput {
 

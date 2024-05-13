@@ -13,6 +13,7 @@ struct VertexOutput {
   @location(1) fragCoord: vec2<f32>
 };  
 
+
 @vertex
 fn main_vertex(input:VertexInput) -> VertexOutput {
 
@@ -34,9 +35,11 @@ export class Material {
     vertexShaderModule: GPUShaderModule;
     fragmentShaderModule: GPUShaderModule;
     constructor(public device: GPUDevice, public shader: IMaterialShader) {
+        
         this.vertexShaderModule = this.device.createShaderModule({
             code: shader.vertex
         });
+
         this.fragmentShaderModule = this.device.createShaderModule({
             code: shader.fragment
         });
