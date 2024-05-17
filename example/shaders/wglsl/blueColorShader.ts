@@ -1,7 +1,7 @@
 import { defaultWglslVertex } from "../../../src/Material";
 import { IMaterialShader } from "../../../src/IMaterialShader";
 
-export const redColorShader:IMaterialShader = {
+export const blueColorShader:IMaterialShader = {
   vertex: defaultWglslVertex,
   fragment: /* wgsl */ `
   
@@ -19,7 +19,7 @@ export const redColorShader:IMaterialShader = {
   };  
 
   fn main(fragCoord: vec2<f32>) -> vec4<f32> {
-    var col: vec3<f32> = vec3<f32>(1.0,0.0,0.0); 
+    var col: vec3<f32> = vec3<f32>(0.0,0.0,1.0); 
     var result:vec4<f32> = vec4<f32>(col,1.0);
    return result; 
   

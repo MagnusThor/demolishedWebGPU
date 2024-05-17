@@ -25,8 +25,7 @@ fn main_vertex(input:VertexInput) -> VertexOutput {
     output.uv = pos;
     output.fragCoord = vec2<f32>((pos.x + 1.0) / 2.0, (1.0 - pos.y) / 2.0); 
 
-
-  return output;
+    return output;
 }`;
 class Material {
     constructor(device, shader) {

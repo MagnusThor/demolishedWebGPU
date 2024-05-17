@@ -1,8 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mainShader = void 0;
-exports.mainShader = {
-    vertex: /* wgsl */ `
+import { IMaterialShader } from "../../../src/IMaterialShader";
+
+export const mainShader:IMaterialShader = {
+  vertex: /* wgsl */ `
   
   struct VertexOutput {
     @builtin(position) Position  : vec4<f32>,
@@ -37,7 +36,7 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
 }
   
   `,
-    fragment: /* wgsl */ `
+  fragment: /* wgsl */ `
   
   struct Uniforms {
     resolution: vec3<f32>,
@@ -46,19 +45,20 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
 
   @group(0) @binding(0) var screen_sampler : sampler;
   @group(0) @binding(1) var<uniform> uniforms: Uniforms;
+  @group(0) @binding(2) var iChannel0: texture_2d<f32>; 
+  @group(0) @binding(3) var iChannel1: texture_2d<f32>; 
+  @group(0) @binding(4) var iChannel2: texture_2d<f32>; 
   
-  @group(0) @binding(2) var color_buffer : texture_2d<f32>;
-     
+  
   struct VertexOutput {
     @builtin(position) Position: vec4<f32>,
     @location(0) TexCoord: vec2<f32>
   };  
 
-  fn main(fragCoord: vec2<f32>) -> vec4<f32> {
-    return textureSample(color_buffer, screen_sampler, fragCoord);  
-  }
   @fragment
   fn main_fragment(@location(0) TexCoord : vec2<f32>) -> @location(0) vec4<f32> {
-    return textureSample(color_buffer, screen_sampler, TexCoord);
+
+    return  textureSample(iChannel1, screen_sampler, TexCoord);  
+
   }`
-};
+}

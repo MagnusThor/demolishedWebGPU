@@ -17,14 +17,17 @@ export const raytracedRollingBallShader: IMaterialShader = {
 		mouse: vec4<f32>,
 		frame: f32
 	  };
+
+	@group(0) @binding(0) var outputTexture: texture_storage_2d<bgra8unorm, write>;
+	@group(0) @binding(1) var<uniform> uniforms: Uniforms;
+	@group(0) @binding(2) var linearSampler: sampler;
+
+	// @group(0) @binding(1) var<uniform> uniforms: Uniforms;
 	
-	@group(0) @binding(0) var<uniform> uniforms: Uniforms;
-	
-	@group(0) @binding(1) var linearSampler: sampler;
-	@group(0) @binding(2) var iChannel0: texture_2d<f32>; 
-	@group(0) @binding(3) var iChannel1: texture_2d<f32>; 
-	@group(0) @binding(4) var iChannel2: texture_2d<f32>; 
-	@group(0) @binding(5) var iChannel3: texture_2d<f32>; 
+	@group(0) @binding(3) var iChannel0: texture_2d<f32>; 
+	// @group(0) @binding(3) var iChannel1: texture_2d<f32>; 
+	// @group(0) @binding(4) var iChannel2: texture_2d<f32>; 
+	// @group(0) @binding(5) var iChannel3: texture_2d<f32>; 
 	
 
 	const ballRad: f32 = 0.5;
@@ -534,8 +537,11 @@ export const raytracedRollingBallShader: IMaterialShader = {
 		}
 	
 		aCol = aCol / (f32(12.));
+		
 		let preCol: vec4<f32> = sample_texture(iChannel0, fragCoord);
+
 		var blend: f32; 
+		
 		if (uniforms.frame < 2) 
 			{ 
 				blend = 1.; 
@@ -544,7 +550,8 @@ export const raytracedRollingBallShader: IMaterialShader = {
 
 			blend = 1. / 2.; 
 		};
-		blend = 1.;
+		
+		//blend = 1.;
 		fragColor = mix(preCol, vec4<f32>(max(aCol, vec3<f32>(0.)), avgT), blend);
 		return fragColor;
 	}
@@ -553,7 +560,11 @@ export const raytracedRollingBallShader: IMaterialShader = {
 	@fragment
 	fn main_fragment(vert: VertexOutput) -> @location(0) vec4<f32> {    
 		
-		return mainImage(vert.pos.xy);
+		var result = mainImage(vert.pos.xy);
+		var uv = vert.pos.xy;
+		var col = mix(result, result.yzxw, smoothstep(.35, .6, length(uv - .5)));
+		return pow(max(col, vec4<f32>(0.)), vec4<f32>(1./2.2)); 		
+ 
 	}
 
 `};

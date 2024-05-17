@@ -1,8 +1,11 @@
 
+import { Geometry } from "../Geometry";
+import { IMaterialShader } from "../IMaterialShader";
+import { Material } from "../Material";
 import { ITextureData } from "../Scene";
 import { IPassBuilder } from "./IPassBuilder";
 
-export class PassBuilder implements IPassBuilder {
+export class ComputePassBuilder implements IPassBuilder {
 
     pipelineLayout: GPUPipelineLayout;
     bindGroup: GPUBindGroup;
@@ -39,11 +42,97 @@ export class PassBuilder implements IPassBuilder {
         return bindingGroupEntrys;
     }
 
+    createRenderPipeline(material:Material,geometry: Geometry,textures:Array<ITextureData>):GPURenderPipeline{
+
+        const bindGroupLayoutEntries = new Array<GPUBindGroupLayoutEntry>();
+
+        bindGroupLayoutEntries.push(  
+        {
+            binding: 0,
+            visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
+            buffer: {
+                type: "uniform"
+            }
+        });
+
+        // const sampler = this.device.createSampler({
+        //     addressModeU: 'repeat',
+        //     addressModeV: 'repeat',
+        //     magFilter: 'linear',
+        //     minFilter: 'nearest'
+        // });
+        
+       
+        bindGroupLayoutEntries.push({ // sampler
+            binding: 1,
+            visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
+            sampler: {
+                type: "filtering"
+            }
+        });
+
+        if (textures.length > 0) {
+
+            for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
+                if(textures[i].type === 0){
+                    bindGroupLayoutEntries.push({ 
+                        binding: 3 + i,
+                        visibility: GPUShaderStage.FRAGMENT,
+                        texture: {
+                            sampleType: "float"
+                        }
+                    })
+                }else{
+                    bindGroupLayoutEntries.push({ 
+                        binding: 3 + i,
+                        visibility:  GPUShaderStage.FRAGMENT,
+                        externalTexture:{ }
+                    })
+                }
+                
+            }
+        }
+
+        const bindGroupLayout = this.device.createBindGroupLayout({
+            entries: bindGroupLayoutEntries 
+        });
+
+      
+
+        const pipeline = this.device.createRenderPipeline({
+            layout: this.device.createPipelineLayout({
+                bindGroupLayouts: [bindGroupLayout],
+            }),
+        
+            vertex: {
+                module: material.vertexShaderModule,            
+                entryPoint: "main_vertex",
+                buffers: [geometry.vertexBufferLayout(0)]
+            },
+            fragment: {
+                module: material.fragmentShaderModule,
+                entryPoint: "main_fragment",
+                targets:[
+                {
+                    format: 'bgra8unorm'
+                }
+                ]   
+            }   
+            
+        });
+
+        return pipeline;
+    
+
+    }
+
     createComputePipeline(computeShader: GPUShaderModule,textures:Array<ITextureData>): GPUComputePipeline {
 
 
         const bindGroupLayoutEntries = new Array<GPUBindGroupLayoutEntry>();
 
+
+        
 
         bindGroupLayoutEntries.push(   {
             binding: 0,
@@ -66,13 +155,7 @@ export class PassBuilder implements IPassBuilder {
 
         if (textures.length > 0) {
             
-            bindGroupLayoutEntries.push({ // sampler
-                binding: 2,
-                visibility: window.GPUShaderStage.COMPUTE,
-                sampler: {
-                    type: "filtering"
-                }
-            });
+          
 
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if(textures[i].type === 0){

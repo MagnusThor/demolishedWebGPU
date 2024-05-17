@@ -11,8 +11,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Renderer = void 0;
 class Renderer {
-    constructor(canvas) {
+    constructor(canvas, mainVertex, mainFragment) {
         this.canvas = canvas;
+        if (mainVertex && mainFragment) {
+            this.mainPipelineLayout = this.device.createPipelineLayout({
+                bindGroupLayouts: [],
+            });
+            this.mainRenderPipeline = this.device.createRenderPipeline({
+                layout: this.mainPipelineLayout,
+                vertex: {
+                    module: mainVertex
+                },
+                fragment: {
+                    module: mainFragment,
+                    entryPoint: 'main',
+                    targets: [
+                        { format: 'rgba8unorm' },
+                    ],
+                },
+            });
+        }
+        ;
     }
     getDevice(config) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -52,7 +71,7 @@ class Renderer {
     addScene(scene) {
         return __awaiter(this, void 0, void 0, function* () {
             this.scene = scene;
-            this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
+            // this.renderPipeline = this.device.createRenderPipeline(this.scene.getMesh().pipelineDescriptor());
             this.textureView = this.context.getCurrentTexture().createView();
             let entities = this.scene.getBindingGroupEntrys();
             entities.push({
@@ -65,27 +84,51 @@ class Renderer {
         this.scene.setUniforms([time], 3); // time
         this.scene.updateUniformBuffer();
         this.bindingGroup = this.device.createBindGroup({
-            layout: this.renderPipeline.getBindGroupLayout(0),
+            layout: this.scene.renderPipleline.getBindGroupLayout(0),
             entries: this.scene.getBindingGroupEntrys(),
         });
         this.commandEncoder = this.device.createCommandEncoder();
-        this.textureView = this.context.getCurrentTexture().createView();
+        this.context.getCurrentTexture().createView();
         const renderPassDescriptor = {
             colorAttachments: [{
                     loadOp: 'clear',
                     storeOp: 'store',
-                    view: this.textureView,
+                    view: this.scene.renderTargetView,
                     clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                 }]
         };
         const passEncoder = this.commandEncoder.beginRenderPass(renderPassDescriptor);
-        passEncoder.setPipeline(this.renderPipeline);
+        passEncoder.setPipeline(this.scene.renderPipleline);
         passEncoder.setVertexBuffer(0, this.scene.getMesh().geometry.vertexBuffer);
         passEncoder.setBindGroup(0, this.bindingGroup);
         passEncoder.setIndexBuffer(this.scene.getMesh().geometry.indexBuffer, 'uint16');
         passEncoder.drawIndexed(this.scene.getMesh().geometry.numOfVerticles, 1);
         passEncoder.end();
         this.device.queue.submit([this.commandEncoder.finish()]);
+        const textureView = this.context.getCurrentTexture().createView();
+        const mainbindingGroup = this.device.createBindGroup({
+            layout: this.mainRenderPipeline.getBindGroupLayout(0),
+            entries: this.scene.getBindingGroupEntrys(),
+        });
+        const commandEncoderSecondPass = this.device.createCommandEncoder();
+        // Begin the render pass for the second shader
+        const renderPassDescriptorSecondPass = {
+            colorAttachments: [{
+                    loadOp: 'clear',
+                    storeOp: 'store',
+                    view: textureView,
+                    clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 }, // Adjust as needed
+                }]
+        };
+        const passEncoderSecondPass = commandEncoderSecondPass.beginRenderPass(renderPassDescriptorSecondPass);
+        passEncoderSecondPass.setPipeline(this.mainRenderPipeline); // Use the pipeline for the second shader
+        passEncoderSecondPass.setVertexBuffer(0, this.scene.getMesh().geometry.vertexBuffer);
+        passEncoderSecondPass.setBindGroup(0, mainbindingGroup); // Use the binding group for the second shader
+        // Set other render pass settings and draw commands for the second shader as needed
+        // End the render pass for the second shader
+        passEncoderSecondPass.end();
+        // Finish encoding commands for the second pass
+        const commandBufferSecondPass = commandEncoderSecondPass.finish();
     }
     start(t, maxFps = 200, onFrame) {
         let startTime = null;

@@ -24,6 +24,9 @@ export class Scene {
     uniformBuffer: GPUBuffer;
 
     mouse: { x: number; y: number; z: number; a: number; };
+    renderTargetTexture: GPUTexture;
+    renderTargetView: GPUTextureView;
+    renderPipleline: GPURenderPipeline;
 
     getMesh(index: number = 0): Mesh {
         return Array.from(this.meshes.values())[index];
@@ -50,6 +53,15 @@ export class Scene {
         this.textures = new Array<ITextureData>();
         this.bindingGroupEntrys = new Array<GPUBindGroupEntry>();
 
+
+        this.renderTargetTexture = this.device.createTexture({
+            size: { width: canvas.width, height:canvas.height, depthOrArrayLayers: 1 },
+            format: "bgra8unorm",
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+        });
+
+        this.renderTargetView = this.renderTargetTexture.createView();
+
         const dpr = window.devicePixelRatio || 1;
         this.uniformBuffer = this.device.createBuffer({
             size: 60,
@@ -68,7 +80,6 @@ export class Scene {
             }
         });
         
-  
        
     }
 
@@ -175,6 +186,8 @@ export class Scene {
 
     addMesh(key: string, mesh: Mesh): void {
         this.meshes.set(key, mesh);
+        this.renderPipleline = this.device.createRenderPipeline(this.getMesh().pipelineDescriptor());
+     
     }
     removeMesh(key: string): boolean {
         return this.meshes.delete(key);

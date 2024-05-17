@@ -31,6 +31,12 @@ class Scene {
         this.meshes = new Map();
         this.textures = new Array();
         this.bindingGroupEntrys = new Array();
+        this.renderTargetTexture = this.device.createTexture({
+            size: { width: canvas.width, height: canvas.height, depthOrArrayLayers: 1 },
+            format: "bgra8unorm",
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+        });
+        this.renderTargetView = this.renderTargetTexture.createView();
         const dpr = window.devicePixelRatio || 1;
         this.uniformBuffer = this.device.createBuffer({
             size: 60,
@@ -145,6 +151,7 @@ class Scene {
     }
     addMesh(key, mesh) {
         this.meshes.set(key, mesh);
+        this.renderPipleline = this.device.createRenderPipeline(this.getMesh().pipelineDescriptor());
     }
     removeMesh(key) {
         return this.meshes.delete(key);
