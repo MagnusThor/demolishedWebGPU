@@ -11,12 +11,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ComputeRenderer = void 0;
 const Rectangle_1 = require("../../example/meshes/Rectangle");
-const Geometry_1 = require("../Geometry");
-const TextureLoader_1 = require("../TextureLoader");
 const IPass_1 = require("./IPass");
 const ComputePassBuilder_1 = require("./ComputePassBuilder");
 const Uniforms_1 = require("./Uniforms");
-//import { RenderPassBuilder } from "../RenderPassBuilder";
+const Geometry_1 = require("./Geometry");
+const TextureLoader_1 = require("./TextureLoader");
 class ComputeRenderer {
     //renderPassBuilder: RenderPassBuilder;
     // computeBuffer: GPUTexture;
@@ -53,16 +52,17 @@ class ComputeRenderer {
             //    this.renderPassBuilder = new RenderPassBuilder(device,this.canvas);
             this.device = device;
             this.context = context;
-            // const samplerDescriptor: GPUSamplerDescriptor = {
-            //     addressModeU: "repeat",
-            //     addressModeV: "repeat",
-            //     magFilter: "linear",
-            //     minFilter: "nearest",
-            //     mipmapFilter: "nearest",
-            //     maxAnisotropy: 1
-            // };
-            // this.renderSampler = this.device.createSampler(samplerDescriptor);
             this.geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
+            this.uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
+            this.canvas.addEventListener("mousemove", (evt) => {
+                if (evt.buttons) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = evt.clientX - rect.left;
+                    const y = evt.clientY - rect.top;
+                    this.uniforms.setUniforms([x, y, evt.buttons, 0], 4);
+                    this.uniforms.updateUniformBuffer();
+                }
+            });
         });
     }
     creatRenderPipeline(uniformBuffer, material) {
@@ -217,14 +217,14 @@ class ComputeRenderer {
         return buffer;
     }
     addMainPass(material) {
-        let uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
-        this.renderPipleline = this.createMainRenderPipeline(uniforms.uniformBuffer, material);
+        //let uniforms = new Uniforms(this.device, this.canvas);
+        this.renderPipleline = this.createMainRenderPipeline(this.uniforms.uniformBuffer, material);
     }
     addRenderPass(label, material, geometry, textures, samplers) {
         return __awaiter(this, void 0, void 0, function* () {
             if (samplers)
                 throw "Samplers not yet implememted, using default binding 2";
-            const uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
+            const uniforms = this.uniforms; //new Uniforms(this.device, this.canvas);
             if (textures) {
                 for (let i = 0; i < textures.length; i++) {
                     const texture = textures[i];
@@ -233,6 +233,7 @@ class ComputeRenderer {
                     }
                     else
                         this.textures.push({ type: 1, data: yield TextureLoader_1.TextureLoader.createVideoTextue(this.device, texture) });
+                    console.log(`adding texture ${texture.key}`);
                 }
             }
             const renderPipeline = this.renderPassBuilder.createRenderPipeline(material, geometry, this.textures);
@@ -244,12 +245,6 @@ class ComputeRenderer {
                 magFilter: 'linear',
                 minFilter: 'nearest'
             });
-            /*
-    {
-                binding: 0,
-                resource: assets.bufferView
-            }
-            */
             bindingGroupEntrys.push({
                 binding: 0,
                 resource: {
@@ -291,7 +286,7 @@ class ComputeRenderer {
             if (samplers)
                 throw "Samplers not yet implememted, using default binding 2";
             const shaderModule = this.device.createShaderModule({ code: computeShaderCode });
-            const uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
+            const uniforms = this.uniforms; //new Uniforms(this.device, this.canvas);
             for (let i = 0; i < textures.length; i++) {
                 const texture = textures[i];
                 if (texture.type == 0) {
@@ -350,8 +345,8 @@ class ComputeRenderer {
         // get the compute shaders from the back log
         arrRenderPasses.filter((pre) => {
             return pre.type == 0;
-        })
-            .forEach(pass => {
+        }).forEach(pass => {
+            pass.uniforms.setUniforms([this.frame], 8);
             pass.uniforms.setUniforms([ts], 3);
             pass.uniforms.updateUniformBuffer();
             const computePass = encoder.beginComputePass();
@@ -371,6 +366,7 @@ class ComputeRenderer {
                         clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                     }]
             };
+            pass.uniforms.setUniforms([this.frame], 8);
             pass.uniforms.setUniforms([ts], 3);
             pass.uniforms.updateUniformBuffer();
             const renderPass = encoder.beginRenderPass(renderPassDescriptor);
@@ -389,6 +385,9 @@ class ComputeRenderer {
                     storeOp: "store"
                 }]
         });
+        this.uniforms.setUniforms([this.frame], 8);
+        this.uniforms.setUniforms([ts], 3);
+        this.uniforms.updateUniformBuffer();
         mainRenderer.setPipeline(this.renderPipleline);
         mainRenderer.setVertexBuffer(0, this.geometry.vertexBuffer);
         mainRenderer.setBindGroup(0, this.screen_bind_group);
@@ -405,6 +404,7 @@ class ComputeRenderer {
             let segment = Math.floor((ts - startTime) / (1000 / maxFps));
             if (segment > frame) {
                 frame = segment;
+                this.frame = segment;
                 this.frameCount = frame;
                 if (!this.isPaused)
                     this.update(ts / 1000);

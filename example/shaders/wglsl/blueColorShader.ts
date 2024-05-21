@@ -1,5 +1,5 @@
 import { defaultWglslVertex } from "../../../src/Material";
-import { IMaterialShader } from "../../../src/IMaterialShader";
+import { IMaterialShader } from "../../../src/interface/IMaterialShader";
 
 export const blueColorShader:IMaterialShader = {
   vertex: defaultWglslVertex,

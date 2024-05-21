@@ -1,6 +1,7 @@
-import { IMaterialShader } from "../../../src/IMaterialShader";
-import { defaultWglslVertex } from "../../../src/Material";
-import { commonFunctions } from "../compute/common";
+import { defaultWglslVertex } from "../../../src/engine/Material";
+import { IMaterialShader } from "../../../src/interface/IMaterialShader";
+
+
 
 export const flamesShader: IMaterialShader = {
 	vertex: defaultWglslVertex,
@@ -20,12 +21,8 @@ export const flamesShader: IMaterialShader = {
 	
 	  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
 	
-	@group(0) @binding(1) var linearSampler: sampler;
-	@group(0) @binding(2) var iChannel0: texture_2d<f32>; 
-	@group(0) @binding(3) var iChannel1: texture_2d<f32>; 
-	@group(0) @binding(4) var iChannel2: texture_2d<f32>; 
-	@group(0) @binding(5) var iChannel3: texture_2d<f32>; 
-	
+		@group(0) @binding(1) var linearSampler: sampler;
+		@group(0) @binding(2) var iChannel0: texture_2d<f32>; 
 	
 		
 	
@@ -34,9 +31,6 @@ export const flamesShader: IMaterialShader = {
 		return result;
 	}   
 	
-	
-	
-
 
 	fn noise(x: vec3<f32>) -> f32 {
 		let p: vec3<f32> = floor(x);

@@ -1,4 +1,4 @@
-import { ITexture } from "./ITexture";
+import { ITexture } from "./interface/ITexture";
 export class TextureLoader {
     constructor(){
     }

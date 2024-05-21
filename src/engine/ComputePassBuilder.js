@@ -52,7 +52,7 @@ class ComputePassBuilder {
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if (textures[i].type === 0) {
                     bindGroupLayoutEntries.push({
-                        binding: 3 + i,
+                        binding: 2 + i,
                         visibility: GPUShaderStage.FRAGMENT,
                         texture: {
                             sampleType: "float"
@@ -61,7 +61,7 @@ class ComputePassBuilder {
                 }
                 else {
                     bindGroupLayoutEntries.push({
-                        binding: 3 + i,
+                        binding: 2 + i,
                         visibility: GPUShaderStage.FRAGMENT,
                         externalTexture: {}
                     });
@@ -108,7 +108,6 @@ class ComputePassBuilder {
                 type: "uniform"
             }
         });
-        // deal with the textures and samplers
         if (textures.length > 0) {
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if (textures[i].type === 0) {

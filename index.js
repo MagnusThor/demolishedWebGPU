@@ -6,8 +6,8 @@ Object.defineProperty(exports, "Geometry", { enumerable: true, get: function () 
 Object.defineProperty(exports, "VERTEXType", { enumerable: true, get: function () { return Geometry_1.VERTEXType; } });
 var Mesh_1 = require("./src/Mesh");
 Object.defineProperty(exports, "Mesh", { enumerable: true, get: function () { return Mesh_1.Mesh; } });
-var Scene_1 = require("./src/Scene");
-Object.defineProperty(exports, "Scene", { enumerable: true, get: function () { return Scene_1.Scene; } });
+var ITextureData_1 = require("./src/interface/ITextureData");
+Object.defineProperty(exports, "Scene", { enumerable: true, get: function () { return ITextureData_1.Scene; } });
 var Renderer_1 = require("./src/Renderer");
 Object.defineProperty(exports, "Renderer", { enumerable: true, get: function () { return Renderer_1.Renderer; } });
 var TextureLoader_1 = require("./src/TextureLoader");

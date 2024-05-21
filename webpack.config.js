@@ -4,9 +4,8 @@ module.exports = {
     mode:"development", 
     watch: false,
     entry: {
-      "frag": './example/Example.js',
-      "comp": './example/ExampleCompute.js',
-      "flames": "./example/ExampleMassive.js"
+    
+      "comp": './example/Example.js',
     },
     output: {
       path: __dirname + '/example/build',

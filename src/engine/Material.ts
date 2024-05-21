@@ -1,4 +1,5 @@
-import { IMaterialShader } from "./IMaterialShader";
+import { IMaterialShader } from "../interface/IMaterialShader";
+
 
 export const defaultWglslVertex = /* glsl */ `  
 

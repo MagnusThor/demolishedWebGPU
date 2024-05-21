@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.flamesShader = void 0;
-const Material_1 = require("../../../src/Material");
+const Material_1 = require("../../../src/engine/Material");
 exports.flamesShader = {
     vertex: Material_1.defaultWglslVertex,
     fragment: /* glsl */ `
@@ -20,12 +20,8 @@ exports.flamesShader = {
 	
 	  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
 	
-	@group(0) @binding(1) var linearSampler: sampler;
-	@group(0) @binding(2) var iChannel0: texture_2d<f32>; 
-	@group(0) @binding(3) var iChannel1: texture_2d<f32>; 
-	@group(0) @binding(4) var iChannel2: texture_2d<f32>; 
-	@group(0) @binding(5) var iChannel3: texture_2d<f32>; 
-	
+		@group(0) @binding(1) var linearSampler: sampler;
+		@group(0) @binding(2) var iChannel0: texture_2d<f32>; 
 	
 		
 	
@@ -34,9 +30,6 @@ exports.flamesShader = {
 		return result;
 	}   
 	
-	
-	
-
 
 	fn noise(x: vec3<f32>) -> f32 {
 		let p: vec3<f32> = floor(x);

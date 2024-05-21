@@ -59,7 +59,7 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
   @fragment
   fn main_fragment(@location(0) TexCoord : vec2<f32>) -> @location(0) vec4<f32> {
 
-    return  textureSample(iChannel1, screen_sampler, TexCoord);  
+    return  textureSample(iChannel0, screen_sampler, TexCoord);  
 
   }`
 };

@@ -1,8 +1,8 @@
 
 import { Geometry } from "../Geometry";
-import { IMaterialShader } from "../IMaterialShader";
+import { IMaterialShader } from "../interface/IMaterialShader";
 import { Material } from "../Material";
-import { ITextureData } from "../Scene";
+import { ITextureData } from "../interface/ITextureData";
 import { IPassBuilder } from "./IPassBuilder";
 
 export class ComputePassBuilder implements IPassBuilder {
@@ -76,7 +76,7 @@ export class ComputePassBuilder implements IPassBuilder {
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if(textures[i].type === 0){
                     bindGroupLayoutEntries.push({ 
-                        binding: 3 + i,
+                        binding: 2 + i,
                         visibility: GPUShaderStage.FRAGMENT,
                         texture: {
                             sampleType: "float"
@@ -84,7 +84,7 @@ export class ComputePassBuilder implements IPassBuilder {
                     })
                 }else{
                     bindGroupLayoutEntries.push({ 
-                        binding: 3 + i,
+                        binding: 2 + i,
                         visibility:  GPUShaderStage.FRAGMENT,
                         externalTexture:{ }
                     })
@@ -127,13 +127,7 @@ export class ComputePassBuilder implements IPassBuilder {
     }
 
     createComputePipeline(computeShader: GPUShaderModule,textures:Array<ITextureData>): GPUComputePipeline {
-
-
         const bindGroupLayoutEntries = new Array<GPUBindGroupLayoutEntry>();
-
-
-        
-
         bindGroupLayoutEntries.push(   {
             binding: 0,
             visibility: GPUShaderStage.COMPUTE,
@@ -149,14 +143,7 @@ export class ComputePassBuilder implements IPassBuilder {
                 type: "uniform"
             }
         });
-
-
-        // deal with the textures and samplers
-
         if (textures.length > 0) {
-            
-          
-
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if(textures[i].type === 0){
                     bindGroupLayoutEntries.push({ 
@@ -176,13 +163,9 @@ export class ComputePassBuilder implements IPassBuilder {
                 
             }
         }
-
-
         const bindGroupLayout = this.device.createBindGroupLayout({
             entries: bindGroupLayoutEntries 
         });
-
-
         const pipeline = this.device.createComputePipeline({
             layout: this.device.createPipelineLayout({
                 bindGroupLayouts: [bindGroupLayout],

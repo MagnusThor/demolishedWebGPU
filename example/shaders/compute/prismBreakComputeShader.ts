@@ -1,4 +1,4 @@
-import { IMaterialShader } from "../../../src/IMaterialShader";
+import { IMaterialShader } from "../../../src/interface/IMaterialShader";
 import { defaultWglslVertex } from "../../../src/Material";
 
 export const prismBreakComputeShader =

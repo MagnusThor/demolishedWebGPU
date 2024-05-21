@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.trisGeometry = void 0;
-const Geometry_1 = require("../../src/Geometry");
+const Geometry_1 = require("../../src/engine/Geometry");
 exports.trisGeometry = {
     verticesType: Geometry_1.VERTEXType.xyzwrgba,
     vertices: new Float32Array([

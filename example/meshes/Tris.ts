@@ -1,5 +1,6 @@
-import { IGeometry as Tris, VERTEXType } from "../../src/Geometry";
-export const trisGeometry:Tris = {
+import { IGeometry, VERTEXType } from "../../src/engine/Geometry";
+
+export const trisGeometry:IGeometry = {
      verticesType:VERTEXType.xyzwrgba,
         vertices: new Float32Array([
             -1, 0, 0, 1, 0, 1, 1, 1,

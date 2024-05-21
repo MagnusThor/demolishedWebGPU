@@ -1,4 +1,5 @@
-import { IGeometry, VERTEXType } from "../../src/Geometry";
+import { IGeometry, VERTEXType } from "../../src/engine/Geometry";
+
 export const rectGeometry:IGeometry = {
      verticesType:VERTEXType.xyz,
         vertices: new Float32Array([
