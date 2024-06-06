@@ -1,16 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.defaultWglslVertex = exports.TextureLoader = exports.Renderer = exports.Scene = exports.Mesh = exports.VERTEXType = exports.Geometry = void 0;
-var Geometry_1 = require("./src/Geometry");
-Object.defineProperty(exports, "Geometry", { enumerable: true, get: function () { return Geometry_1.Geometry; } });
-Object.defineProperty(exports, "VERTEXType", { enumerable: true, get: function () { return Geometry_1.VERTEXType; } });
-var Mesh_1 = require("./src/Mesh");
-Object.defineProperty(exports, "Mesh", { enumerable: true, get: function () { return Mesh_1.Mesh; } });
-var ITextureData_1 = require("./src/interface/ITextureData");
-Object.defineProperty(exports, "Scene", { enumerable: true, get: function () { return ITextureData_1.Scene; } });
-var Renderer_1 = require("./src/Renderer");
-Object.defineProperty(exports, "Renderer", { enumerable: true, get: function () { return Renderer_1.Renderer; } });
-var TextureLoader_1 = require("./src/TextureLoader");
-Object.defineProperty(exports, "TextureLoader", { enumerable: true, get: function () { return TextureLoader_1.TextureLoader; } });
-var Material_1 = require("./src/Material");
-Object.defineProperty(exports, "defaultWglslVertex", { enumerable: true, get: function () { return Material_1.defaultWglslVertex; } });
+// export {Geometry,VERTEXType} from './src/Geometry'
+// export {Mesh} from './src/Mesh'
+// export {Scene} from './src/interface/ITextureData'
+// export {Renderer} from './src/Renderer'
+// export {ITexture} from './src/interface/ITexture'
+// export {TextureLoader} from './src/TextureLoader'
+// export {IMaterialShader} from './src/interface/IMaterialShader'
+// export {defaultWglslVertex} from './src/Material'

@@ -1,5 +1,6 @@
-import { defaultWglslVertex } from "../../../src/Material";
+import { defaultWglslVertex } from "../../../src/engine/Material";
 import { IMaterialShader } from "../../../src/interface/IMaterialShader";
+
 
 export const blueColorShader:IMaterialShader = {
   vertex: defaultWglslVertex,
@@ -10,8 +11,8 @@ export const blueColorShader:IMaterialShader = {
     time: f32
   };
 
-  @group(0) @binding(0) var linearSampler: sampler;
-	@group(0) @binding(1) var<uniform> uniforms: Uniforms;
+  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+  @group(0) @binding(1) var linearSampler: sampler;
   
   struct VertexOutput {
     @builtin(position) pos: vec4<f32>,

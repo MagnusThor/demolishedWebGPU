@@ -9,17 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ComputeRenderer = void 0;
+exports.Renderer = void 0;
 const Rectangle_1 = require("../../example/meshes/Rectangle");
-const IPass_1 = require("./IPass");
+const IPass_1 = require("../interface/IPass");
 const ComputePassBuilder_1 = require("./ComputePassBuilder");
 const Uniforms_1 = require("./Uniforms");
 const Geometry_1 = require("./Geometry");
 const TextureLoader_1 = require("./TextureLoader");
-class ComputeRenderer {
-    //renderPassBuilder: RenderPassBuilder;
-    // computeBuffer: GPUTexture;
-    // computeBufferView: GPUTextureView;
+class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
         this.renderPassBacklog = new Map();
@@ -332,10 +329,10 @@ class ComputeRenderer {
             });
             const bindGroup = this.device.createBindGroup({
                 layout: computePipeline.getBindGroupLayout(0),
-                entries: bindingGroupEntrys
+                entries: bindingGroupEntrys,
+                label: `${label} computepass`
             });
             const renderPass = new IPass_1.RenderPass(0, label, computePipeline, uniforms, bindGroup, assets.buffer, assets.bufferView);
-            console.log("adding a computeRender pass", label);
             this.renderPassBacklog.set(label, renderPass);
         });
     }
@@ -346,9 +343,6 @@ class ComputeRenderer {
         arrRenderPasses.filter((pre) => {
             return pre.type == 0;
         }).forEach(pass => {
-            pass.uniforms.setUniforms([this.frame], 8);
-            pass.uniforms.setUniforms([ts], 3);
-            pass.uniforms.updateUniformBuffer();
             const computePass = encoder.beginComputePass();
             computePass.setPipeline(pass.pipleline);
             computePass.setBindGroup(0, pass.bindGroup);
@@ -366,9 +360,6 @@ class ComputeRenderer {
                         clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                     }]
             };
-            pass.uniforms.setUniforms([this.frame], 8);
-            pass.uniforms.setUniforms([ts], 3);
-            pass.uniforms.updateUniformBuffer();
             const renderPass = encoder.beginRenderPass(renderPassDescriptor);
             renderPass.setPipeline(pass.pipleline);
             renderPass.setBindGroup(0, pass.bindGroup);
@@ -406,10 +397,11 @@ class ComputeRenderer {
                 frame = segment;
                 this.frame = segment;
                 this.frameCount = frame;
-                if (!this.isPaused)
+                if (!this.isPaused) {
                     this.update(ts / 1000);
-                if (onFrame)
-                    onFrame(frame);
+                    if (onFrame)
+                        onFrame(frame);
+                }
             }
             requestAnimationFrame(renderLoop);
         };
@@ -418,5 +410,8 @@ class ComputeRenderer {
     pause() {
         this.isPaused = !this.isPaused;
     }
+    clear() {
+        this.renderPassBacklog.clear();
+    }
 }
-exports.ComputeRenderer = ComputeRenderer;
+exports.Renderer = Renderer;

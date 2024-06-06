@@ -6,15 +6,16 @@ module.exports = {
     entry: {
     
       "comp": './example/Example.js',
+      "editor": './src/editor/editor.js'
     },
     output: {
       path: __dirname + '/example/build',
       filename: '[name]-bundle.js'  
     },
     plugins: [
-      new webpack.ProvidePlugin({
-        process: 'process/browser',
-      }),
+      // new webpack.ProvidePlugin({
+      //   process: 'process/browser',
+      // }),
     ],
     module: {
       rules: [

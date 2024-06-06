@@ -3,16 +3,14 @@ import { rectGeometry } from "../../example/meshes/Rectangle";
 import { ITexture } from "../interface/ITexture";
 import { ITextureData } from "../interface/ITextureData";
 
-import { IPass, RenderPass } from "./IPass";
+import { IPass, RenderPass } from "../interface/IPass";
 import { ComputePassBuilder } from "./ComputePassBuilder";
 import { Uniforms } from "./Uniforms";
 import { Material } from "./Material";
 import { Geometry } from "./Geometry";
 import { TextureLoader } from "./TextureLoader";
 
-
-
-export class ComputeRenderer {
+export class Renderer {
 
     context: GPUCanvasContext;
     device: GPUDevice;
@@ -21,7 +19,6 @@ export class ComputeRenderer {
 
     renderTarget: GPUTexture;
     renderPipleline: GPURenderPipeline;
-    // renderSampler: GPUSampler;
 
     renderPassBuilder: ComputePassBuilder;
 
@@ -34,15 +31,11 @@ export class ComputeRenderer {
     textures: Array<ITextureData>;
     frame: number;
     uniforms: Uniforms;
-    //renderPassBuilder: RenderPassBuilder;
 
-    // computeBuffer: GPUTexture;
-    // computeBufferView: GPUTextureView;
     constructor(public canvas: HTMLCanvasElement
     ) {
         this.renderPassBacklog = new Map<string, IPass>();
         this.textures = new Array<ITextureData>();
- 
     }
 
     async init() {
@@ -77,20 +70,22 @@ export class ComputeRenderer {
         this.context = context;
         this.geometry = new Geometry(device, rectGeometry);
 
-        this.uniforms = new Uniforms(this.device,this.canvas);
-        this.canvas.addEventListener("mousemove",(evt:MouseEvent) => {
-            if(evt.buttons){
+        this.uniforms = new Uniforms(this.device, this.canvas);
+        this.canvas.addEventListener("mousemove", (evt: MouseEvent) => {
+            if (evt.buttons) {
                 const rect = this.canvas.getBoundingClientRect();
                 const x = evt.clientX - rect.left;
                 const y = evt.clientY - rect.top;
-                this.uniforms.setUniforms([x,y,evt.buttons,0],4)
+                this.uniforms.setUniforms([x, y, evt.buttons, 0], 4)
                 this.uniforms.updateUniformBuffer();
             }
         });
     }
 
     creatRenderPipeline(uniformBuffer: GPUBuffer, material: Material): GPURenderPipeline {
+
         const bindingGroupEntrys: Array<GPUBindGroupEntry> = [];
+
         const sampler = this.device.createSampler({
             addressModeU: 'repeat',
             addressModeV: 'repeat',
@@ -101,12 +96,14 @@ export class ComputeRenderer {
         bindingGroupEntrys.push({
             binding: 0,
             resource: sampler
-        }, {
-            binding: 1,
-            resource: {
-                buffer: uniformBuffer
+        },
+            {
+                binding: 1,
+                resource: {
+                    buffer: uniformBuffer
+                }
             }
-        });
+        );
 
 
         const layout = new Array<GPUBindGroupLayoutEntry>();
@@ -285,8 +282,6 @@ export class ComputeRenderer {
 
         if (samplers) throw "Samplers not yet implememted, using default binding 2"
 
-
-
         const uniforms = this.uniforms; //new Uniforms(this.device, this.canvas);
 
         if (textures) {
@@ -295,12 +290,12 @@ export class ComputeRenderer {
                 if (texture.type == 0) {
                     this.textures.push({ type: 0, data: await TextureLoader.createImageTexture(this.device, texture) });
                 } else
-                this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
-                
+                    this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
+
                 console.log(`adding texture ${texture.key}`);
 
             }
-            
+
         }
 
         const renderPipeline = this.renderPassBuilder.createRenderPipeline(material, geometry,
@@ -333,8 +328,6 @@ export class ComputeRenderer {
         const offset = bindingGroupEntrys.length;
 
         this.textures.forEach((t, i) => {
-
-
             let entry: GPUBindGroupEntry;
             if (t.type === 0) {
                 entry = {
@@ -348,7 +341,6 @@ export class ComputeRenderer {
                 };
             }
             bindingGroupEntrys.push(entry);
-           
         });
 
         const bindGroup = this.device.createBindGroup({
@@ -357,16 +349,12 @@ export class ComputeRenderer {
             label: `${label} renderpass`
         });
 
-
-
         const renderPass = new RenderPass(
             1, label, renderPipeline, uniforms, bindGroup, assets.buffer, assets.bufferView
         );
 
         this.renderPassBacklog.set(label, renderPass);
     }
-
-
 
     async addComputeRenderPass(label: string, computeShaderCode: string,
         textures?: Array<ITexture>, samplers?: Array<GPUSamplerDescriptor>
@@ -432,14 +420,14 @@ export class ComputeRenderer {
 
         const bindGroup = this.device.createBindGroup({
             layout: computePipeline.getBindGroupLayout(0),
-            entries: bindingGroupEntrys
+            entries: bindingGroupEntrys,
+            label: `${label} computepass`
+
         });
 
         const renderPass = new RenderPass(
             0, label, computePipeline, uniforms, bindGroup, assets.buffer, assets.bufferView
         );
-
-        console.log("adding a computeRender pass", label);
 
         this.renderPassBacklog.set(label, renderPass);
     }
@@ -448,21 +436,18 @@ export class ComputeRenderer {
 
         const encoder = this.device.createCommandEncoder();
         const arrRenderPasses = Array.from(this.renderPassBacklog.values());
+
         // get the compute shaders from the back log
         arrRenderPasses.filter((pre) => {
             return pre.type == 0
         }).forEach(pass => {
-                pass.uniforms.setUniforms([this.frame], 8);
-                pass.uniforms.setUniforms([ts], 3);
-                pass.uniforms.updateUniformBuffer();
-                const computePass = encoder.beginComputePass();
-                computePass.setPipeline(pass.pipleline as GPUComputePipeline);
-                computePass.setBindGroup(0, pass.bindGroup);
-                computePass.dispatchWorkgroups(Math.floor((this.canvas.width + 7) / 8), Math.floor((this.canvas.height + 7) / 8), 1);
-                computePass.end();
-                
 
-            });
+            const computePass = encoder.beginComputePass();
+            computePass.setPipeline(pass.pipleline as GPUComputePipeline);
+            computePass.setBindGroup(0, pass.bindGroup);
+            computePass.dispatchWorkgroups(Math.floor((this.canvas.width + 7) / 8), Math.floor((this.canvas.height + 7) / 8), 1);
+            computePass.end();
+        });
 
         arrRenderPasses.filter(pre => {
             return pre.type == 1
@@ -475,9 +460,7 @@ export class ComputeRenderer {
                     clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
                 }]
             };
-            pass.uniforms.setUniforms([this.frame], 8);
-            pass.uniforms.setUniforms([ts], 3);
-            pass.uniforms.updateUniformBuffer();
+
             const renderPass = encoder.beginRenderPass(renderPassDescriptor);
             renderPass.setPipeline(pass.pipleline as GPURenderPipeline)
             renderPass.setBindGroup(0, pass.bindGroup);
@@ -485,9 +468,6 @@ export class ComputeRenderer {
             renderPass.setIndexBuffer(this.geometry.indexBuffer, 'uint16');
             renderPass.drawIndexed(this.geometry.numOfVerticles, 1);
             renderPass.end();
-
-            
-
         });
 
         const mainRenderer: GPURenderPassEncoder = encoder.beginRenderPass({
@@ -499,7 +479,6 @@ export class ComputeRenderer {
             }]
         });
 
-
         this.uniforms.setUniforms([this.frame], 8);
         this.uniforms.setUniforms([ts], 3);
         this.uniforms.updateUniformBuffer();
@@ -510,20 +489,13 @@ export class ComputeRenderer {
         mainRenderer.draw(6, 1, 0, 0);
         mainRenderer.end();
 
-        
-
         this.device.queue.submit([encoder.finish()]);
 
     }
 
     start(t: number, maxFps: number = 200, onFrame?: (frame: number) => void): void {
-        
-        
-        
         let startTime = null;
         let frame = -1;
-
-
         const renderLoop = (ts: number) => {
             if (!startTime) startTime = ts;
             let segment = Math.floor((ts - startTime) / (1000 / maxFps));
@@ -531,10 +503,10 @@ export class ComputeRenderer {
                 frame = segment;
                 this.frame = segment;
                 this.frameCount = frame;
-                if (!this.isPaused)
+                if (!this.isPaused) {
                     this.update(ts / 1000);
-                if (onFrame) onFrame(frame);
-              
+                    if (onFrame) onFrame(frame);
+                }
             }
             requestAnimationFrame(renderLoop);
         };
@@ -542,5 +514,8 @@ export class ComputeRenderer {
     }
     pause(): void {
         this.isPaused = !this.isPaused;
+    }
+    clear() {
+        this.renderPassBacklog.clear();
     }
 }

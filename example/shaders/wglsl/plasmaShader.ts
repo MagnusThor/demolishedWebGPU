@@ -1,5 +1,6 @@
+import { defaultWglslVertex } from "../../../src/engine/Material";
 import { IMaterialShader } from "../../../src/interface/IMaterialShader";
-import { defaultWglslVertex } from "../../../src/Material";
+
 
 export const plasmaShader: IMaterialShader = {
     vertex: defaultWglslVertex,

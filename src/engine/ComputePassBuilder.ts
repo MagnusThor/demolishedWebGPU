@@ -1,9 +1,9 @@
 
-import { Geometry } from "../Geometry";
-import { IMaterialShader } from "../interface/IMaterialShader";
-import { Material } from "../Material";
+
 import { ITextureData } from "../interface/ITextureData";
-import { IPassBuilder } from "./IPassBuilder";
+import { IPassBuilder } from "../interface/IPassBuilder";
+import { Material } from "./Material";
+import { Geometry } from "./Geometry";
 
 export class ComputePassBuilder implements IPassBuilder {
 
