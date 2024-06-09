@@ -13,6 +13,7 @@ import { mainShader } from './shaders/shared/mainShader';
 import { mrangeShader } from './shaders/wglsl/mrange';
 import { microRayMarcherCompute } from './shaders/compute/microRayMarcher';
 import { blueColorShader } from './shaders/wglsl/blueColorShader';
+import { flamesShader } from './shaders/wglsl/flamesShader';
 
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -54,7 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // });
 
     
-    const material = new Material(renderer.device,blueColorShader);
+    const material = new Material(renderer.device,flamesShader);
     
     await renderer.addRenderPass("iChannel0",material,geometry,textures).catch (err => {
         console.log(err);

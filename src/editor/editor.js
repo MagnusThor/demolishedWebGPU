@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Editor = void 0;
+exports.Editor = exports.StoredShader = void 0;
 const state_1 = require("@codemirror/state");
 const view_1 = require("@codemirror/view");
 const commands_1 = require("@codemirror/commands");
@@ -23,9 +23,23 @@ const errorDecorator_1 = require("./errorDecorator");
 const Renderer_1 = require("../engine/Renderer");
 const Geometry_1 = require("../engine/Geometry");
 const Rectangle_1 = require("../../example/meshes/Rectangle");
+const blueColorShader_1 = require("../../example/shaders/wglsl/blueColorShader");
 const mainShader_1 = require("../../example/shaders/shared/mainShader");
-const raymarchShader_1 = require("../../example/shaders/wglsl/raymarchShader");
+const OfflineStorage_1 = require("./OfflineStorage");
 const fps = new yy_fps_1.FPS();
+const randomStr = () => (Math.random() + 1).toString(36).substring(7);
+/*
+ LocalStorage related stuff
+*/
+class StoredShader extends OfflineStorage_1.IEntityBase {
+    constructor(name, description, source) {
+        super();
+        this.name = name;
+        this.description = description;
+        this.source = source;
+    }
+}
+exports.StoredShader = StoredShader;
 class Editor {
     tryCompile(source) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -79,20 +93,30 @@ class Editor {
             return true;
         });
     }
-    setupEditor() {
+    setupEditor(shader) {
         return __awaiter(this, void 0, void 0, function* () {
             this.renderer = new Renderer_1.Renderer(document.querySelector("canvas"));
             yield this.renderer.init();
-            const customKeymap = view_1.keymap.of([
-                { key: "Mod-Shift-b", run: (view) => {
+            const actionKeys = [
+                {
+                    key: "Mod-Shift-b", run: (view) => {
                         this.onCompile(view).then(shouldSave => {
                         });
                         return true;
-                    } },
-                ...commands_1.defaultKeymap,
+                    }
+                },
+                {
+                    key: "Mod-s", run: () => {
+                        this.updateCurrentShader();
+                        return true;
+                    }
+                }
+            ];
+            const customKeymap = view_1.keymap.of([
+                ...commands_1.defaultKeymap, ...actionKeys
             ]);
             const state = state_1.EditorState.create({
-                doc: raymarchShader_1.raymarchShader.fragment,
+                doc: shader.source,
                 extensions: [codemirror_1.basicSetup, (0, lang_javascript_1.javascript)(), customKeymap,
                     (0, language_1.syntaxHighlighting)(language_1.defaultHighlightStyle),
                     (0, language_1.bracketMatching)(),
@@ -104,10 +128,11 @@ class Editor {
                     })
                 ],
             });
-            let editorView = new view_1.EditorView({
+            this.editorView = new view_1.EditorView({
                 state,
                 parent: DOMUtis_1.DOMUtils.get("#editor")
             });
+            this.state = state;
             let isRunning = false;
             DOMUtis_1.DOMUtils.get("#btn-run-shader").addEventListener("click", (e) => {
                 DOMUtis_1.DOMUtils.toggleClasses("#btn-run-shader i", ["bi-play-btn-fill", "bi-stop-fill"]);
@@ -119,7 +144,7 @@ class Editor {
                     this.renderer.isPaused = false;
                 }
                 const material = new Material_1.Material(this.renderer.device, {
-                    fragment: editorView.state.doc.toString(),
+                    fragment: this.editorView.state.doc.toString(),
                     vertex: Material_1.defaultWglslVertex
                 });
                 this.tryAddShader(material).then(p => {
@@ -129,10 +154,63 @@ class Editor {
                 });
                 isRunning = !isRunning;
             });
+            DOMUtis_1.DOMUtils.on("click", "#btn-save", () => {
+                this.updateCurrentShader();
+            });
+        });
+    }
+    updateCurrentShader() {
+        this.currentShader.source = this.editorView.state.doc.toString();
+        console.log(this.currentShader.source);
+        this.storage.update(this.currentShader);
+        this.storage.save();
+    }
+    renderStoredShaders(shaders) {
+        const parent = DOMUtis_1.DOMUtils.get("#lst-shaders");
+        shaders.forEach(shader => {
+            const template = `
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">${shader.name}</div>
+                        ${shader.description}
+                    </div>
+                    <button class="btn btn-sm btn-secondary" data-id=${shader.id}">Edit</button>
+                </li>`;
+            const item = DOMUtis_1.DOMUtils.toDOM(template);
+            const button = DOMUtis_1.DOMUtils.get("button", item);
+            button.dataset.id = shader.id;
+            DOMUtis_1.DOMUtils.on("click", button, () => {
+                console.log(button.dataset.id);
+            });
+            parent.append(item);
+        });
+    }
+    initStorage() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                try {
+                    this.storage = new OfflineStorage_1.OfflineStorage("editor");
+                    this.storage.init();
+                    resolve(this.storage.model.collection[0]);
+                }
+                catch (err) {
+                    this.storage = new OfflineStorage_1.OfflineStorage("editor");
+                    this.storage.setup();
+                    // create a default shader and add it to the storage
+                    const defaultShader = new StoredShader(`Shader ${randomStr()} `, `My first WGLSL Shader`, blueColorShader_1.blueColorShader.fragment);
+                    this.storage.insert(defaultShader);
+                    this.storage.save();
+                    reject("No storage found");
+                }
+            });
         });
     }
     constructor() {
-        this.setupEditor().then(r => {
+        this.initStorage().then(shader => {
+            this.currentShader = shader;
+            this.renderStoredShaders(this.storage.model.collection);
+            this.setupEditor(shader).then(r => {
+            });
         });
     }
 }

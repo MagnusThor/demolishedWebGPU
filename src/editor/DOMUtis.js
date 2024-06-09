@@ -27,7 +27,7 @@ class DOMUtils {
     static toggleClasses(element, classes) {
         typeof (element) === "string" ? element = DOMUtils.get(element) : element = element;
         classes.forEach(className => {
-            element.classList.toggle(className);
+            (element).classList.toggle(className);
         });
         return this;
     }

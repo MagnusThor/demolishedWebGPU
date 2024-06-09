@@ -17,8 +17,8 @@
         }
 
         .cm-editor {
-            height: 600px;
-            
+            height: 500px;
+
         }
 
         .cm-scroller {
@@ -33,6 +33,14 @@
             background-color: #ffdddd;
 
         }
+
+        .list-group {
+            max-height: 300px;
+            margin-bottom: 10px;
+            height: 300px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
     </style>
 
 
@@ -41,29 +49,70 @@
 </html>
 
 <body>
-    <nav class="navbar bg-body-tertiary">
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-menu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+
+          
+
+            <hr>
+
+            <h3>Your shaders</h3>
+            <ul class="list-group list-group-flush" id="lst-shaders">
+
+            </ul>
+
+            <div>
+
+            </div>
+            
+        </div>
+    </div>
+    <nav class="navbar bg-dark" data-bs-theme="dark"">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                WebGPU ShaderEditor
-            </a>
+
+        <a class="navbar-brand" href="#">
+            <i class="bi bi-braces"></i>
+            WGLSL ShaderEditor (embark)
+        </a>
+        <div class="d-flex" role="search">
+            <input class="form-control me-2" type="text">
+            <button class="btn btn-sm btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-menu">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
         </div>
     </nav>
 
 
     <div class="container-fluid ">
         <div class="row">
+            <div class="col-md-12">
+                <div class="mt-1">
+                    <button class="btn btn-primary" id="btn-save">
+                        <i class="bi bi-floppy-fill"></i>                        
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-md-8">
 
 
 
-                <div id="editor" class="my-4"></div>
+                <div id="editor" class="my-1"></div>
+
+              
 
             </div>
             <div class="col-md-4">
                 <div class="card my-4">
                     <canvas class="card-img-top" width="320" height="200" style="background-color: #000;"></canvas>
                     <div class="card-body">
-                        <h5>Error</h5>
+                        <h6>Error</h6>
                         <p class="card-text" id="compiler-result">
                             Compile to run.
                         </p>
@@ -79,7 +128,7 @@
     </div>
 
 
-  
+
 
     <script src="../build/editor-bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"

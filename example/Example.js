@@ -16,7 +16,7 @@ const Rectangle_1 = require("./meshes/Rectangle");
 const Material_1 = require("../src/engine/Material");
 const Geometry_1 = require("../src/engine/Geometry");
 const mainShader_1 = require("./shaders/shared/mainShader");
-const blueColorShader_1 = require("./shaders/wglsl/blueColorShader");
+const flamesShader_1 = require("./shaders/wglsl/flamesShader");
 document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, void 0, function* () {
     const textures = [
         {
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => __awaiter(void 0, void 0, vo
     // await renderer.addRenderPass("iChannel",mrange,geometry).catch (err => {
     //     console.log(err);
     // });
-    const material = new Material_1.Material(renderer.device, blueColorShader_1.blueColorShader);
+    const material = new Material_1.Material(renderer.device, flamesShader_1.flamesShader);
     yield renderer.addRenderPass("iChannel0", material, geometry, textures).catch(err => {
         console.log(err);
     });

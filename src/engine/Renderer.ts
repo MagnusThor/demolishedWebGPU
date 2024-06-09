@@ -357,7 +357,7 @@ export class Renderer {
     }
 
     async addComputeRenderPass(label: string, computeShaderCode: string,
-        textures?: Array<ITexture>, samplers?: Array<GPUSamplerDescriptor>
+        textures?: Array<ITexture>, samplers?: Array<GPUSamplerDescriptor> 
     ) {
 
         if (samplers) throw "Samplers not yet implememted, using default binding 2"
@@ -488,9 +488,7 @@ export class Renderer {
         mainRenderer.setBindGroup(0, this.screen_bind_group);
         mainRenderer.draw(6, 1, 0, 0);
         mainRenderer.end();
-
         this.device.queue.submit([encoder.finish()]);
-
     }
 
     start(t: number, maxFps: number = 200, onFrame?: (frame: number) => void): void {
