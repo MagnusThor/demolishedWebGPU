@@ -64,8 +64,7 @@ export class OfflineStorage<T extends IEntityBase>  {
         }
  
         insert(item: T): T {
-            this.model.collection.push(item);
-            console.log(this.model);
+            this.model.collection.push(item);         
             return item;
         }
     
@@ -73,6 +72,7 @@ export class OfflineStorage<T extends IEntityBase>  {
             const index = this.model.collection.findIndex((pre) => pre.id === item.id);
             console.log(index);
             if (index !== -1) {
+                item.lastModified = Date.now();
                 this.model.collection[index] = item;
             }
         }
@@ -82,7 +82,6 @@ export class OfflineStorage<T extends IEntityBase>  {
             if (index !== -1) {
                 this.model.collection.splice(index, 1);
             }
-            console.log(index);
         }
     
         findById(uuid: string): T | undefined {

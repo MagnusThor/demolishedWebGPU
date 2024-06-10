@@ -96,12 +96,13 @@ export class Editor {
                 setTitleForLine(view, error.lineNum, error.message);
             });
         }).catch(err => {
-            console.log(err);
             DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = false;
         });
         return true;
     }
 
+
+    
 
     async setupEditor(shader:StoredShader) {
 
@@ -181,26 +182,47 @@ export class Editor {
         });
 
         DOMUtils.on("click","#btn-save", () => {
-
             this.updateCurrentShader();
+        });
 
+        DOMUtils.on("click","#btn-new", () => {
+            const item = new StoredShader(`Shader ${randomStr()}`,"N/A",
+                blueColorShader.fragment
+            );
+            this.storage.insert(item);
+            this.setCurrentShader(item);
+            this.storage.save();       
         });
 
     }
 
+     
+    setCurrentShader(shader:StoredShader): void {
+        this.currentShader = shader;         
+        DOMUtils.get<HTMLInputElement>("#shader-name").value = shader.name;
+        DOMUtils.get<HTMLInputElement>("#shader-description").value = shader.description;
+        // Create a transaction to replace the document
+        const transaction = this.editorView.state.update({
+            changes: { from: 0, to:  this.editorView.state.doc.length, insert: shader.source }
+        });
+        // Dispatch the transaction to the editor view
+        this.editorView.dispatch(transaction);
+    }
 
     updateCurrentShader(){
         this.currentShader.source = this.editorView.state.doc.toString();
-
-        console.log(this.currentShader.source);
-
+        this.currentShader.name = DOMUtils.get<HTMLInputElement>("#shader-name").value;
+        this.currentShader.description = DOMUtils.get<HTMLInputElement>("#shader-description").value;        
         this.storage.update(this.currentShader);
-       
         this.storage.save();
+        this.renderStoredShaders(this.storage.model.collection);
     }
 
     renderStoredShaders(shaders:Array<StoredShader>):void{
             const parent = DOMUtils.get("#lst-shaders");
+        
+            DOMUtils.removeChilds(parent);
+
             shaders.forEach( shader => {
                 const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
@@ -214,15 +236,13 @@ export class Editor {
                 const button = DOMUtils.get("button",item);
                 button.dataset.id= shader.id;
                 DOMUtils.on("click", button,() => {
-                    console.log(button.dataset.id);
+                    this.setCurrentShader(shader);
                 });
                 parent.append(item);
             });
     }
 
-
     async initStorage(): Promise<StoredShader> {
-
         return new Promise((resolve, reject) => {
             try {
                 this.storage = new OfflineStorage<StoredShader>("editor");
@@ -241,6 +261,7 @@ export class Editor {
 
                 this.storage.save();
 
+
                 reject("No storage found")
 
             }
@@ -256,7 +277,10 @@ export class Editor {
 
             this.renderStoredShaders(this.storage.model.collection)
             this.setupEditor(shader).then(r => {
+                this.setCurrentShader(shader);
             });
+        }).catch( err => {            
+            this.renderStoredShaders(this.storage.model.collection);
         });
     }
 }

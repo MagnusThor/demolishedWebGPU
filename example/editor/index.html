@@ -51,35 +51,21 @@
 <body>
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-menu">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Menu</h5>
+            <h5 class="offcanvas-title">Your shaders</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
-
-          
-
-            <hr>
-
-            <h3>Your shaders</h3>
             <ul class="list-group list-group-flush" id="lst-shaders">
-
             </ul>
-
-            <div>
-
-            </div>
-            
         </div>
     </div>
     <nav class="navbar bg-dark" data-bs-theme="dark"">
         <div class="container-fluid">
-
         <a class="navbar-brand" href="#">
             <i class="bi bi-braces"></i>
             WGLSL ShaderEditor (embark)
         </a>
-        <div class="d-flex" role="search">
-            <input class="form-control me-2" type="text">
+        <div class="d-flex">
             <button class="btn btn-sm btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-menu">
                 <i class="bi bi-list"></i>
             </button>
@@ -90,39 +76,62 @@
 
     <div class="container-fluid ">
         <div class="row">
-            <div class="col-md-12">
-                <div class="mt-1">
-                    <button class="btn btn-primary" id="btn-save">
-                        <i class="bi bi-floppy-fill"></i>                        
-                    </button>
+            <div class="col-md-8">
+                <div class="d-flex mb-3">
+                    <div class="p-1">
+                        <button class="btn btn-primary" id="btn-save">
+                            <i class="bi bi-floppy-fill"></i>
+                        </button>
+                    </div>
+                    <div class="p-1">
+                        <button class="btn btn-primary mr-2" id="btn-new">
+                            <i class="bi bi-plus-square-fill"></i>
+                        </button>
+                    </div>
+                    <div class="p-1">
+                        <button class="btn btn-primary mr-2" id="btn-clone" disabled>
+                            <i class="bi bi-copy"></i>
+                        </button>
+                        
+
+                    </div>
+                    <div class="ms-auto p-1"> <button class="btn btn-danger mr-2" id="btn-delete" disabled>
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div id="editor" class="my-1"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card my-4">
+                    <canvas class="card-img-top" width="320" height="180" style="background-color: #000;"></canvas>
+                    <div class="card-body">
+                        <button class="btn btn-primary" id="btn-run-shader" disabled>
+                            <i class="bi bi-play-btn-fill"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="shader-name">Name</label>
+                    <input class="form-control me-2" type="text" id="shader-name">
+                </div>
+                <div class="form-group">
+                    <label for="shader-description">Description</label>
+                    <textarea class="form-control" id="shader-description" rows="2"></textarea>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-8">
-
-
-
-                <div id="editor" class="my-1"></div>
-
-              
-
-            </div>
-            <div class="col-md-4">
-                <div class="card my-4">
-                    <canvas class="card-img-top" width="320" height="200" style="background-color: #000;"></canvas>
-                    <div class="card-body">
-                        <h6>Error</h6>
-                        <p class="card-text" id="compiler-result">
-                            Compile to run.
-                        </p>
-                        <button class="btn btn-primary" id="btn-run-shader" disabled>
-                            <i class="bi bi-play-btn-fill"></i>
-                        </button>
-
-
-                    </div>
-                </div>
+                <h6>Immediate</h6>
+                <p id="compiler-result">
+                    Compile to run.
+                </p>
             </div>
         </div>
     </div>
