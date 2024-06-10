@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Editor = exports.StoredShader = void 0;
 const state_1 = require("@codemirror/state");
@@ -18,6 +21,7 @@ const Material_1 = require("../engine/Material");
 const codemirror_1 = require("codemirror");
 const lang_javascript_1 = require("@codemirror/lang-javascript");
 const yy_fps_1 = require("yy-fps");
+const js_beautify_1 = __importDefault(require("js-beautify"));
 const language_1 = require("@codemirror/language");
 const errorDecorator_1 = require("./errorDecorator");
 const Renderer_1 = require("../engine/Renderer");
@@ -96,7 +100,7 @@ class Editor {
         return __awaiter(this, void 0, void 0, function* () {
             this.renderer = new Renderer_1.Renderer(document.querySelector("canvas"));
             yield this.renderer.init();
-            const actionKeys = [
+            const customKeyMap = [
                 {
                     key: "Mod-Shift-b", run: (view) => {
                         this.onCompile(view).then(shouldSave => {
@@ -109,14 +113,30 @@ class Editor {
                         this.updateCurrentShader();
                         return true;
                     }
+                },
+                {
+                    key: "Mod-Shift-f", run: (view) => {
+                        const code = view.state.doc.toString();
+                        const formattedCode = (0, js_beautify_1.default)(code, { /* Beautify options */});
+                        view.dispatch({
+                            changes: {
+                                from: 0,
+                                to: view.state.doc.length,
+                                insert: formattedCode,
+                            },
+                        });
+                        return true;
+                    },
                 }
             ];
-            const customKeymap = view_1.keymap.of([
-                ...commands_1.defaultKeymap, ...actionKeys
+            const editorKeymap = view_1.keymap.of([
+                ...commands_1.defaultKeymap, ...customKeyMap, commands_1.indentWithTab
             ]);
             const state = state_1.EditorState.create({
                 doc: shader.source,
-                extensions: [codemirror_1.basicSetup, (0, lang_javascript_1.javascript)(), customKeymap,
+                extensions: [
+                    (0, language_1.indentOnInput)(),
+                    codemirror_1.basicSetup, (0, lang_javascript_1.javascript)(), editorKeymap,
                     (0, language_1.syntaxHighlighting)(language_1.defaultHighlightStyle),
                     (0, language_1.bracketMatching)(),
                     errorDecorator_1.decorationField,

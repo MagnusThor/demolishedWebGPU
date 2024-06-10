@@ -8,6 +8,7 @@ import { Material, defaultWglslVertex } from "../engine/Material";
 import { basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { FPS } from 'yy-fps'
+import beautify from "js-beautify";
 
 
 import {
@@ -38,7 +39,7 @@ const randomStr = () => (Math.random() + 1).toString(36).substring(7);
  LocalStorage related stuff
 */
 export class StoredShader extends IEntityBase implements IOfflineEntity {
-    constructor(public name: string, public description: string,public source:string) {
+    constructor(public name: string, public description: string, public source: string) {
         super();
     }
 }
@@ -102,15 +103,16 @@ export class Editor {
     }
 
 
-    
 
-    async setupEditor(shader:StoredShader) {
+
+    async setupEditor(shader: StoredShader) {
 
         this.renderer = new Renderer(document.querySelector("canvas"));
         await this.renderer.init();
 
 
-        const actionKeys = [
+        const customKeyMap = [
+           
             {
                 key: "Mod-Shift-b", run: (view: EditorView) => {
                     this.onCompile(view).then(shouldSave => {
@@ -124,15 +126,31 @@ export class Editor {
                     return true;
                 }
             }
+            ,{
+                 key: "Mod-Shift-f",  run: (view:EditorView) => {
+                    const code = view.state.doc.toString();
+                    const formattedCode = beautify(code, {}); 
+                    view.dispatch({
+                        changes: {
+                          from: 0,
+                          to: view.state.doc.length,
+                          insert: formattedCode,
+                        },
+                      });                 
+                    return true;
+                 } ,
+            }
         ];
 
-        const customKeymap = keymap.of([
-            ...defaultKeymap,...actionKeys
+        const editorKeymap = keymap.of([
+            ...defaultKeymap, ...customKeyMap,indentWithTab
         ]);
 
         const state = EditorState.create({
             doc: shader.source,
-            extensions: [basicSetup, javascript(), customKeymap,
+            extensions: [
+                indentOnInput(),
+                basicSetup, javascript(), editorKeymap,
                 syntaxHighlighting(defaultHighlightStyle),
                 bracketMatching(),
                 decorationField,
@@ -181,65 +199,65 @@ export class Editor {
 
         });
 
-        DOMUtils.on("click","#btn-save", () => {
+        DOMUtils.on("click", "#btn-save", () => {
             this.updateCurrentShader();
         });
 
-        DOMUtils.on("click","#btn-new", () => {
-            const item = new StoredShader(`Shader ${randomStr()}`,"N/A",
+        DOMUtils.on("click", "#btn-new", () => {
+            const item = new StoredShader(`Shader ${randomStr()}`, "N/A",
                 blueColorShader.fragment
             );
             this.storage.insert(item);
             this.setCurrentShader(item);
-            this.storage.save();       
+            this.storage.save();
         });
 
     }
 
-     
-    setCurrentShader(shader:StoredShader): void {
-        this.currentShader = shader;         
+
+    setCurrentShader(shader: StoredShader): void {
+        this.currentShader = shader;
         DOMUtils.get<HTMLInputElement>("#shader-name").value = shader.name;
         DOMUtils.get<HTMLInputElement>("#shader-description").value = shader.description;
         // Create a transaction to replace the document
         const transaction = this.editorView.state.update({
-            changes: { from: 0, to:  this.editorView.state.doc.length, insert: shader.source }
+            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.source }
         });
         // Dispatch the transaction to the editor view
         this.editorView.dispatch(transaction);
     }
 
-    updateCurrentShader(){
+    updateCurrentShader() {
         this.currentShader.source = this.editorView.state.doc.toString();
         this.currentShader.name = DOMUtils.get<HTMLInputElement>("#shader-name").value;
-        this.currentShader.description = DOMUtils.get<HTMLInputElement>("#shader-description").value;        
+        this.currentShader.description = DOMUtils.get<HTMLInputElement>("#shader-description").value;
         this.storage.update(this.currentShader);
         this.storage.save();
         this.renderStoredShaders(this.storage.model.collection);
     }
 
-    renderStoredShaders(shaders:Array<StoredShader>):void{
-            const parent = DOMUtils.get("#lst-shaders");
-        
-            DOMUtils.removeChilds(parent);
+    renderStoredShaders(shaders: Array<StoredShader>): void {
+        const parent = DOMUtils.get("#lst-shaders");
 
-            shaders.forEach( shader => {
-                const template = `
+        DOMUtils.removeChilds(parent);
+
+        shaders.forEach(shader => {
+            const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">${shader.name}</div>
                         ${shader.description}
                     </div>
                     <button class="btn btn-sm btn-secondary" data-id=${shader.id}">Edit</button>
-                </li>`;                
-                const item = DOMUtils.toDOM(template);
-                const button = DOMUtils.get("button",item);
-                button.dataset.id= shader.id;
-                DOMUtils.on("click", button,() => {
-                    this.setCurrentShader(shader);
-                });
-                parent.append(item);
+                </li>`;
+            const item = DOMUtils.toDOM(template);
+            const button = DOMUtils.get("button", item);
+            button.dataset.id = shader.id;
+            DOMUtils.on("click", button, () => {
+                this.setCurrentShader(shader);
             });
+            parent.append(item);
+        });
     }
 
     async initStorage(): Promise<StoredShader> {
@@ -255,7 +273,7 @@ export class Editor {
                 // create a default shader and add it to the storage
 
                 const defaultShader = new StoredShader(`Shader ${randomStr()} `,
-                `My first WGLSL Shader`, blueColorShader.fragment);
+                    `My first WGLSL Shader`, blueColorShader.fragment);
 
                 this.storage.insert(defaultShader);
 
@@ -271,7 +289,7 @@ export class Editor {
     }
 
     constructor() {
-        this.initStorage().then ( shader => {
+        this.initStorage().then(shader => {
 
             this.currentShader = shader;
 
@@ -279,7 +297,7 @@ export class Editor {
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });
-        }).catch( err => {            
+        }).catch(err => {
             this.renderStoredShaders(this.storage.model.collection);
         });
     }

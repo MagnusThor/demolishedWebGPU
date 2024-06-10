@@ -21,4 +21,8 @@ module.exports = {
       rules: [
       ],
     },
+    externals: {
+      prettier: 'prettier', // Exclude Prettier from the bundle
+      'prettier/standalone': 'prettier' 
+  }
   }
