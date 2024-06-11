@@ -52,6 +52,7 @@ export class Editor {
     state: EditorState;
     editorView: EditorView;
     currentShader: StoredShader;
+    isRunning: boolean;
 
     async tryCompile(source: string): Promise<GPUCompilationInfo> {
         const shaderModule = this.renderer.device.createShaderModule({
@@ -91,7 +92,7 @@ export class Editor {
             DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = false;
             clearAllDecorations(view);
             const resultEl = DOMUtils.get("#compiler-result");
-            resultEl.textContent = "There is no errors."
+            
             conpileInfo.messages.forEach(error => {
                 resultEl.append(DOMUtils.create("p").textContent = `${error.message} at line ${error.lineNum}.`);
                 setTitleForLine(view, error.lineNum, error.message);
@@ -103,16 +104,21 @@ export class Editor {
     }
 
 
+    toggleCanvasFullScreen(): void {
+        const canvas = DOMUtils.get<HTMLCanvasElement>("canvas");
+        if (!document.fullscreenElement) {
+            canvas.requestFullscreen();
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+
 
 
     async setupEditor(shader: StoredShader) {
-
         this.renderer = new Renderer(document.querySelector("canvas"));
         await this.renderer.init();
-
-
         const customKeyMap = [
-           
             {
                 key: "Mod-Shift-b", run: (view: EditorView) => {
                     this.onCompile(view).then(shouldSave => {
@@ -126,38 +132,36 @@ export class Editor {
                     return true;
                 }
             }
-            ,{
-                 key: "Mod-Shift-f",  run: (view:EditorView) => {
+            , {
+                key: "Mod-Shift-f", run: (view: EditorView) => {
                     const code = view.state.doc.toString();
-                    const formattedCode = beautify(code, {}); 
+                    const formattedCode = beautify(code, {});
                     view.dispatch({
                         changes: {
-                          from: 0,
-                          to: view.state.doc.length,
-                          insert: formattedCode,
+                            from: 0,
+                            to: view.state.doc.length,
+                            insert: formattedCode,
                         },
-                      });                 
+                    });
                     return true;
-                 } ,
+                },
             }
         ];
 
-        const editorKeymap = keymap.of([
-            ...defaultKeymap, ...customKeyMap,indentWithTab
-        ]);
 
         const state = EditorState.create({
             doc: shader.source,
             extensions: [
                 indentOnInput(),
-                basicSetup, javascript(), editorKeymap,
+                basicSetup, javascript(), keymap.of([
+                    ...defaultKeymap, ...customKeyMap, indentWithTab
+                ]),
                 syntaxHighlighting(defaultHighlightStyle),
                 bracketMatching(),
                 decorationField,
                 EditorView.lineWrapping,
                 EditorView.domEventHandlers({
                     click: () => {
-
                     }
                 })
             ],
@@ -170,33 +174,31 @@ export class Editor {
 
 
         this.state = state;
+        this.isRunning = false;
 
 
-        let isRunning = false;
+    }
 
+
+    setupUI(): void {
         DOMUtils.get<HTMLButtonElement>("#btn-run-shader").addEventListener("click", (e) => {
             DOMUtils.toggleClasses("#btn-run-shader i", ["bi-play-btn-fill", "bi-stop-fill"]);
-
-            if (isRunning) {
+            if (this.isRunning) {
                 this.renderer.clear();
                 this.renderer.isPaused = true;
             } else {
                 this.renderer.isPaused = false;
             }
-
             const material = new Material(this.renderer.device, {
                 fragment: this.editorView.state.doc.toString(),
                 vertex: defaultWglslVertex
             })
-
             this.tryAddShader(material).then(p => {
                 this.renderer.start(0, 200, (frame) => {
                     fps.frame();
                 });
             });
-
-            isRunning = !isRunning;
-
+            this.isRunning = !this.isRunning;
         });
 
         DOMUtils.on("click", "#btn-save", () => {
@@ -212,6 +214,7 @@ export class Editor {
             this.storage.save();
         });
 
+        DOMUtils.on("click","#btn-canvas-fullscreen", this.toggleCanvasFullScreen)
     }
 
 
@@ -238,7 +241,6 @@ export class Editor {
 
     renderStoredShaders(shaders: Array<StoredShader>): void {
         const parent = DOMUtils.get("#lst-shaders");
-
         DOMUtils.removeChilds(parent);
 
         shaders.forEach(shader => {
@@ -266,39 +268,35 @@ export class Editor {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.init();
                 resolve(this.storage.model.collection[0]);
-
             } catch (err) {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.setup();
                 // create a default shader and add it to the storage
-
                 const defaultShader = new StoredShader(`Shader ${randomStr()} `,
                     `My first WGLSL Shader`, blueColorShader.fragment);
-
                 this.storage.insert(defaultShader);
-
                 this.storage.save();
-
-
                 reject("No storage found")
-
             }
-
         });
-
     }
 
     constructor() {
+        this.setupUI();
         this.initStorage().then(shader => {
-
             this.currentShader = shader;
 
             this.renderStoredShaders(this.storage.model.collection)
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });
-        }).catch(err => {
+        }).catch(err => {            
             this.renderStoredShaders(this.storage.model.collection);
+            const shader = this.storage.model.collection[0];
+            this.setupEditor(shader).then(r => {
+                this.setCurrentShader(shader);
+            });
+
         });
     }
 }
