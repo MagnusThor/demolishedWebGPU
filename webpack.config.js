@@ -4,21 +4,25 @@ module.exports = {
     mode:"development", 
     watch: false,
     entry: {
-      "frag": './example/Example.js',
-      "comp": './example/ExampleCompute.js',
-      "flames": "./example/ExampleMassive.js"
+    
+      "comp": './example/Example.js',
+      "editor": './src/editor/editor.js'
     },
     output: {
       path: __dirname + '/example/build',
       filename: '[name]-bundle.js'  
     },
     plugins: [
-      new webpack.ProvidePlugin({
-        process: 'process/browser',
-      }),
+      // new webpack.ProvidePlugin({
+      //   process: 'process/browser',
+      // }),
     ],
     module: {
       rules: [
       ],
     },
+    externals: {
+      prettier: 'prettier', // Exclude Prettier from the bundle
+      'prettier/standalone': 'prettier' 
+  }
   }

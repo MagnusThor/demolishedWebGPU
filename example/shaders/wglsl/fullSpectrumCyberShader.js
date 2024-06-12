@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fullSpectrumCyberShader = void 0;
-const Material_1 = require("../../../src/Material");
+const Material_1 = require("../../../src/engine/Material");
 exports.fullSpectrumCyberShader = {
     vertex: Material_1.defaultWglslVertex,
     fragment: /* glsl */ `
@@ -175,8 +175,8 @@ fn march(ro: vec3<f32>, rd: vec3<f32>) -> vec3<f32> {
 	return col;
 } 
 
-// Full Spectrum Cyber made by Kali 
-// https://www.shadertoy.com/view/XcXXzS
+	// Full Spectrum Cyber made by Kali 
+	// https://www.shadertoy.com/view/XcXXzS
 
 fn mainImage(fragCoord: vec2<f32>) -> vec4<f32> {
 

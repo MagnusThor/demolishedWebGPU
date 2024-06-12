@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rectGeometry = void 0;
-const Geometry_1 = require("../../src/Geometry");
+const Geometry_1 = require("../../src/engine/Geometry");
 exports.rectGeometry = {
     verticesType: Geometry_1.VERTEXType.xyz,
     vertices: new Float32Array([

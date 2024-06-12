@@ -1,54 +1,73 @@
-import { Geometry } from "../src/Geometry";
-import { Material } from "../src/Material";
-import { Renderer } from "../src/Renderer";
-import { ITexture, TextureType } from "../src/ITexture";
-import { rectGeometry } from "./meshes/Rectangle";
-import { Scene } from "../src/Scene";
-import { Mesh } from "../src/Mesh";
-
 import { FPS } from 'yy-fps'
-import { prismBreakShader } from "./shaders/wglsl/prismBreakShader";
+import { Renderer } from "../src/engine/Renderer";
+import { ITexture, TextureType } from "../src/interface/ITexture";
+import { raytracedRollingBallShader } from "./shaders/wglsl/raytracedRollingBallShader";
+import { rectGeometry } from "./meshes/Rectangle";
+
+import { customMainShader } from "./shaders/shared/customMainShader";
+import { Material } from "../src/engine/Material";
+import { Geometry } from '../src/engine/Geometry';
+import { computeRaymarchShader } from './shaders/compute/computeRaymarchShader';
+import { letsSelfRefectComputeShader } from './shaders/compute/letsSelfReflectShader';
+import { mainShader } from './shaders/shared/mainShader';
+import { mrangeShader } from './shaders/wglsl/mrange';
+import { microRayMarcherCompute } from './shaders/compute/microRayMarcher';
+import { blueColorShader } from './shaders/wglsl/blueColorShader';
+import { flamesShader } from './shaders/wglsl/flamesShader';
+
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const canvas = document.querySelector('canvas') as HTMLCanvasElement;
+   
 
-  const fps = new FPS()
+    const textures: Array<ITexture> = [
+        {
+          key: "iChannel0",
+          source: "assets/noise2.png", // ms 
+          type: TextureType.IMAGE,
+        }
+    ];
+    
 
-  const renderer = new Renderer(canvas);
-  const device = await renderer.getDevice();
+    const fps = new FPS();
 
-  const scene = new Scene("myScene", device, canvas);
-  
-  const material = new Material(device, prismBreakShader);    
+    const renderer = new Renderer(document.querySelector("canvas"));
 
-  const geometry = new Geometry(device, rectGeometry);
+    await renderer.init();
  
-  const textures: Array<ITexture> = [
-    {
-      key: "iChannel0",
-      source: "assets/channel0.jpg", // ms 
-      type: TextureType.IMAGE,
-    },
+    const geometry = new Geometry(renderer.device, rectGeometry);
 
-    {
-      key: "iChannel1",
-      source: "assets/channel1.jpg",
-      type: TextureType.IMAGE
-    },
-  ];
+    // add a frag shader ()
+    // const iChannel0Shader = new Material(renderer.device,redColorShader);
+    // await renderer.addRenderPass("iChannel0",iChannel0Shader,geometry,textures).catch (err => {
+    //     console.log(err);
+    // });
 
-  const mesh = new Mesh(device, geometry, material,[textures[0],textures[1]]); 
-  
-  await scene.addAssets(textures);
+    // add a frag shader ()
+    //const iChannel1Shader = new Material(renderer.device,blueColorShader);
+    // await renderer.addRenderPass("iChannel1",iChannel1Shader,geometry).catch (err => {
+    //     console.log(err);
+    // });
 
-  scene.addMesh("myMesh", mesh);
+    // add a frag shader ()
+    // const mrange = new Material(renderer.device,mrangeShader);
+    // await renderer.addRenderPass("iChannel",mrange,geometry).catch (err => {
+    //     console.log(err);
+    // });
 
-  await renderer.addScene(scene)
+    
+    const material = new Material(renderer.device,flamesShader);
+    
+    await renderer.addRenderPass("iChannel0",material,geometry,textures).catch (err => {
+        console.log(err);
+    });
 
-  renderer.start(0,200,(frameNo) => {
-    fps.frame();
-  });
+    //await renderer.addComputeRenderPass("iChannel0", microRayMarcherCompute,[]);
 
+    
+    renderer.addMainPass(new Material(renderer.device, mainShader));
+
+    renderer.start(0, 200, (frame) => {
+        fps.frame();
+    });
+        
 });
-
-

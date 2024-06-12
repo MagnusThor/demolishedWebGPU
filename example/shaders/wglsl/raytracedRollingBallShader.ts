@@ -1,10 +1,11 @@
-import { IMaterialShader } from "../../../src/IMaterialShader";
-import { defaultWglslVertex } from "../../../src/Material";
-import { commonFunctions } from "../compute/common";
+import { defaultWglslVertex } from "../../../src/engine/Material";
+import { IMaterialShader } from "../../../src/interface/IMaterialShader";
+
+
 
 export const raytracedRollingBallShader: IMaterialShader = {
 	vertex: defaultWglslVertex,
-	fragment: /* glsl */ `
+	fragment: /* wgsl */ `
 
 	struct VertexOutput {
 		@builtin(position) pos: vec4<f32>,
@@ -16,66 +17,27 @@ export const raytracedRollingBallShader: IMaterialShader = {
 		time: f32,
 		mouse: vec4<f32>,
 		frame: f32
-	  };
-	
-	@group(0) @binding(0) var<uniform> uniforms: Uniforms;
-	
-	@group(0) @binding(1) var linearSampler: sampler;
-	@group(0) @binding(2) var iChannel0: texture_2d<f32>; 
-	@group(0) @binding(3) var iChannel1: texture_2d<f32>; 
-	@group(0) @binding(4) var iChannel2: texture_2d<f32>; 
-	@group(0) @binding(5) var iChannel3: texture_2d<f32>; 
-	
+	 };
+
+
+	 @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+	 @group(0) @binding(1) var linearSampler: sampler;
+	 @group(0) @binding(2) var iChannel0: texture_2d<f32>; 
+
+
 
 	const ballRad: f32 = 0.5;
 
 	var<private> sph4: vec4<f32> = vec4<f32>(0., ballRad - 1., 1., ballRad);
 	var<private> boxNrm: vec3<f32>;
 	var<private> seed: vec2<f32> = vec2<f32>(0.183, 0.257);
-
-
 	
 	fn floatBitsToInt(value: f32) -> i32 {
 		return i32(value);
 	}
-
-	// fn floatBitsToInt(value: f32) -> i32 {
-	// 	var intValue: i32 = 0;
-	// 	let numBits: i32 = 32;
-	
-	// 	for (var i: i32 = 0; i < numBits; i = i + 1) {
-	// 		let mask: i32 = i32(pow(2.0, f32(i)));
-	// 		var bit: i32;
-	// 		if ((i32(value) & mask) != 0) {
-	// 			bit = 1;
-	// 		} else {
-	// 			bit = 0;
-	// 		}
-	// 		intValue = intValue | (bit * i32(1u << u32(i)));
-	// 	}
-	
-	// 	return intValue;
-	// }
-	
-
-	
-	
-	
+		
 	fn floatBitsToUint(value: f32) -> u32 {
 		return u32(value);
-		// var uintValue: u32 = 0u;
-		// let numBits: i32 = 32;
-		// 	for (var i: i32 = 0; i < numBits; i = i + 1) {
-		// 	let mask: u32 = u32(pow(2.0, f32(i)));
-		// 	var bit: u32;
-		// 	if ((u32(value) & mask) != 0u) {
-		// 		bit = 1u;
-		// 	} else {
-		// 		bit = 0u;
-		// 	}
-		// 	uintValue = uintValue | (bit * (1u << u32(i)));
-		// }
-		// return uintValue;
 	}
 	
 	fn sample_texture(tex:texture_2d<f32>,uv:vec2<f32>) -> vec4<f32>{
@@ -88,15 +50,12 @@ export const raytracedRollingBallShader: IMaterialShader = {
 		var s: f32 = sin(a);
 		return mat2x2<f32>(c, -s, s, c);
 	} 
-
-	fn hash(p: vec2<f32>) -> f32 {
-		var h: f32 = dot(p, vec2<f32>(127.1, 311.7));
-		return -1.0 + 2.0 * fract(sin(h) * 43758.5453123);
-	}
 	
 	fn hash21(f: vec2<f32>) -> f32 {
-		return hash(f * vec2<f32>(0.2483, 0.1437));
-	} 
+	 	var p: vec2<u32> = vec2<u32>(floatBitsToUint(f.x),floatBitsToUint(f.y));
+		p = 1664525u * ((p >> vec2<u32>(1u)) ^ p.yx);  // Use vec2<u32>(1u) for the right shift
+		return f32(1103515245u * (p.x ^ (p.y >> 3u))) / f32(4294967300.);
+	}
 	
 	fn hash31(f: vec3<f32>) -> f32 {
 		var p: vec3<u32> = vec3<u32>(
@@ -104,10 +63,7 @@ export const raytracedRollingBallShader: IMaterialShader = {
 			u32(f.y * 1000000.0),
 			u32(f.z * 1000000.0)
 		);
-		//p = 1103515245u * ((p >> 2u) ^ ((p.yzx >> 1u) ^ p.zxy));
-		//p = 1103515245u * ((vec3<u32>(p.x >> 2u, p.y >> 2u, p.z >> 2u)) ^ ((vec3<u32>(p.yzx >> 1u) ^ vec3<u32>(p.zxy))));
 		p = 1103515245u * ((vec3<u32>(p.x >> 2u, p.y >> 2u, p.z >> 2u)) ^ ((vec3<u32>(p.y >> 1u, p.z >> 1u, p.x >> 1u)) ^ vec3<u32>(p.z >> 1u, p.x >> 1u, p.y >> 1u)));
-
 		var h32: u32 = 1103515245u * (((p.x ^ p.y) >> 3u) ^ (p.z >> 6u));
 		var n: u32 = h32 ^ (h32 >> 16);
 		return f32(n & 2147483600u) / 2147483600.0;
@@ -136,10 +92,7 @@ export const raytracedRollingBallShader: IMaterialShader = {
 		return vec2<f32>((rz >> vec2<u32>(1u)) & vec2<u32>(2147483600u)) / 2147483600.0;
 	}
 	
-	
-	
 
-	
 	
 	fn sBox(p: vec2<f32>, b: vec2<f32>, r: f32) -> f32 {
 		var d: vec2<f32> = abs(p) - b + vec2<f32>(r);
@@ -534,8 +487,11 @@ export const raytracedRollingBallShader: IMaterialShader = {
 		}
 	
 		aCol = aCol / (f32(12.));
+		
 		let preCol: vec4<f32> = sample_texture(iChannel0, fragCoord);
+
 		var blend: f32; 
+		
 		if (uniforms.frame < 2) 
 			{ 
 				blend = 1.; 
@@ -544,6 +500,7 @@ export const raytracedRollingBallShader: IMaterialShader = {
 
 			blend = 1. / 2.; 
 		};
+		
 		blend = 1.;
 		fragColor = mix(preCol, vec4<f32>(max(aCol, vec3<f32>(0.)), avgT), blend);
 		return fragColor;
@@ -554,6 +511,10 @@ export const raytracedRollingBallShader: IMaterialShader = {
 	fn main_fragment(vert: VertexOutput) -> @location(0) vec4<f32> {    
 		
 		return mainImage(vert.pos.xy);
+			
+ 
 	}
+
+	
 
 `};

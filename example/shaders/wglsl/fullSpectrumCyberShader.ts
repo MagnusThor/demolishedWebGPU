@@ -1,5 +1,6 @@
-import { IMaterialShader } from "../../../src/IMaterialShader";
-import { defaultWglslVertex } from "../../../src/Material";
+import { defaultWglslVertex } from "../../../src/engine/Material";
+import { IMaterialShader } from "../../../src/interface/IMaterialShader";
+
 
 export const fullSpectrumCyberShader: IMaterialShader = {
     vertex: defaultWglslVertex,
@@ -174,8 +175,8 @@ fn march(ro: vec3<f32>, rd: vec3<f32>) -> vec3<f32> {
 	return col;
 } 
 
-// Full Spectrum Cyber made by Kali 
-// https://www.shadertoy.com/view/XcXXzS
+	// Full Spectrum Cyber made by Kali 
+	// https://www.shadertoy.com/view/XcXXzS
 
 fn mainImage(fragCoord: vec2<f32>) -> vec4<f32> {
 
