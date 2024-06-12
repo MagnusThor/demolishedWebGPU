@@ -12,16 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Editor = exports.StoredShader = void 0;
+exports.Editor = void 0;
 const state_1 = require("@codemirror/state");
 const view_1 = require("@codemirror/view");
 const commands_1 = require("@codemirror/commands");
 const DOMUtis_1 = require("./DOMUtis");
 const Material_1 = require("../engine/Material");
 const codemirror_1 = require("codemirror");
-const lang_javascript_1 = require("@codemirror/lang-javascript");
 const yy_fps_1 = require("yy-fps");
 const js_beautify_1 = __importDefault(require("js-beautify"));
+const lang_rust_1 = require("@codemirror/lang-rust");
 const language_1 = require("@codemirror/language");
 const errorDecorator_1 = require("./errorDecorator");
 const Renderer_1 = require("../engine/Renderer");
@@ -29,21 +29,10 @@ const Geometry_1 = require("../engine/Geometry");
 const Rectangle_1 = require("../../example/meshes/Rectangle");
 const blueColorShader_1 = require("../../example/shaders/wglsl/blueColorShader");
 const mainShader_1 = require("../../example/shaders/shared/mainShader");
-const OfflineStorage_1 = require("./OfflineStorage");
+const OfflineStorage_1 = require("./store/OfflineStorage");
+const StoredShader_1 = require("./models/StoredShader");
 const fps = new yy_fps_1.FPS();
 const randomStr = () => (Math.random() + 1).toString(36).substring(7);
-/*
- LocalStorage related stuff
-*/
-class StoredShader extends OfflineStorage_1.IEntityBase {
-    constructor(name, description, source) {
-        super();
-        this.name = name;
-        this.description = description;
-        this.source = source;
-    }
-}
-exports.StoredShader = StoredShader;
 class Editor {
     tryCompile(source) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -81,16 +70,29 @@ class Editor {
     onCompile(view) {
         return __awaiter(this, void 0, void 0, function* () {
             const source = view.state.doc.toString();
+            if (this.isRunning) {
+                this.renderer.pause();
+                this.isRunning = false;
+            }
+            const pa = DOMUtis_1.DOMUtils.get("#btn-run-shader i");
+            if (pa.classList.contains("bi-stop-fill")) {
+                pa.classList.remove("bi-stop-fill");
+                pa.classList.add("bi-play-btn-fill");
+            }
             this.tryCompile(source).then(conpileInfo => {
                 DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = false;
                 (0, errorDecorator_1.clearAllDecorations)(view);
                 const resultEl = DOMUtis_1.DOMUtils.get("#compiler-result");
+                DOMUtis_1.DOMUtils.removeChilds(resultEl);
+                if (conpileInfo.messages.length > 0) {
+                    DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = true;
+                }
                 conpileInfo.messages.forEach(error => {
                     resultEl.append(DOMUtis_1.DOMUtils.create("p").textContent = `${error.message} at line ${error.lineNum}.`);
                     (0, errorDecorator_1.setTitleForLine)(view, error.lineNum, error.message);
                 });
             }).catch(err => {
-                DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = false;
+                DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = true;
             });
             return true;
         });
@@ -141,7 +143,7 @@ class Editor {
                 doc: shader.source,
                 extensions: [
                     (0, language_1.indentOnInput)(),
-                    codemirror_1.basicSetup, (0, lang_javascript_1.javascript)(), view_1.keymap.of([
+                    codemirror_1.basicSetup, (0, lang_rust_1.rust)(), view_1.keymap.of([
                         ...commands_1.defaultKeymap, ...customKeyMap, commands_1.indentWithTab
                     ]),
                     (0, language_1.syntaxHighlighting)(language_1.defaultHighlightStyle),
@@ -164,7 +166,8 @@ class Editor {
     }
     setupUI() {
         DOMUtis_1.DOMUtils.get("#btn-run-shader").addEventListener("click", (e) => {
-            DOMUtis_1.DOMUtils.toggleClasses("#btn-run-shader i", ["bi-play-btn-fill", "bi-stop-fill"]);
+            DOMUtis_1.DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill");
+            DOMUtis_1.DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill");
             if (this.isRunning) {
                 this.renderer.clear();
                 this.renderer.isPaused = true;
@@ -187,12 +190,17 @@ class Editor {
             this.updateCurrentShader();
         });
         DOMUtis_1.DOMUtils.on("click", "#btn-new", () => {
-            const item = new StoredShader(`Shader ${randomStr()}`, "N/A", blueColorShader_1.blueColorShader.fragment);
+            const item = new StoredShader_1.StoredShader(`Shader ${randomStr()}`, "N/A", blueColorShader_1.blueColorShader.fragment);
             this.storage.insert(item);
             this.setCurrentShader(item);
             this.storage.save();
         });
         DOMUtis_1.DOMUtils.on("click", "#btn-canvas-fullscreen", this.toggleCanvasFullScreen);
+        DOMUtis_1.DOMUtils.on("click", "#btn-clone", () => {
+            const clone = new StoredShader_1.StoredShader(`Copy of ${this.currentShader.name}`, this.currentShader.description, this.currentShader.source);
+            this.storage.insert(clone);
+            this.currentShader = clone;
+        });
     }
     setCurrentShader(shader) {
         this.currentShader = shader;
@@ -210,16 +218,20 @@ class Editor {
         this.currentShader.name = DOMUtis_1.DOMUtils.get("#shader-name").value;
         this.currentShader.description = DOMUtis_1.DOMUtils.get("#shader-description").value;
         this.storage.update(this.currentShader);
+        this.currentShader.thumbnail = this.renderer.canvas.toDataURL();
         this.storage.save();
-        this.renderStoredShaders(this.storage.model.collection);
     }
     renderStoredShaders(shaders) {
         const parent = DOMUtis_1.DOMUtils.get("#lst-shaders");
         DOMUtis_1.DOMUtils.removeChilds(parent);
         shaders.forEach(shader => {
+            const image = shader.thumbnail ? shader.thumbnail : "https://via.placeholder.com/40";
+            console.log(image);
             const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
+                   <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
+
                         <div class="fw-bold">${shader.name}</div>
                         ${shader.description}
                     </div>
@@ -240,13 +252,16 @@ class Editor {
                 try {
                     this.storage = new OfflineStorage_1.OfflineStorage("editor");
                     this.storage.init();
-                    resolve(this.storage.model.collection[0]);
+                    const lastModified = this.storage.model.collection.sort((a, b) => {
+                        return b.lastModified - a.lastModified;
+                    })[0];
+                    resolve(lastModified);
                 }
                 catch (err) {
                     this.storage = new OfflineStorage_1.OfflineStorage("editor");
                     this.storage.setup();
                     // create a default shader and add it to the storage
-                    const defaultShader = new StoredShader(`Shader ${randomStr()} `, `My first WGLSL Shader`, blueColorShader_1.blueColorShader.fragment);
+                    const defaultShader = new StoredShader_1.StoredShader(`Shader ${randomStr()} `, `My first WGLSL Shader`, blueColorShader_1.blueColorShader.fragment);
                     this.storage.insert(defaultShader);
                     this.storage.save();
                     reject("No storage found");
@@ -257,6 +272,9 @@ class Editor {
     constructor() {
         this.setupUI();
         this.initStorage().then(shader => {
+            this.storage.onChange = () => {
+                this.renderStoredShaders(this.storage.model.collection);
+            };
             this.currentShader = shader;
             this.renderStoredShaders(this.storage.model.collection);
             this.setupEditor(shader).then(r => {

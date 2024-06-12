@@ -6,9 +6,10 @@ import { defaultKeymap, indentWithTab } from "@codemirror/commands"
 import { DOMUtils } from "./DOMUtis"
 import { Material, defaultWglslVertex } from "../engine/Material";
 import { basicSetup } from "codemirror";
-import { javascript } from "@codemirror/lang-javascript";
 import { FPS } from 'yy-fps'
 import beautify from "js-beautify";
+import {rust} from "@codemirror/lang-rust";
+
 
 
 import {
@@ -28,23 +29,16 @@ import { blueColorShader } from "../../example/shaders/wglsl/blueColorShader";
 import { mainShader } from "../../example/shaders/shared/mainShader";
 import { raymarchShader } from "../../example/shaders/wglsl/raymarchShader";
 import { simpleMarcher } from "../../example/shaders/wglsl/simpleMarcher";
-import { IEntityBase, IOfflineEntity, IOfflineGraph, OfflineStorage } from "./OfflineStorage";
+import { IOfflineGraph, OfflineStorage } from "./store/OfflineStorage";
+import { StoredShader } from "./models/StoredShader";
+
+
 
 
 const fps = new FPS();
 
 
 const randomStr = () => (Math.random() + 1).toString(36).substring(7);
-/*
- LocalStorage related stuff
-*/
-export class StoredShader extends IEntityBase implements IOfflineEntity {
-    constructor(public name: string, public description: string, public source: string) {
-        super();
-    }
-}
-
-
 export class Editor {
 
     renderer: Renderer;
@@ -74,35 +68,43 @@ export class Editor {
         const device = await adapter.requestDevice();
         return device;
     }
-
-
     async tryAddShader(shader: Material): Promise<void> {
         const geometry = new Geometry(this.renderer.device, rectGeometry);
         await this.renderer.addRenderPass("iChannel0", shader, geometry, []).catch(err => {
             console.log(err);
         });
         this.renderer.addMainPass(new Material(this.renderer.device, mainShader));
-
         return;
     }
 
     async onCompile(view: EditorView): Promise<boolean> {
         const source = view.state.doc.toString();
+        if(this.isRunning){
+            this.renderer.pause();   
+            this.isRunning = false;    
+        }      
+        const pa = DOMUtils.get("#btn-run-shader i");
+        if(pa.classList.contains("bi-stop-fill")){
+            pa.classList.remove("bi-stop-fill");
+            pa.classList.add("bi-play-btn-fill");
+        }    
         this.tryCompile(source).then(conpileInfo => {
             DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = false;
             clearAllDecorations(view);
             const resultEl = DOMUtils.get("#compiler-result");
-            
+            DOMUtils.removeChilds(resultEl);
+            if(conpileInfo.messages.length >0 ){
+                DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = true;
+            }
             conpileInfo.messages.forEach(error => {
                 resultEl.append(DOMUtils.create("p").textContent = `${error.message} at line ${error.lineNum}.`);
                 setTitleForLine(view, error.lineNum, error.message);
             });
         }).catch(err => {
-            DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = false;
+            DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = true;
         });
         return true;
     }
-
 
     toggleCanvasFullScreen(): void {
         const canvas = DOMUtils.get<HTMLCanvasElement>("canvas");
@@ -112,8 +114,6 @@ export class Editor {
             document.exitFullscreen();
         }
     }
-
-
 
     async setupEditor(shader: StoredShader) {
         this.renderer = new Renderer(document.querySelector("canvas"));
@@ -135,7 +135,10 @@ export class Editor {
             , {
                 key: "Mod-Shift-f", run: (view: EditorView) => {
                     const code = view.state.doc.toString();
-                    const formattedCode = beautify(code, {});
+                    const formattedCode = beautify(code,
+                        {
+                        }
+                    );
                     view.dispatch({
                         changes: {
                             from: 0,
@@ -153,7 +156,7 @@ export class Editor {
             doc: shader.source,
             extensions: [
                 indentOnInput(),
-                basicSetup, javascript(), keymap.of([
+                basicSetup, rust(), keymap.of([
                     ...defaultKeymap, ...customKeyMap, indentWithTab
                 ]),
                 syntaxHighlighting(defaultHighlightStyle),
@@ -182,12 +185,20 @@ export class Editor {
 
     setupUI(): void {
         DOMUtils.get<HTMLButtonElement>("#btn-run-shader").addEventListener("click", (e) => {
-            DOMUtils.toggleClasses("#btn-run-shader i", ["bi-play-btn-fill", "bi-stop-fill"]);
+          
+            DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill")
+            DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill")
+
+
             if (this.isRunning) {
                 this.renderer.clear();
                 this.renderer.isPaused = true;
+            
+               
             } else {
                 this.renderer.isPaused = false;
+            
+         
             }
             const material = new Material(this.renderer.device, {
                 fragment: this.editorView.state.doc.toString(),
@@ -215,6 +226,12 @@ export class Editor {
         });
 
         DOMUtils.on("click","#btn-canvas-fullscreen", this.toggleCanvasFullScreen)
+        DOMUtils.on("click","#btn-clone", () => {
+            const clone = new StoredShader(`Copy of ${this.currentShader.name}`,
+                this.currentShader.description,this.currentShader.source);
+            this.storage.insert(clone);
+            this.currentShader = clone;  
+        });
     }
 
 
@@ -235,8 +252,8 @@ export class Editor {
         this.currentShader.name = DOMUtils.get<HTMLInputElement>("#shader-name").value;
         this.currentShader.description = DOMUtils.get<HTMLInputElement>("#shader-description").value;
         this.storage.update(this.currentShader);
-        this.storage.save();
-        this.renderStoredShaders(this.storage.model.collection);
+        this.currentShader.thumbnail = this.renderer.canvas.toDataURL();
+        this.storage.save();     
     }
 
     renderStoredShaders(shaders: Array<StoredShader>): void {
@@ -244,9 +261,14 @@ export class Editor {
         DOMUtils.removeChilds(parent);
 
         shaders.forEach(shader => {
+            const image = shader.thumbnail ? shader.thumbnail : "https://via.placeholder.com/40";
+            console.log(image);
+
             const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
+                   <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
+
                         <div class="fw-bold">${shader.name}</div>
                         ${shader.description}
                     </div>
@@ -267,7 +289,10 @@ export class Editor {
             try {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.init();
-                resolve(this.storage.model.collection[0]);
+                const lastModified = this.storage.model.collection.sort ( (a:StoredShader,b:StoredShader) => {
+                        return b.lastModified - a.lastModified
+                })[0];
+                resolve(lastModified);
             } catch (err) {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.setup();
@@ -284,8 +309,11 @@ export class Editor {
     constructor() {
         this.setupUI();
         this.initStorage().then(shader => {
-            this.currentShader = shader;
 
+            this.storage.onChange = () => {
+                this.renderStoredShaders(this.storage.model.collection)
+            }
+            this.currentShader = shader;
             this.renderStoredShaders(this.storage.model.collection)
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);

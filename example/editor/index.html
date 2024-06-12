@@ -35,12 +35,16 @@
         }
 
         .list-group {
-            max-height: 300px;
-            margin-bottom: 10px;
-            height: 300px;
+           
+            height: 100%;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
         }
+
+        .list-group-item img{
+            max-width: 80px;
+        }
+
     </style>
 
 
@@ -89,7 +93,7 @@
                         </button>
                     </div>
                     <div class="p-1">
-                        <button class="btn btn-primary mr-2" id="btn-clone" disabled>
+                        <button class="btn btn-primary mr-2" id="btn-clone">
                             <i class="bi bi-copy"></i>
                         </button>
 
@@ -148,7 +152,7 @@
         <div class="col-md-8">
             <h6>Immediate</h6>
             <p id="compiler-result">
-                Compile to run.
+                Compile using (ctrl-shift-b) hit <i class="bi bi-play-btn-fill"></i> to run.
             </p>
         </div>
     </div>
