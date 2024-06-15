@@ -27,8 +27,7 @@ exports.raymarchShader = {
     fn map(p: vec3<f32>, s: f32) -> f32 {
         var p_var = p;
         var scale: f32 = 1.;
-        orb = vec4<f32>(1000.);
-    
+        orb = vec4<f32>(1000.);    
         for (var i: i32 = 0; i < 8; i = i + 1) {
             p_var = -1. + 2. * fract(0.5 * p_var + 0.5);
             let r2: f32 = dot(p_var, p_var);
@@ -36,8 +35,7 @@ exports.raymarchShader = {
             let k: f32 = s / r2;
             p_var = p_var * (k);
             scale = scale * (k);
-        }
-    
+        }    
         return 0.25 * abs(p_var.y) / scale;
     } 
     

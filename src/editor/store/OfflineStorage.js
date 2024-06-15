@@ -37,21 +37,26 @@ class OfflineStorage {
     }
     insert(item) {
         this.model.collection.push(item);
+        if (this.onChange)
+            this.onChange();
         return item;
     }
     update(item) {
         const index = this.model.collection.findIndex((pre) => pre.id === item.id);
-        console.log(index);
         if (index !== -1) {
             item.lastModified = Date.now();
             this.model.collection[index] = item;
         }
+        if (this.onChange)
+            this.onChange();
     }
     delete(item) {
         const index = this.model.collection.findIndex((pre) => pre.id === item.id);
         if (index !== -1) {
             this.model.collection.splice(index, 1);
         }
+        if (this.onChange)
+            this.onChange();
     }
     findById(uuid) {
         return this.model.collection.find((pre) => pre.id === uuid);
