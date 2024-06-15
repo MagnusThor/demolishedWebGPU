@@ -28,9 +28,9 @@ const Renderer_1 = require("../engine/Renderer");
 const Geometry_1 = require("../engine/Geometry");
 const Rectangle_1 = require("../../example/meshes/Rectangle");
 const blueColorShader_1 = require("../../example/shaders/wglsl/blueColorShader");
-const mainShader_1 = require("../../example/shaders/shared/mainShader");
 const OfflineStorage_1 = require("./store/OfflineStorage");
 const StoredShader_1 = require("./models/StoredShader");
+const FXAAShader_1 = require("../../example/shaders/shared/FXAAShader");
 const fps = new yy_fps_1.FPS();
 const randomStr = () => (Math.random() + 1).toString(36).substring(7);
 class Editor {
@@ -63,7 +63,7 @@ class Editor {
             yield this.renderer.addRenderPass("iChannel0", shader, geometry, []).catch(err => {
                 console.log(err);
             });
-            this.renderer.addMainPass(new Material_1.Material(this.renderer.device, mainShader_1.mainShader));
+            this.renderer.addMainPass(new Material_1.Material(this.renderer.device, FXAAShader_1.FAXXShader));
             return;
         });
     }
@@ -226,7 +226,6 @@ class Editor {
         DOMUtis_1.DOMUtils.removeChilds(parent);
         shaders.forEach(shader => {
             const image = shader.thumbnail ? shader.thumbnail : "https://via.placeholder.com/40";
-            console.log(image);
             const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                    <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >

@@ -45,12 +45,9 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
 
   @group(0) @binding(0) var screen_sampler : sampler;
   
-  @group(0) @binding(1) var<uniform> uniforms: Uniforms;
-  
-  @group(0) @binding(2) var iChannel0: texture_2d<f32>; 
-  
-  @group(0) @binding(3) var iChannel1: texture_2d<f32>; 
-  
+  @group(0) @binding(1) var<uniform> uniforms: Uniforms;  
+  @group(0) @binding(2) var iChannel0: texture_2d<f32>;   
+  @group(0) @binding(3) var iChannel1: texture_2d<f32>;   
   @group(0) @binding(4) var iChannel2: texture_2d<f32>; 
   
   struct VertexOutput {
@@ -58,9 +55,11 @@ fn main_vertex(@builtin(vertex_index) VertexIndex : u32) -> VertexOutput {
     @location(0) TexCoord: vec2<f32>
   };  
 
-  @fragment
-  fn main_fragment(@location(0) TexCoord : vec2<f32>) -> @location(0) vec4<f32> {
 
+
+
+  @fragment
+  fn main_fragment(@location(0) TexCoord : vec2<f32>,@builtin(position) Position: vec4<f32> ) -> @location(0) vec4<f32> {
     return  textureSample(iChannel0, screen_sampler, TexCoord);  
 
   }`

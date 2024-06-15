@@ -31,6 +31,8 @@ import { raymarchShader } from "../../example/shaders/wglsl/raymarchShader";
 import { simpleMarcher } from "../../example/shaders/wglsl/simpleMarcher";
 import { IOfflineGraph, OfflineStorage } from "./store/OfflineStorage";
 import { StoredShader } from "./models/StoredShader";
+import { FAXXShader } from "../../example/shaders/shared/FXAAShader";
+
 
 
 
@@ -73,7 +75,10 @@ export class Editor {
         await this.renderer.addRenderPass("iChannel0", shader, geometry, []).catch(err => {
             console.log(err);
         });
-        this.renderer.addMainPass(new Material(this.renderer.device, mainShader));
+        this.renderer.addMainPass(new Material(this.renderer.device, 
+            FAXXShader
+            
+        ));
         return;
     }
 
@@ -262,7 +267,6 @@ export class Editor {
 
         shaders.forEach(shader => {
             const image = shader.thumbnail ? shader.thumbnail : "https://via.placeholder.com/40";
-            console.log(image);
 
             const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
