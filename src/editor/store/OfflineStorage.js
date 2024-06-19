@@ -31,6 +31,8 @@ class OfflineStorage {
     save() {
         const data = this.deSerialize();
         localStorage.setItem(this.label, data);
+        if (this.onChange)
+            this.onChange();
     }
     getLocalStorage() {
         return this.serialize();
@@ -67,6 +69,9 @@ class OfflineStorage {
     setup() {
         this.model = { label: this.label, collection: [] };
         return this.model;
+    }
+    all() {
+        return this.model.collection;
     }
     init() {
         this.model = this.getLocalStorage();

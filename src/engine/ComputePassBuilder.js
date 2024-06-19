@@ -26,8 +26,9 @@ class ComputePassBuilder {
         });
         return bindingGroupEntrys;
     }
-    createRenderPipeline(material, geometry, textures) {
+    createRenderPipeline(material, geometry, textures, priorRenderPasses) {
         const bindGroupLayoutEntries = new Array();
+        // add uniforms
         bindGroupLayoutEntries.push({
             binding: 0,
             visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
@@ -35,12 +36,7 @@ class ComputePassBuilder {
                 type: "uniform"
             }
         });
-        // const sampler = this.device.createSampler({
-        //     addressModeU: 'repeat',
-        //     addressModeV: 'repeat',
-        //     magFilter: 'linear',
-        //     minFilter: 'nearest'
-        // });
+        // add sampler
         bindGroupLayoutEntries.push({
             binding: 1,
             visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
@@ -48,6 +44,16 @@ class ComputePassBuilder {
                 type: "filtering"
             }
         });
+        let offset = bindGroupLayoutEntries.length;
+        // add prior render passes
+        priorRenderPasses.forEach((p, index) => {
+            bindGroupLayoutEntries.push({
+                binding: offset + index,
+                visibility: GPUShaderStage.FRAGMENT,
+                texture: {}
+            });
+        });
+        offset = bindGroupLayoutEntries.length;
         if (textures.length > 0) {
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
                 if (textures[i].type === 0) {

@@ -27,7 +27,6 @@ import { rectGeometry } from "../../example/meshes/Rectangle";
 import { blueColorShader } from "../../example/shaders/wglsl/blueColorShader";
 import { OfflineStorage } from "./store/OfflineStorage";
 import { IDocumentData, StoredShader, TypeOfShader } from "./models/StoredShader";
-import { FAXXShader } from "../../example/shaders/shared/fxaaShader";
 import { mainShader } from "../../example/shaders/shared/mainShader";
 import { IMaterialShader } from "../interface/IMaterialShader";
 
@@ -276,36 +275,21 @@ export class Editor {
 
     setupUI(): void {
         DOMUtils.get<HTMLButtonElement>("#btn-run-shader").addEventListener("click", (e) => {
-
             this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
-
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill")
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill")
-
             if (this.isRunning) {
                 this.renderer.clear();
                 this.renderer.isPaused = true;
 
-
             } else {
                 this.renderer.isPaused = false;
-
-
             }
-
-            // const material = new Material(this.renderer.device, {
-            //     fragment: this.editorView.state.doc.toString(),
-            //     vertex: defaultWglslVertex
-            // });
-
             this.tryAddShaders(this.currentShader.documents).then(p => {
                 this.renderer.start(0, 200, (frame) => {
                     fps.frame();
                 });
             });
-
-
-
             this.isRunning = !this.isRunning;
         });
 
@@ -317,10 +301,19 @@ export class Editor {
             const item = new StoredShader(`Shader ${randomStr()}`, "N/A");
             item.addDocument(randomStr(), mainShader.fragment, TypeOfShader.MainFrag);
             item.addDocument(randomStr(), blueColorShader.fragment, TypeOfShader.Frag);
-
             this.storage.insert(item);
             this.setCurrentShader(item);
             this.storage.save();
+        });
+
+        DOMUtils.on("click","#btn-delete",() => {
+                this.storage.delete(this.currentShader);
+                // get the firstShader from the storage,
+                let firstShader = this.storage.all()[0];
+                this.setCurrentShader(firstShader);
+                this.storage.save();
+                
+
         });
 
         DOMUtils.on("click", "#btn-canvas-fullscreen", this.toggleCanvasFullScreen)
@@ -333,6 +326,29 @@ export class Editor {
             this.currentShader = clone;
         });
 
+        DOMUtils.on("click","#btn-add-renderpass", () => {
+            const renderpass:IDocumentData = {
+                type:TypeOfShader.Frag,
+                name: randomStr(),
+                source: blueColorShader.fragment
+            }
+            this.currentShader.documents.push(renderpass);
+            this.renderSourceList(this.currentShader.documents);
+            this.updateCurrentShader();
+        });
+
+        DOMUtils.on("click","#btn-remove-renderpass",() => {
+            this.currentShader.documents.splice(this.sourceIndex,1);
+            const transaction = this.editorView.state.update({
+                changes: { from: 0, to: this.editorView.state.doc.length, insert: 
+                    this.currentShader.documents[0].source                            
+                 }
+            })    
+            this.editorView.dispatch(transaction);
+            this.sourceIndex = 0;
+            this.renderSourceList(this.currentShader.documents);
+        });
+
     }
 
 
@@ -341,13 +357,13 @@ export class Editor {
         DOMUtils.get<HTMLInputElement>("#shader-name").value = shader.name;
         DOMUtils.get<HTMLInputElement>("#shader-description").value = shader.description;
         // Create a transaction to replace the document
-
         const transaction = this.editorView.state.update({
             changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.documents[1].source }
         });
-
         // Dispatch the transaction to the editor view
         this.editorView.dispatch(transaction);
+        this.renderSourceList(shader.documents);
+        this.editorView.focus();
     }
 
     updateCurrentShader() {
@@ -402,7 +418,7 @@ export class Editor {
             parent.append(option);
         });
 
-        parent.value = "1"
+        parent.value = "0";
 
     }
 
@@ -412,7 +428,7 @@ export class Editor {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.init();
 
-                const lastModified = this.storage.model.collection.sort((a: StoredShader, b: StoredShader) => {
+                const lastModified = this.storage.all().sort((a: StoredShader, b: StoredShader) => {
                     return b.lastModified - a.lastModified
                 })[0];
 
@@ -447,16 +463,16 @@ export class Editor {
         this.initStorage().then(shader => {
 
             this.storage.onChange = () => {
-                this.renderStoredShaders(this.storage.model.collection)
+                this.renderStoredShaders(this.storage.all())
             }
             this.currentShader = shader;
-            this.renderStoredShaders(this.storage.model.collection)
+            this.renderStoredShaders(this.storage.all())
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });
         }).catch(err => {
-            this.renderStoredShaders(this.storage.model.collection);
-            const shader = this.storage.model.collection[0];
+            this.renderStoredShaders(this.storage.all());
+            const shader = this.storage.all()[0];
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });
@@ -464,19 +480,13 @@ export class Editor {
         });
 
         DOMUtils.on("change", "#select-source", (ev, el) => {
-
             this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
-
-
             const document = this.currentShader.documents[parseInt(el.value)];
-
             const transaction = this.editorView.state.update({
                 changes: { from: 0, to: this.editorView.state.doc.length, insert: document.source }
             });
-
             this.editorView.dispatch(transaction);
             this.sourceIndex = parseInt(el.value);
-
         });
 
     }

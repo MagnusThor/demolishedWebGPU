@@ -186,9 +186,8 @@ export class Renderer {
             }
         });
 
-        const computesPasses = Array.from(this.renderPassBacklog.values());
-
-        computesPasses.forEach((pass, i) => {
+        const renderPasses = Array.from(this.renderPassBacklog.values());
+        renderPasses.forEach((pass, i) => {
             bindingGroupEntrys.push({
                 binding: 2 + i,
                 resource: pass.bufferView
@@ -199,7 +198,6 @@ export class Renderer {
                     visibility: GPUShaderStage.FRAGMENT,
                     texture: {}
                 });
-
         });
 
         const screen_bind_group_layout = this.device.createBindGroupLayout({
@@ -282,8 +280,13 @@ export class Renderer {
 
         if (samplers) throw "Samplers not yet implememted, using default binding 2"
 
+        const priorRenderPasses = Array.from(this.renderPassBacklog.values());
+
+        console.log(this.renderPassBacklog.values());
+
         const uniforms = this.uniforms; //new Uniforms(this.device, this.canvas);
 
+        // load textures if provided
         if (textures) {
             for (let i = 0; i < textures.length; i++) {
                 const texture = textures[i];
@@ -291,15 +294,11 @@ export class Renderer {
                     this.textures.push({ type: 0, data: await TextureLoader.createImageTexture(this.device, texture) });
                 } else
                     this.textures.push({ type: 1, data: await TextureLoader.createVideoTextue(this.device, texture) });
-
-                console.log(`adding texture ${texture.key}`);
-
             }
-
         }
 
         const renderPipeline = this.renderPassBuilder.createRenderPipeline(material, geometry,
-            this.textures);
+            this.textures,priorRenderPasses);
 
         const assets = this.createAssets();
         const bindingGroupEntrys: Array<GPUBindGroupEntry> = [];
@@ -321,12 +320,21 @@ export class Renderer {
             binding: 1,
             resource: sampler
         }
-
         );
-        // add the bindings for the textures and samplers.
 
-        const offset = bindingGroupEntrys.length;
+        let offset = bindingGroupEntrys.length;
 
+        // add prior renderpasses to current
+        priorRenderPasses.forEach((pass, i) => {
+            bindingGroupEntrys.push({
+                binding: offset + i,
+                resource: pass.bufferView,
+            });           
+          console.log(offset + i)
+        });
+       
+        // add the bindings for the textures  
+        offset = bindingGroupEntrys.length;
         this.textures.forEach((t, i) => {
             let entry: GPUBindGroupEntry;
             if (t.type === 0) {

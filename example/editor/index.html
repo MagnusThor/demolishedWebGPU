@@ -10,6 +10,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+    integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+    integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+    crossorigin="anonymous"></script>
+
+
+
+
     <style>
         #editor {
             width: 100%;
@@ -52,6 +62,9 @@
 </html>
 
 <body>
+
+
+   
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-menu">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title">Your shaders</h5>
@@ -77,16 +90,74 @@
     </nav>
 
 
-    <div class="container-fluid ">
+
+    <div class="container-fluid">
+
+
+ 
+  <div class="modal fade" id="modal-delete-shader" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5"">Delete shader</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete the current shader?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCEL</button>
+          <button type="button" class="btn btn-danger" id="btn-delete" data-bs-dismiss="modal">DELETE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modal-delete-renderpass" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5"">Delete renderpass</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete the selected renderpass?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCEL</button>
+          <button type="button" class="btn btn-danger" id="btn-remove-renderpass" data-bs-dismiss="modal">DELETE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
         <div class="row">
             <div class="col-md-8">
-                
                 <div class="d-flex mb-3 mr-3">
-                    <div class="p-1">                       
+                    <div class="p-1">
                         <select class="form-control my-1 mr-sm-2" id="select-source">
-                          <option selected>Choose code to edit</option>
                         </select>
                     </div>
+
+                    <div class="p-1">
+                        <button class="btn btn-btn btn-outline-secondary" id="btn-add-renderpass">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="ms-auto p-1">
+                        <button class="btn btn-btn btn-outline-danger" id="btn-remove-renderpass"
+                        data-bs-toggle="modal" data-bs-target="#modal-delete-renderpass">
+                            <i class="bi bi-file-earmark-x"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="col-md-4">
+                <div class="d-flex mb-3 mr-3">
                     <div class="p-1">
                         <button class="btn btn-primary" id="btn-save">
                             <i class="bi bi-floppy-fill"></i>
@@ -102,78 +173,74 @@
                             <i class="bi bi-copy"></i>
                         </button>
                     </div>
-                  
 
-                        <div class="ms-auto p-1"> <button class="btn btn-danger mr-2" id="btn-delete" disabled>
-                                <i class="bi bi-trash3-fill"></i>
-                            </button>
-                        </div>
+
+                    <div class="ms-auto p-1">
+
+                       
+                        <button class="btn btn-danger mr-2" data-bs-toggle="modal" data-bs-target="#modal-delete-shader">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
                     </div>
                 </div>
-               
             </div>
 
-            <div class="row">
-                <div class="col-md-8">
-                    <div id="editor" class="my-1"></div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card my-4">
+        </div>
 
-                        <canvas class="card-img-top mr-2" width="800" height="450" style="background-color: #000;"></canvas>
+        <div class="row">
+            <div class="col-md-8">
+                <div id="editor" class="my-1"></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card my-4">
+
+                    <canvas class="card-img-top mr-2" width="800" height="450" style="background-color: #000;"></canvas>
 
 
-                        <div class="card-body">
+                    <div class="card-body">
 
-                            <div class="d-flex mb-3">
-                                <div class="p-1">
-                                    <button class="btn btn-primary" id="btn-run-shader" disabled>
-                                        <i class="bi bi-play-btn-fill"></i>
-                                    </button>
-                                </div>
-
-                                <div class="ms-auto p-1">
-
-                                    <button class="btn btn-primary" id="btn-canvas-fullscreen">
-                                        <i class="bi bi-arrows-fullscreen"></i>
-                                    </button>
-                                </div>
-
+                        <div class="d-flex mb-3">
+                            <div class="p-1">
+                                <button class="btn btn-primary" id="btn-run-shader" disabled>
+                                    <i class="bi bi-play-btn-fill"></i>
+                                </button>
                             </div>
 
+                            <div class="ms-auto p-1">
+
+                                <button class="btn btn-primary" id="btn-canvas-fullscreen">
+                                    <i class="bi bi-arrows-fullscreen"></i>
+                                </button>
+                            </div>
 
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="shader-name">Name</label>
-                        <input class="form-control me-2" type="text" id="shader-name">
-                    </div>
-                    <div class="form-group">
-                        <label for="shader-description">Description</label>
-                        <textarea class="form-control" id="shader-description" rows="2"></textarea>
+
+
                     </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-md-8">
-                    <h6>Immediate</h6>
-                    <p id="compiler-result">
-                        Compile using (ctrl-shift-b) hit <i class="bi bi-play-btn-fill"></i> to run.
-                    </p>
+                <div class="form-group">
+                    <label for="shader-name">Name</label>
+                    <input class="form-control me-2" type="text" id="shader-name">
+                </div>
+                <div class="form-group">
+                    <label for="shader-description">Description</label>
+                    <textarea class="form-control" id="shader-description" rows="2"></textarea>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-8">
+                <h6>Immediate</h6>
+                <p id="compiler-result">
+                    Compile using (ctrl-shift-b) hit <i class="bi bi-play-btn-fill"></i> to run.
+                </p>
+            </div>
+        </div>
+    </div>
 
 
+    <script src="../build/editor-bundle.js"></script>
 
-
-        <script src="../build/editor-bundle.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-            crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
-            integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
-            crossorigin="anonymous"></script>
 </body>
 
 </html>
