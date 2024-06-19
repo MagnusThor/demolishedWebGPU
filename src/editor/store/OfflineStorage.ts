@@ -85,6 +85,5 @@ export class OfflineStorage<T extends IEntityBase> {
 
     init(): void {
         this.model = this.getLocalStorage();
-
     }
 }
