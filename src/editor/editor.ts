@@ -27,7 +27,6 @@ import { rectGeometry } from "../../example/meshes/Rectangle";
 import { blueColorShader } from "../../example/shaders/wglsl/blueColorShader";
 import { OfflineStorage } from "./store/OfflineStorage";
 import { IDocumentData, StoredShader, TypeOfShader } from "./models/StoredShader";
-import { FAXXShader } from "../../example/shaders/shared/fxaaShader";
 import { mainShader } from "../../example/shaders/shared/mainShader";
 import { IMaterialShader } from "../interface/IMaterialShader";
 
@@ -276,36 +275,21 @@ export class Editor {
 
     setupUI(): void {
         DOMUtils.get<HTMLButtonElement>("#btn-run-shader").addEventListener("click", (e) => {
-
             this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
-
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill")
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill")
-
             if (this.isRunning) {
                 this.renderer.clear();
                 this.renderer.isPaused = true;
 
-
             } else {
                 this.renderer.isPaused = false;
-
-
             }
-
-            // const material = new Material(this.renderer.device, {
-            //     fragment: this.editorView.state.doc.toString(),
-            //     vertex: defaultWglslVertex
-            // });
-
             this.tryAddShaders(this.currentShader.documents).then(p => {
                 this.renderer.start(0, 200, (frame) => {
                     fps.frame();
                 });
             });
-
-
-
             this.isRunning = !this.isRunning;
         });
 
@@ -331,6 +315,39 @@ export class Editor {
             clone.documents = this.currentShader.documents;
             this.storage.insert(clone);
             this.currentShader = clone;
+        });
+
+        DOMUtils.on("click","#btn-add-renderpass", () => {
+            const renderpass:IDocumentData = {
+                type:TypeOfShader.Frag,
+                name: randomStr(),
+                source: blueColorShader.fragment
+            }
+            this.currentShader.documents.push(renderpass);
+            this.renderSourceList(this.currentShader.documents);
+            this.updateCurrentShader();
+        });
+
+        DOMUtils.on("click","#btn-remove-renderpass",() => {
+            this.currentShader.documents.splice(this.sourceIndex,1);
+
+
+            const transaction = this.editorView.state.update({
+                changes: { from: 0, to: this.editorView.state.doc.length, insert: 
+                    this.currentShader.documents[0].source                            
+                 }
+            });
+    
+            // Dispatch the transaction to the editor view
+            this.editorView.dispatch(transaction);
+
+            this.sourceIndex = 0;
+
+
+            this.renderSourceList(this.currentShader.documents);
+
+
+
         });
 
     }
@@ -402,7 +419,7 @@ export class Editor {
             parent.append(option);
         });
 
-        parent.value = "1"
+        parent.value = "0";
 
     }
 

@@ -235,10 +235,6 @@ class Editor {
             else {
                 this.renderer.isPaused = false;
             }
-            // const material = new Material(this.renderer.device, {
-            //     fragment: this.editorView.state.doc.toString(),
-            //     vertex: defaultWglslVertex
-            // });
             this.tryAddShaders(this.currentShader.documents).then(p => {
                 this.renderer.start(0, 200, (frame) => {
                     fps.frame();
@@ -263,6 +259,27 @@ class Editor {
             clone.documents = this.currentShader.documents;
             this.storage.insert(clone);
             this.currentShader = clone;
+        });
+        DOMUtis_1.DOMUtils.on("click", "#btn-add-renderpass", () => {
+            const renderpass = {
+                type: StoredShader_1.TypeOfShader.Frag,
+                name: randomStr(),
+                source: blueColorShader_1.blueColorShader.fragment
+            };
+            this.currentShader.documents.push(renderpass);
+            this.renderSourceList(this.currentShader.documents);
+            this.updateCurrentShader();
+        });
+        DOMUtis_1.DOMUtils.on("click", "#btn-remove-renderpass", () => {
+            this.currentShader.documents.splice(this.sourceIndex, 1);
+            const transaction = this.editorView.state.update({
+                changes: { from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[0].source
+                }
+            });
+            // Dispatch the transaction to the editor view
+            this.editorView.dispatch(transaction);
+            this.sourceIndex = 0;
+            this.renderSourceList(this.currentShader.documents);
         });
     }
     setCurrentShader(shader) {
@@ -318,7 +335,7 @@ class Editor {
             option.value = index.toString();
             parent.append(option);
         });
-        parent.value = "1";
+        parent.value = "0";
     }
     initStorage() {
         return __awaiter(this, void 0, void 0, function* () {

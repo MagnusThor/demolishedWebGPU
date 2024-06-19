@@ -79,15 +79,32 @@
 
     <div class="container-fluid ">
         <div class="row">
-            <div class="col-md-8">
-                
+            <div class="col-md-8">                
                 <div class="d-flex mb-3 mr-3">
                     <div class="p-1">                       
                         <select class="form-control my-1 mr-sm-2" id="select-source">
-                          <option selected>Choose code to edit</option>
                         </select>
                     </div>
+
                     <div class="p-1">
+                        <button class="btn btn-btn btn-outline-secondary" id="btn-add-renderpass">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </button>
+                    </div>
+
+                    <div class="ms-auto p-1">
+                        <button class="btn btn-btn btn-outline-danger" id="btn-remove-renderpass">
+                            <i class="bi bi-file-earmark-x"></i>
+                        </button>
+                    </div>
+                  
+                    </div>
+                </div>
+       
+
+                <div class="col-md-4">
+                    <div class="d-flex mb-3 mr-3">
+                        <div class="p-1">
                         <button class="btn btn-primary" id="btn-save">
                             <i class="bi bi-floppy-fill"></i>
                         </button>
