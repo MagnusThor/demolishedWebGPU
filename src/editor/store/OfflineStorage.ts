@@ -46,7 +46,7 @@ export class OfflineStorage<T extends IEntityBase> {
     save() {
         const data = this.deSerialize();
         localStorage.setItem(this.label, data);
-
+        if (this.onChange) this.onChange();
     }
     getLocalStorage(): IOfflineGraph<T> {
         return this.serialize();
@@ -81,6 +81,9 @@ export class OfflineStorage<T extends IEntityBase> {
     setup(): IOfflineGraph<T> {
         this.model = { label: this.label, collection: [] };
         return this.model;
+    }
+    all():Array<T>{
+        return this.model.collection;
     }
 
     init(): void {

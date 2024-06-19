@@ -4,6 +4,7 @@ import { ITextureData } from "../interface/ITextureData";
 import { IPassBuilder } from "../interface/IPassBuilder";
 import { Material } from "./Material";
 import { Geometry } from "./Geometry";
+import { IPass } from "../interface/IPass";
 
 export class ComputePassBuilder implements IPassBuilder {
 
@@ -42,10 +43,14 @@ export class ComputePassBuilder implements IPassBuilder {
         return bindingGroupEntrys;
     }
 
-    createRenderPipeline(material:Material,geometry: Geometry,textures:Array<ITextureData>):GPURenderPipeline{
+    createRenderPipeline(material:Material,geometry: Geometry,textures:Array<ITextureData>,
+        priorRenderPasses: IPass[]
+
+    ):GPURenderPipeline{
 
         const bindGroupLayoutEntries = new Array<GPUBindGroupLayoutEntry>();
 
+        // add uniforms
         bindGroupLayoutEntries.push(  
         {
             binding: 0,
@@ -55,14 +60,8 @@ export class ComputePassBuilder implements IPassBuilder {
             }
         });
 
-        // const sampler = this.device.createSampler({
-        //     addressModeU: 'repeat',
-        //     addressModeV: 'repeat',
-        //     magFilter: 'linear',
-        //     minFilter: 'nearest'
-        // });
-        
-       
+               
+        // add sampler
         bindGroupLayoutEntries.push({ // sampler
             binding: 1,
             visibility: GPUShaderStage.COMPUTE | GPUShaderStage.FRAGMENT,
@@ -71,6 +70,22 @@ export class ComputePassBuilder implements IPassBuilder {
             }
         });
 
+        let offset = bindGroupLayoutEntries.length;
+
+        // add prior render passes
+
+        priorRenderPasses.forEach( (p,index) => {
+            bindGroupLayoutEntries.push({
+                    binding:offset + index,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    texture: {}
+            });
+        
+        })
+
+        offset =  bindGroupLayoutEntries.length;
+      
+       
         if (textures.length > 0) {
 
             for (let i = 0; i < textures.length; i++) { //  1-n texture bindings
@@ -92,7 +107,7 @@ export class ComputePassBuilder implements IPassBuilder {
                 
             }
         }
-
+        
         const bindGroupLayout = this.device.createBindGroupLayout({
             entries: bindGroupLayoutEntries 
         });

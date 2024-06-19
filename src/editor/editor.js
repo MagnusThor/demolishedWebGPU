@@ -253,6 +253,13 @@ class Editor {
             this.setCurrentShader(item);
             this.storage.save();
         });
+        DOMUtis_1.DOMUtils.on("click", "#btn-delete", () => {
+            this.storage.delete(this.currentShader);
+            // get the firstShader from the storage,
+            let firstShader = this.storage.all()[0];
+            this.setCurrentShader(firstShader);
+            this.storage.save();
+        });
         DOMUtis_1.DOMUtils.on("click", "#btn-canvas-fullscreen", this.toggleCanvasFullScreen);
         DOMUtis_1.DOMUtils.on("click", "#btn-clone", () => {
             const clone = new StoredShader_1.StoredShader(`Copy of ${this.currentShader.name}`, this.currentShader.description);
@@ -276,7 +283,6 @@ class Editor {
                 changes: { from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[0].source
                 }
             });
-            // Dispatch the transaction to the editor view
             this.editorView.dispatch(transaction);
             this.sourceIndex = 0;
             this.renderSourceList(this.currentShader.documents);
@@ -292,6 +298,8 @@ class Editor {
         });
         // Dispatch the transaction to the editor view
         this.editorView.dispatch(transaction);
+        this.renderSourceList(shader.documents);
+        this.editorView.focus();
     }
     updateCurrentShader() {
         this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
@@ -343,7 +351,7 @@ class Editor {
                 try {
                     this.storage = new OfflineStorage_1.OfflineStorage("editor");
                     this.storage.init();
-                    const lastModified = this.storage.model.collection.sort((a, b) => {
+                    const lastModified = this.storage.all().sort((a, b) => {
                         return b.lastModified - a.lastModified;
                     })[0];
                     this.renderSourceList(lastModified.documents);
@@ -368,16 +376,16 @@ class Editor {
         this.setupUI();
         this.initStorage().then(shader => {
             this.storage.onChange = () => {
-                this.renderStoredShaders(this.storage.model.collection);
+                this.renderStoredShaders(this.storage.all());
             };
             this.currentShader = shader;
-            this.renderStoredShaders(this.storage.model.collection);
+            this.renderStoredShaders(this.storage.all());
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });
         }).catch(err => {
-            this.renderStoredShaders(this.storage.model.collection);
-            const shader = this.storage.model.collection[0];
+            this.renderStoredShaders(this.storage.all());
+            const shader = this.storage.all()[0];
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });

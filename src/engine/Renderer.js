@@ -146,8 +146,8 @@ class Renderer {
                 type: "uniform"
             }
         });
-        const computesPasses = Array.from(this.renderPassBacklog.values());
-        computesPasses.forEach((pass, i) => {
+        const renderPasses = Array.from(this.renderPassBacklog.values());
+        renderPasses.forEach((pass, i) => {
             bindingGroupEntrys.push({
                 binding: 2 + i,
                 resource: pass.bufferView
@@ -221,7 +221,10 @@ class Renderer {
         return __awaiter(this, void 0, void 0, function* () {
             if (samplers)
                 throw "Samplers not yet implememted, using default binding 2";
+            const priorRenderPasses = Array.from(this.renderPassBacklog.values());
+            console.log(this.renderPassBacklog.values());
             const uniforms = this.uniforms; //new Uniforms(this.device, this.canvas);
+            // load textures if provided
             if (textures) {
                 for (let i = 0; i < textures.length; i++) {
                     const texture = textures[i];
@@ -230,10 +233,9 @@ class Renderer {
                     }
                     else
                         this.textures.push({ type: 1, data: yield TextureLoader_1.TextureLoader.createVideoTextue(this.device, texture) });
-                    console.log(`adding texture ${texture.key}`);
                 }
             }
-            const renderPipeline = this.renderPassBuilder.createRenderPipeline(material, geometry, this.textures);
+            const renderPipeline = this.renderPassBuilder.createRenderPipeline(material, geometry, this.textures, priorRenderPasses);
             const assets = this.createAssets();
             const bindingGroupEntrys = [];
             const sampler = this.device.createSampler({
@@ -251,8 +253,17 @@ class Renderer {
                 binding: 1,
                 resource: sampler
             });
-            // add the bindings for the textures and samplers.
-            const offset = bindingGroupEntrys.length;
+            let offset = bindingGroupEntrys.length;
+            // add prior renderpasses to current
+            priorRenderPasses.forEach((pass, i) => {
+                bindingGroupEntrys.push({
+                    binding: offset + i,
+                    resource: pass.bufferView,
+                });
+                console.log(offset + i);
+            });
+            // add the bindings for the textures  
+            offset = bindingGroupEntrys.length;
             this.textures.forEach((t, i) => {
                 let entry;
                 if (t.type === 0) {
