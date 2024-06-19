@@ -30,16 +30,25 @@ const Rectangle_1 = require("../../example/meshes/Rectangle");
 const blueColorShader_1 = require("../../example/shaders/wglsl/blueColorShader");
 const OfflineStorage_1 = require("./store/OfflineStorage");
 const StoredShader_1 = require("./models/StoredShader");
-const FXAAShader_1 = require("../../example/shaders/shared/FXAAShader");
+const mainShader_1 = require("../../example/shaders/shared/mainShader");
 const fps = new yy_fps_1.FPS();
 const randomStr = () => (Math.random() + 1).toString(36).substring(7);
 class Editor {
-    tryCompile(source) {
+    tryCompile(sources) {
         return __awaiter(this, void 0, void 0, function* () {
-            const shaderModule = this.renderer.device.createShaderModule({
-                code: source
-            });
-            return yield shaderModule.getCompilationInfo();
+            const results = yield Promise.all(sources.map((document, index) => __awaiter(this, void 0, void 0, function* () {
+                const source = document.source;
+                const shaderModule = this.renderer.device.createShaderModule({
+                    code: source
+                });
+                const compileError = {
+                    documentIndex: index,
+                    name: document.name,
+                    errors: yield shaderModule.getCompilationInfo(),
+                };
+                return compileError;
+            })));
+            return results;
         });
     }
     initwebGPU() {
@@ -57,19 +66,35 @@ class Editor {
             return device;
         });
     }
-    tryAddShader(shader) {
+    tryAddShaders(documents) {
         return __awaiter(this, void 0, void 0, function* () {
-            const geometry = new Geometry_1.Geometry(this.renderer.device, Rectangle_1.rectGeometry);
-            yield this.renderer.addRenderPass("iChannel0", shader, geometry, []).catch(err => {
-                console.log(err);
-            });
-            this.renderer.addMainPass(new Material_1.Material(this.renderer.device, FXAAShader_1.FAXXShader));
+            this.renderer.renderPassBacklog.clear();
+            const rectangle = new Geometry_1.Geometry(this.renderer.device, Rectangle_1.rectGeometry);
+            yield Promise.all(documents.map((document, index) => __awaiter(this, void 0, void 0, function* () {
+                const source = document.source;
+                if (document.type === StoredShader_1.TypeOfShader.Frag) {
+                    const material = new Material_1.Material(this.renderer.device, {
+                        fragment: source,
+                        vertex: Material_1.defaultWglslVertex
+                    });
+                    yield this.renderer.addRenderPass(`iChannel${index - 1}`, material, rectangle, []).catch(err => {
+                        console.error(err);
+                    });
+                }
+                return true;
+            })));
+            mainShader_1.mainShader.fragment = documents[0].source;
+            this.updateMainRenderPass(mainShader_1.mainShader);
             return;
         });
+    }
+    updateMainRenderPass(material) {
+        this.renderer.addMainPass(new Material_1.Material(this.renderer.device, material));
     }
     onCompile(view) {
         return __awaiter(this, void 0, void 0, function* () {
             const source = view.state.doc.toString();
+            this.currentShader.documents[this.sourceIndex].source = view.state.doc.toString();
             if (this.isRunning) {
                 this.renderer.pause();
                 this.isRunning = false;
@@ -79,19 +104,37 @@ class Editor {
                 pa.classList.remove("bi-stop-fill");
                 pa.classList.add("bi-play-btn-fill");
             }
-            this.tryCompile(source).then(conpileInfo => {
+            this.tryCompile(this.currentShader.documents).then(compileInfo => {
                 DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = false;
                 (0, errorDecorator_1.clearAllDecorations)(view);
                 const resultEl = DOMUtis_1.DOMUtils.get("#compiler-result");
                 DOMUtis_1.DOMUtils.removeChilds(resultEl);
-                if (conpileInfo.messages.length > 0) {
+                const hasErrors = compileInfo.some(ci => ci.errors.messages.length > 0);
+                if (hasErrors) {
+                    const firstCorruptShader = compileInfo.filter(pre => {
+                        return pre.errors.messages.length > 0;
+                    })[0];
                     DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = true;
+                    if (firstCorruptShader.documentIndex != this.sourceIndex) {
+                        DOMUtis_1.DOMUtils.get("#select-source").selectedIndex = firstCorruptShader.documentIndex;
+                        const transaction = this.editorView.state.update({
+                            changes: { from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[firstCorruptShader.documentIndex].source
+                            }
+                        });
+                        // Dispatch the transaction to the editor view
+                        this.editorView.dispatch(transaction);
+                        this.sourceIndex = firstCorruptShader.documentIndex;
+                    }
+                    firstCorruptShader.errors.messages.forEach(error => {
+                        resultEl.append(DOMUtis_1.DOMUtils.create("p").textContent = `${error.message} at line ${error.lineNum}.`);
+                        (0, errorDecorator_1.setTitleForLine)(view, error.lineNum, error.message);
+                    });
                 }
-                conpileInfo.messages.forEach(error => {
-                    resultEl.append(DOMUtis_1.DOMUtils.create("p").textContent = `${error.message} at line ${error.lineNum}.`);
-                    (0, errorDecorator_1.setTitleForLine)(view, error.lineNum, error.message);
-                });
+                else {
+                    DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = false;
+                }
             }).catch(err => {
+                console.log(err);
                 DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = true;
             });
             return true;
@@ -113,7 +156,23 @@ class Editor {
             const customKeyMap = [
                 {
                     key: "Mod-Shift-b", run: (view) => {
-                        this.onCompile(view).then(shouldSave => {
+                        this.onCompile(view).then(result => {
+                            const typeToCompile = this.currentShader.documents[this.sourceIndex].type;
+                            if (typeToCompile == StoredShader_1.TypeOfShader.Frag) {
+                                const material = new Material_1.Material(this.renderer.device, {
+                                    fragment: this.editorView.state.doc.toString(),
+                                    vertex: Material_1.defaultWglslVertex
+                                });
+                            }
+                            else if (typeToCompile === StoredShader_1.TypeOfShader.MainFrag) {
+                                const mainFragSource = this.editorView.state.doc.toString();
+                                const shader = {
+                                    fragment: mainFragSource,
+                                    vertex: mainShader_1.mainShader.vertex
+                                };
+                            }
+                            console.log(typeToCompile, this.sourceIndex);
+                        }).catch(err => {
                         });
                         return true;
                     }
@@ -140,7 +199,7 @@ class Editor {
                 }
             ];
             const state = state_1.EditorState.create({
-                doc: shader.source,
+                doc: shader.documents[this.sourceIndex].source,
                 extensions: [
                     (0, language_1.indentOnInput)(),
                     codemirror_1.basicSetup, (0, lang_rust_1.rust)(), view_1.keymap.of([
@@ -151,7 +210,7 @@ class Editor {
                     errorDecorator_1.decorationField,
                     view_1.EditorView.lineWrapping,
                     view_1.EditorView.domEventHandlers({
-                        click: () => {
+                        los: () => {
                         }
                     })
                 ],
@@ -166,6 +225,7 @@ class Editor {
     }
     setupUI() {
         DOMUtis_1.DOMUtils.get("#btn-run-shader").addEventListener("click", (e) => {
+            this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
             DOMUtis_1.DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill");
             DOMUtis_1.DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill");
             if (this.isRunning) {
@@ -175,11 +235,11 @@ class Editor {
             else {
                 this.renderer.isPaused = false;
             }
-            const material = new Material_1.Material(this.renderer.device, {
-                fragment: this.editorView.state.doc.toString(),
-                vertex: Material_1.defaultWglslVertex
-            });
-            this.tryAddShader(material).then(p => {
+            // const material = new Material(this.renderer.device, {
+            //     fragment: this.editorView.state.doc.toString(),
+            //     vertex: defaultWglslVertex
+            // });
+            this.tryAddShaders(this.currentShader.documents).then(p => {
                 this.renderer.start(0, 200, (frame) => {
                     fps.frame();
                 });
@@ -190,14 +250,17 @@ class Editor {
             this.updateCurrentShader();
         });
         DOMUtis_1.DOMUtils.on("click", "#btn-new", () => {
-            const item = new StoredShader_1.StoredShader(`Shader ${randomStr()}`, "N/A", blueColorShader_1.blueColorShader.fragment);
+            const item = new StoredShader_1.StoredShader(`Shader ${randomStr()}`, "N/A");
+            item.addDocument(randomStr(), mainShader_1.mainShader.fragment, StoredShader_1.TypeOfShader.MainFrag);
+            item.addDocument(randomStr(), blueColorShader_1.blueColorShader.fragment, StoredShader_1.TypeOfShader.Frag);
             this.storage.insert(item);
             this.setCurrentShader(item);
             this.storage.save();
         });
         DOMUtis_1.DOMUtils.on("click", "#btn-canvas-fullscreen", this.toggleCanvasFullScreen);
         DOMUtis_1.DOMUtils.on("click", "#btn-clone", () => {
-            const clone = new StoredShader_1.StoredShader(`Copy of ${this.currentShader.name}`, this.currentShader.description, this.currentShader.source);
+            const clone = new StoredShader_1.StoredShader(`Copy of ${this.currentShader.name}`, this.currentShader.description);
+            clone.documents = this.currentShader.documents;
             this.storage.insert(clone);
             this.currentShader = clone;
         });
@@ -208,13 +271,13 @@ class Editor {
         DOMUtis_1.DOMUtils.get("#shader-description").value = shader.description;
         // Create a transaction to replace the document
         const transaction = this.editorView.state.update({
-            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.source }
+            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.documents[1].source }
         });
         // Dispatch the transaction to the editor view
         this.editorView.dispatch(transaction);
     }
     updateCurrentShader() {
-        this.currentShader.source = this.editorView.state.doc.toString();
+        this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
         this.currentShader.name = DOMUtis_1.DOMUtils.get("#shader-name").value;
         this.currentShader.description = DOMUtis_1.DOMUtils.get("#shader-description").value;
         this.storage.update(this.currentShader);
@@ -245,6 +308,18 @@ class Editor {
             parent.append(item);
         });
     }
+    renderSourceList(documents) {
+        const parent = DOMUtis_1.DOMUtils.get("#select-source");
+        DOMUtis_1.DOMUtils.removeChilds(parent);
+        documents.forEach((doc, index) => {
+            const option = DOMUtis_1.DOMUtils.create("option");
+            const suffix = doc.type === StoredShader_1.TypeOfShader.Frag ? `iChannel${index}` : "";
+            option.text = `${doc.name}(${doc.type}) ${suffix}`;
+            option.value = index.toString();
+            parent.append(option);
+        });
+        parent.value = "1";
+    }
     initStorage() {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve, reject) => {
@@ -254,13 +329,16 @@ class Editor {
                     const lastModified = this.storage.model.collection.sort((a, b) => {
                         return b.lastModified - a.lastModified;
                     })[0];
+                    this.renderSourceList(lastModified.documents);
                     resolve(lastModified);
                 }
                 catch (err) {
                     this.storage = new OfflineStorage_1.OfflineStorage("editor");
                     this.storage.setup();
                     // create a default shader and add it to the storage
-                    const defaultShader = new StoredShader_1.StoredShader(`Shader ${randomStr()} `, `My first WGLSL Shader`, blueColorShader_1.blueColorShader.fragment);
+                    const defaultShader = new StoredShader_1.StoredShader(`Shader ${randomStr()} `, `My first WGLSL Shader`);
+                    defaultShader.addDocument(randomStr(), mainShader_1.mainShader.fragment, StoredShader_1.TypeOfShader.MainFrag);
+                    defaultShader.addDocument(randomStr(), blueColorShader_1.blueColorShader.fragment, StoredShader_1.TypeOfShader.Frag);
                     this.storage.insert(defaultShader);
                     this.storage.save();
                     reject("No storage found");
@@ -269,6 +347,7 @@ class Editor {
         });
     }
     constructor() {
+        this.sourceIndex = 1;
         this.setupUI();
         this.initStorage().then(shader => {
             this.storage.onChange = () => {
@@ -285,6 +364,15 @@ class Editor {
             this.setupEditor(shader).then(r => {
                 this.setCurrentShader(shader);
             });
+        });
+        DOMUtis_1.DOMUtils.on("change", "#select-source", (ev, el) => {
+            this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
+            const document = this.currentShader.documents[parseInt(el.value)];
+            const transaction = this.editorView.state.update({
+                changes: { from: 0, to: this.editorView.state.doc.length, insert: document.source }
+            });
+            this.editorView.dispatch(transaction);
+            this.sourceIndex = parseInt(el.value);
         });
     }
 }
