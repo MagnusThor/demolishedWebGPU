@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Editor = void 0;
 const state_1 = require("@codemirror/state");
@@ -28,6 +31,7 @@ const blueColorShader_1 = require("../../example/shaders/wglsl/blueColorShader")
 const OfflineStorage_1 = require("./store/OfflineStorage");
 const StoredShader_1 = require("./models/StoredShader");
 const mainShader_1 = require("../../example/shaders/shared/mainShader");
+const axios_1 = __importDefault(require("axios"));
 const fps = new yy_fps_1.FPS();
 const randomStr = () => (Math.random() + 1).toString(36).substring(7);
 class Editor {
@@ -326,7 +330,7 @@ class Editor {
         DOMUtis_1.DOMUtils.get("#shader-description").value = shader.description;
         // Create a transaction to replace the document
         const transaction = this.editorView.state.update({
-            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.documents[1].source }
+            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.documents[0].source }
         });
         // Dispatch the transaction to the editor view
         this.editorView.dispatch(transaction);
@@ -345,16 +349,17 @@ class Editor {
         const parent = DOMUtis_1.DOMUtils.get("#lst-shaders");
         DOMUtis_1.DOMUtils.removeChilds(parent);
         shaders.forEach(shader => {
-            const image = shader.thumbnail ? shader.thumbnail : "https://via.placeholder.com/40";
+            const image = shader.thumbnail ? shader.thumbnail : "https://placehold.co/80x45?text=?";
             const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                    <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
-
                         <div class="fw-bold">${shader.name}</div>
                         ${shader.description}
                     </div>
-                    <button class="btn btn-sm btn-secondary" data-id=${shader.id}">Edit</button>
+                    <button class="btn btn-sm btn-secondary" data-id=${shader.id}">
+                    <i class="bi bi-pencil-square"></i>
+                    </button>
                 </li>`;
             const item = DOMUtis_1.DOMUtils.toDOM(template);
             const button = DOMUtis_1.DOMUtils.get("button", item);
@@ -392,19 +397,19 @@ class Editor {
                 catch (err) {
                     this.storage = new OfflineStorage_1.OfflineStorage("editor");
                     this.storage.setup();
-                    // create a default shader and add it to the storage
-                    const defaultShader = new StoredShader_1.StoredShader(`Shader ${randomStr()} `, `My first WGLSL Shader`);
-                    defaultShader.addDocument(randomStr(), mainShader_1.mainShader.fragment, StoredShader_1.TypeOfShader.MainFrag);
-                    defaultShader.addDocument(randomStr(), blueColorShader_1.blueColorShader.fragment, StoredShader_1.TypeOfShader.Frag);
-                    this.storage.insert(defaultShader);
-                    this.storage.save();
-                    reject("No storage found");
+                    axios_1.default.get("shaders/default.json").then(defaultShaders => {
+                        defaultShaders.data.collection.forEach(shader => {
+                            this.storage.insert(shader);
+                        });
+                        this.storage.save();
+                        reject("No storage found");
+                    });
                 }
             });
         });
     }
     constructor() {
-        this.sourceIndex = 1;
+        this.sourceIndex = 0;
         this.setupUI();
         this.initStorage().then(shader => {
             this.storage.onChange = () => {

@@ -29,6 +29,7 @@ import { IOfflineGraph, OfflineStorage } from "./store/OfflineStorage";
 import { IDocumentData, StoredShader, TypeOfShader } from "./models/StoredShader";
 import { mainShader } from "../../example/shaders/shared/mainShader";
 import { IMaterialShader } from "../interface/IMaterialShader";
+import axios from "axios";
 
 
 
@@ -57,7 +58,7 @@ export class Editor {
     isRunning: boolean;
 
 
-    sourceIndex: number = 1;
+    sourceIndex: number = 0;
 
     async tryCompile(sources: IDocumentData[]): Promise<IError[]> {
         const results = await Promise.all(sources.map(async (document, index) => {
@@ -379,9 +380,7 @@ export class Editor {
 
                     
 
-                    })    
-                    
-                 
+                    });    
                     this.storage.save();
                     this.renderStoredShaders(this.storage.all())  
                     const p = DOMUtils.create("p");
@@ -403,7 +402,7 @@ export class Editor {
         DOMUtils.get<HTMLInputElement>("#shader-description").value = shader.description;
         // Create a transaction to replace the document
         const transaction = this.editorView.state.update({
-            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.documents[1].source }
+            changes: { from: 0, to: this.editorView.state.doc.length, insert: shader.documents[0].source }
         });
         // Dispatch the transaction to the editor view
         this.editorView.dispatch(transaction);
@@ -423,19 +422,18 @@ export class Editor {
     renderStoredShaders(shaders: Array<StoredShader>): void {
         const parent = DOMUtils.get("#lst-shaders");
         DOMUtils.removeChilds(parent);
-
         shaders.forEach(shader => {
-            const image = shader.thumbnail ? shader.thumbnail : "https://via.placeholder.com/40";
-
+            const image = shader.thumbnail ? shader.thumbnail : "https://placehold.co/80x45?text=?";
             const template = `
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                    <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
-
                         <div class="fw-bold">${shader.name}</div>
                         ${shader.description}
                     </div>
-                    <button class="btn btn-sm btn-secondary" data-id=${shader.id}">Edit</button>
+                    <button class="btn btn-sm btn-secondary" data-id=${shader.id}">
+                    <i class="bi bi-pencil-square"></i>
+                    </button>
                 </li>`;
             const item = DOMUtils.toDOM(template);
             const button = DOMUtils.get("button", item);
@@ -472,33 +470,21 @@ export class Editor {
             try {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.init();
-
                 const lastModified = this.storage.all().sort((a: StoredShader, b: StoredShader) => {
                     return b.lastModified - a.lastModified
                 })[0];
-
-
-                this.renderSourceList(lastModified.documents);
-
+                this.renderSourceList(lastModified.documents);                
                 resolve(lastModified);
-
-
             } catch (err) {
-
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.setup();
-
-                // create a default shader and add it to the storage
-                const defaultShader = new StoredShader(`Shader ${randomStr()} `,
-                    `My first WGLSL Shader`);
-
-                defaultShader.addDocument(randomStr(), mainShader.fragment, TypeOfShader.MainFrag);
-                defaultShader.addDocument(randomStr(), blueColorShader.fragment, TypeOfShader.Frag);
-
-                this.storage.insert(defaultShader);
-
-                this.storage.save();
-                reject("No storage found")
+                axios.get<IOfflineGraph<StoredShader>>("shaders/default.json").then ( defaultShaders => {
+                    defaultShaders.data.collection.forEach( shader => {
+                    this.storage.insert(shader);
+                    });
+                    this.storage.save();
+                    reject("No storage found")
+                });                                
             }
         });
     }

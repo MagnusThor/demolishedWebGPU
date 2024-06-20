@@ -84,15 +84,15 @@
             </ul>
         </div>
     </div>
-    <nav class="navbar bg-dark" data-bs-theme="dark"">
-        <div class=" container-fluid">
+    <nav class="navbar bg-light" data-bs-theme="light">
+        <div class="container-fluid">
         <a class="navbar-brand" href="#">
             <i class="bi bi-braces"></i>
-            WGLSL ShaderEditor (embark)
+            WGLSL ShaderEditor
         </a>
         <div class="d-flex">
-            <button class="btn btn-sm btn-outline-light" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-menu">
-                <i class="bi bi-list"></i>
+            <button class="btn btn-sm btn-outline-dark" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-menu">
+                <i class="bi bi-list mx-2"></i>Shaders
             </button>
         </div>
         </div>
@@ -184,15 +184,15 @@
                     </div>
 
                     <div class="p-1">
-                        <button class="btn btn-btn btn-outline-secondary" id="btn-add-renderpass">
-                            <i class="bi bi-file-earmark-plus"></i>
+                        <button class="btn btn-secondary btn-sm mt-2" id="btn-add-renderpass">
+                            <i class="bi bi-file-earmark-plus mx-2"></i>New renderpass
                         </button>
                     </div>
 
                     <div class="ms-auto p-1">
-                        <button class="btn btn-btn btn-outline-danger" id="btn-remove-renderpass"
+                        <button class="btn btn-danger btn-sm mt-2" id="btn-remove-renderpass"
                         data-bs-toggle="modal" data-bs-target="#modal-delete-renderpass">
-                            <i class="bi bi-file-earmark-x"></i>
+                            <i class="bi bi-file-earmark-x mx-2"></i>Delete renderpass
                         </button>
                     </div>
 
@@ -201,19 +201,19 @@
 
 
             <div class="col-md-4">
-                <div class="d-flex mb-3 mr-3">
+                <div class="d-flex mb-3 mt-2">
                     <div class="p-1">
-                        <button class="btn btn-primary" id="btn-save">
+                        <button class="btn btn-primary btn-sm" id="btn-save">
                             <i class="bi bi-floppy-fill"></i>
                         </button>
                     </div>
                     <div class="p-1">
-                        <button class="btn btn-primary mr-2" id="btn-new">
+                        <button class="btn btn-primary mr-2 btn-sm" id="btn-new">
                             <i class="bi bi-plus-square-fill"></i>
                         </button>
                     </div>
                     <div class="p-1">
-                        <button class="btn btn-primary mr-2" id="btn-clone">
+                        <button class="btn btn-primary mr-2 btn-sm" id="btn-clone">
                             <i class="bi bi-copy"></i>
                         </button>
                     </div>
@@ -222,7 +222,7 @@
                     <div class="ms-auto p-1">
 
                        
-                        <button class="btn btn-danger mr-2" data-bs-toggle="modal" data-bs-target="#modal-delete-shader">
+                        <button class="btn btn-danger mr-2 btn-sm" data-bs-toggle="modal" data-bs-target="#modal-delete-shader">
                             <i class="bi bi-trash3-fill"></i>
                         </button>
                     </div>
@@ -233,13 +233,13 @@
 
         <div class="row">
             <div class="col-md-8">
-                <div class="alert alert-secondary" role="alert" id="compiler-result">
-                    Compile using (ctrl-shift-b), hit <i class="bi bi-play-btn-fill"></i> to run.
+                <div class="alert alert-info" role="alert" id="compiler-result">
+                    Compile using ctrl-shift-b (editor focused) - Hit <i class="bi bi-play-btn-fill"></i> to run.
                 </div>
                 <div id="editor" class="my-1"></div>
             </div>
             <div class="col-md-4">
-                <div class="card my-4">
+                <div class="card">
 
                     <canvas class="card-img-top mr-2" width="800" height="450" style="background-color: #000;"></canvas>
 
@@ -267,7 +267,7 @@
                 </div>
                 <div class="form-group">
                     <label for="shader-name">Name</label>
-                    <input class="form-control me-2" type="text" id="shader-name">
+                    <input class="form-control" type="text" id="shader-name">
                 </div>
                 <div class="form-group">
                     <label for="shader-description">Description</label>
