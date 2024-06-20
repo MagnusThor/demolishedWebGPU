@@ -25,7 +25,7 @@ import { Renderer } from "../engine/Renderer";
 import { Geometry } from "../engine/Geometry";
 import { rectGeometry } from "../../example/meshes/Rectangle";
 import { blueColorShader } from "../../example/shaders/wglsl/blueColorShader";
-import { OfflineStorage } from "./store/OfflineStorage";
+import { IOfflineGraph, OfflineStorage } from "./store/OfflineStorage";
 import { IDocumentData, StoredShader, TypeOfShader } from "./models/StoredShader";
 import { mainShader } from "../../example/shaders/shared/mainShader";
 import { IMaterialShader } from "../interface/IMaterialShader";
@@ -60,7 +60,7 @@ export class Editor {
     sourceIndex: number = 1;
 
     async tryCompile(sources: IDocumentData[]): Promise<IError[]> {
-        const results = await Promise.all(sources.map(async (document,index) => {
+        const results = await Promise.all(sources.map(async (document, index) => {
             const source = document.source;
             const shaderModule = this.renderer.device.createShaderModule({
                 code: source
@@ -144,31 +144,32 @@ export class Editor {
             const resultEl = DOMUtils.get("#compiler-result");
             DOMUtils.removeChilds(resultEl);
             const hasErrors = compileInfo.some(ci => ci.errors.messages.length > 0);
-            if (hasErrors) {        
+            if (hasErrors) {
                 const firstCorruptShader = compileInfo.filter(pre => {
                     return pre.errors.messages.length > 0
                 })[0];
                 DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = true;
 
-                if(firstCorruptShader.documentIndex != this.sourceIndex){
+                if (firstCorruptShader.documentIndex != this.sourceIndex) {
 
                     DOMUtils.get<HTMLSelectElement>("#select-source").selectedIndex = firstCorruptShader.documentIndex;
 
                     const transaction = this.editorView.state.update({
-                        changes: { from: 0, to: this.editorView.state.doc.length, insert: 
-                            this.currentShader.documents[firstCorruptShader.documentIndex].source                            
-                         }
+                        changes: {
+                            from: 0, to: this.editorView.state.doc.length, insert:
+                                this.currentShader.documents[firstCorruptShader.documentIndex].source
+                        }
                     });
-            
+
                     // Dispatch the transaction to the editor view
                     this.editorView.dispatch(transaction);
-    
+
                     this.sourceIndex = firstCorruptShader.documentIndex;
-    
+
                 }
 
 
-                 firstCorruptShader.errors.messages.forEach(error => {       
+                firstCorruptShader.errors.messages.forEach(error => {
                     resultEl.append(DOMUtils.create("p").textContent = `${error.message} at line ${error.lineNum}.`);
                     setTitleForLine(view, error.lineNum, error.message);
                 });
@@ -306,14 +307,15 @@ export class Editor {
             this.storage.save();
         });
 
-        DOMUtils.on("click","#btn-delete",() => {
-                this.storage.delete(this.currentShader);
-                // get the firstShader from the storage,
-                let firstShader = this.storage.all()[0];
-                this.setCurrentShader(firstShader);
-                this.storage.save();
-                
+        DOMUtils.on("click", "#btn-delete", () => {
+            this.storage.delete(this.currentShader);
 
+         
+        
+            // get the firstShader from the storage,
+            let firstShader = this.storage.all()[0];
+            this.setCurrentShader(firstShader);
+            this.storage.save();
         });
 
         DOMUtils.on("click", "#btn-canvas-fullscreen", this.toggleCanvasFullScreen)
@@ -326,9 +328,9 @@ export class Editor {
             this.currentShader = clone;
         });
 
-        DOMUtils.on("click","#btn-add-renderpass", () => {
-            const renderpass:IDocumentData = {
-                type:TypeOfShader.Frag,
+        DOMUtils.on("click", "#btn-add-renderpass", () => {
+            const renderpass: IDocumentData = {
+                type: TypeOfShader.Frag,
                 name: randomStr(),
                 source: blueColorShader.fragment
             }
@@ -337,16 +339,67 @@ export class Editor {
             this.updateCurrentShader();
         });
 
-        DOMUtils.on("click","#btn-remove-renderpass",() => {
-            this.currentShader.documents.splice(this.sourceIndex,1);
+        DOMUtils.on("click", "#btn-remove-renderpass", () => {
+            this.currentShader.documents.splice(this.sourceIndex, 1);
             const transaction = this.editorView.state.update({
-                changes: { from: 0, to: this.editorView.state.doc.length, insert: 
-                    this.currentShader.documents[0].source                            
-                 }
-            })    
+                changes: {
+                    from: 0, to: this.editorView.state.doc.length, insert:
+                        this.currentShader.documents[0].source
+                }
+            })
             this.editorView.dispatch(transaction);
             this.sourceIndex = 0;
             this.renderSourceList(this.currentShader.documents);
+        });
+
+        DOMUtils.on("click", "#btn-export", () => {
+        
+            const blob = new Blob([this.storage.deSerialize()], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = DOMUtils.create<HTMLAnchorElement>("a");
+            a.href = url;
+            a.download = 'data.json';
+            a.click();
+            URL.revokeObjectURL(url);          
+          
+        });
+
+        DOMUtils.on<HTMLInputElement>("change","#upload-json", (evt,fileInput) => {
+            if (!fileInput || fileInput.files?.length === 0) {
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (event: ProgressEvent<FileReader>) => {
+                const content = event.target?.result as string;
+                try {
+                    const data = JSON.parse(content) as IOfflineGraph<StoredShader>;
+
+                    console.log(data);
+                    
+                    data.collection.forEach ( shader => {
+
+                        const clone = new StoredShader(`${shader.name}`,
+                            shader.description);
+                        clone.documents = shader.documents;
+                        this.storage.insert(clone);
+
+                    
+
+                    })    
+                    
+                 
+                    this.storage.save();
+                    this.renderStoredShaders(this.storage.all())  
+                    const p = DOMUtils.create("p");
+                    p.textContent = "Shaders imported.";  
+                    DOMUtils.get("#export-result").append(p);          
+                } catch (e) {
+                    console.error('Error parsing JSON:', e);
+                }
+            };
+            reader.readAsText(file);
         });
 
     }
@@ -479,7 +532,7 @@ export class Editor {
 
         });
 
-        DOMUtils.on("change", "#select-source", (ev, el) => {
+        DOMUtils.on<HTMLInputElement>("change", "#select-source", (ev, el) => {
             this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
             const document = this.currentShader.documents[parseInt(el.value)];
             const transaction = this.editorView.state.update({

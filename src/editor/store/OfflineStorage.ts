@@ -29,7 +29,7 @@ export class OfflineStorage<T extends IEntityBase> {
 
     constructor(public label: string) {
     }
-    private serialize(): IOfflineGraph<T> {
+    serialize(): IOfflineGraph<T> {
         const data = localStorage.getItem(this.label);
         if (!data) {
             throw `no storage found for ${this.label}`;
@@ -39,7 +39,7 @@ export class OfflineStorage<T extends IEntityBase> {
             return model;
         }
     }
-    private deSerialize(): string {
+    deSerialize(): string {
         const data = JSON.stringify(this.model);
         return data;
     }
@@ -52,9 +52,9 @@ export class OfflineStorage<T extends IEntityBase> {
         return this.serialize();
     }
 
-    insert(item: T): T {
+    insert(item: T,silent?:boolean): T {
         this.model.collection.push(item);
-        if (this.onChange) this.onChange();
+        if (this.onChange && !silent) this.onChange();
         return item;
     }
     update(item: T): void {

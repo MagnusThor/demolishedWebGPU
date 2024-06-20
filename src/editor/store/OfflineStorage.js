@@ -37,9 +37,9 @@ class OfflineStorage {
     getLocalStorage() {
         return this.serialize();
     }
-    insert(item) {
+    insert(item, silent) {
         this.model.collection.push(item);
-        if (this.onChange)
+        if (this.onChange && !silent)
             this.onChange();
         return item;
     }

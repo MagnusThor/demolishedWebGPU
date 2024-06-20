@@ -71,6 +71,12 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
+            <div class="mb-2">
+                <button class="btn btn-secondary btn-sm" 
+                data-bs-toggle="modal" data-bs-target="#modal-preserve-data">
+                <i class="bi bi-archive-fill mx-2"></i>Archive
+                </button>
+            </div>
             <ul class="list-group list-group-flush" id="lst-shaders">
             </ul>
         </div>
@@ -94,6 +100,41 @@
     <div class="container-fluid">
 
 
+        <div class="modal fade" id="modal-preserve-data" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5"">Import & export shaders</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                
+                    <div  class="mb-3">
+                    <button class="btn btn-primary" id="btn-export">
+                        <i class="bi bi-download mr-2" ></i> Export
+                    </button>
+                    </div>
+
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <label for="upload-json" class="form-label">Import</label>
+                        <input class="form-control" type="file" id="upload-json">
+                      </div>
+
+                    <div id="export-result">
+                        
+                    </div>
+
+                    
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        
  
   <div class="modal fade" id="modal-delete-shader" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
@@ -106,8 +147,8 @@
           Are you sure you want to delete the current shader?
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCEL</button>
-          <button type="button" class="btn btn-danger" id="btn-delete" data-bs-dismiss="modal">DELETE</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="btn-delete" data-bs-dismiss="modal">Delete</button>
         </div>
       </div>
     </div>
