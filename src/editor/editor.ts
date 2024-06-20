@@ -7,8 +7,8 @@ import { DOMUtils } from "./DOMUtis"
 import { Material, defaultWglslVertex } from "../engine/Material";
 import { basicSetup } from "codemirror";
 import { FPS } from 'yy-fps'
-import beautify from "js-beautify";
 import { rust } from "@codemirror/lang-rust";
+import { solarizedDark } from 'cm6-theme-solarized-dark'
 
 
 
@@ -145,6 +145,7 @@ export class Editor {
             DOMUtils.removeChilds(resultEl);
             const hasErrors = compileInfo.some(ci => ci.errors.messages.length > 0);
             if (hasErrors) {
+                resultEl.classList.remove("d-none");
                 const firstCorruptShader = compileInfo.filter(pre => {
                     return pre.errors.messages.length > 0
                 })[0];
@@ -175,6 +176,7 @@ export class Editor {
                 });
 
             } else {
+                resultEl.classList.add("d-none");
                 DOMUtils.get<HTMLButtonElement>("#btn-run-shader").disabled = false;
             }
 
@@ -230,27 +232,17 @@ export class Editor {
             }
             , {
                 key: "Mod-Shift-f", run: (view: EditorView) => {
-                    const code = view.state.doc.toString();
-                    const formattedCode = beautify(code,
-                        {
-                        }
-                    );
-                    view.dispatch({
-                        changes: {
-                            from: 0,
-                            to: view.state.doc.length,
-                            insert: formattedCode,
-                        },
-                    });
                     return true;
                 },
             }
         ];
 
+        
 
         const state = EditorState.create({
             doc: shader.documents[this.sourceIndex].source,
             extensions: [
+                solarizedDark,
                 indentOnInput(),
                 basicSetup, rust(), keymap.of([
                     ...defaultKeymap, ...customKeyMap, indentWithTab

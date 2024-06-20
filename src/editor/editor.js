@@ -8,9 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Editor = void 0;
 const state_1 = require("@codemirror/state");
@@ -20,8 +17,8 @@ const DOMUtis_1 = require("./DOMUtis");
 const Material_1 = require("../engine/Material");
 const codemirror_1 = require("codemirror");
 const yy_fps_1 = require("yy-fps");
-const js_beautify_1 = __importDefault(require("js-beautify"));
 const lang_rust_1 = require("@codemirror/lang-rust");
+const cm6_theme_solarized_dark_1 = require("cm6-theme-solarized-dark");
 const language_1 = require("@codemirror/language");
 const errorDecorator_1 = require("./errorDecorator");
 const Renderer_1 = require("../engine/Renderer");
@@ -111,6 +108,7 @@ class Editor {
                 DOMUtis_1.DOMUtils.removeChilds(resultEl);
                 const hasErrors = compileInfo.some(ci => ci.errors.messages.length > 0);
                 if (hasErrors) {
+                    resultEl.classList.remove("d-none");
                     const firstCorruptShader = compileInfo.filter(pre => {
                         return pre.errors.messages.length > 0;
                     })[0];
@@ -132,6 +130,7 @@ class Editor {
                     });
                 }
                 else {
+                    resultEl.classList.add("d-none");
                     DOMUtis_1.DOMUtils.get("#btn-run-shader").disabled = false;
                 }
             }).catch(err => {
@@ -186,15 +185,6 @@ class Editor {
                 },
                 {
                     key: "Mod-Shift-f", run: (view) => {
-                        const code = view.state.doc.toString();
-                        const formattedCode = (0, js_beautify_1.default)(code, {});
-                        view.dispatch({
-                            changes: {
-                                from: 0,
-                                to: view.state.doc.length,
-                                insert: formattedCode,
-                            },
-                        });
                         return true;
                     },
                 }
@@ -202,6 +192,7 @@ class Editor {
             const state = state_1.EditorState.create({
                 doc: shader.documents[this.sourceIndex].source,
                 extensions: [
+                    cm6_theme_solarized_dark_1.solarizedDark,
                     (0, language_1.indentOnInput)(),
                     codemirror_1.basicSetup, (0, lang_rust_1.rust)(), view_1.keymap.of([
                         ...commands_1.defaultKeymap, ...customKeyMap, commands_1.indentWithTab
@@ -256,7 +247,6 @@ class Editor {
         });
         DOMUtis_1.DOMUtils.on("click", "#btn-delete", () => {
             this.storage.delete(this.currentShader);
-            alert();
             // get the firstShader from the storage,
             let firstShader = this.storage.all()[0];
             this.setCurrentShader(firstShader);

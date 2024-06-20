@@ -16,13 +16,11 @@ module.exports = {
       // new webpack.ProvidePlugin({
       //   process: 'process/browser',
       // }),
+
     ],
     module: {
-      rules: [
-      ],
+     
     },
     externals: {
-      prettier: 'prettier', // Exclude Prettier from the bundle
-      'prettier/standalone': 'prettier' 
-  }
+       }
   }

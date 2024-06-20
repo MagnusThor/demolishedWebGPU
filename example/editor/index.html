@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
     <meta charset="utf-8">
@@ -49,6 +49,9 @@
             height: 100%;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
+        }
+        .cm-gutters {
+            background:red
         }
 
         .list-group-item img {
@@ -230,6 +233,9 @@
 
         <div class="row">
             <div class="col-md-8">
+                <div class="alert alert-secondary" role="alert" id="compiler-result">
+                    Compile using (ctrl-shift-b), hit <i class="bi bi-play-btn-fill"></i> to run.
+                </div>
                 <div id="editor" class="my-1"></div>
             </div>
             <div class="col-md-4">
@@ -269,14 +275,7 @@
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-8">
-                <h6>Immediate</h6>
-                <p id="compiler-result">
-                    Compile using (ctrl-shift-b) hit <i class="bi bi-play-btn-fill"></i> to run.
-                </p>
-            </div>
-        </div>
+        
     </div>
 
 
