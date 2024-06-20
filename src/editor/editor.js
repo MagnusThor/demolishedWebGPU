@@ -118,7 +118,8 @@ class Editor {
                     if (firstCorruptShader.documentIndex != this.sourceIndex) {
                         DOMUtis_1.DOMUtils.get("#select-source").selectedIndex = firstCorruptShader.documentIndex;
                         const transaction = this.editorView.state.update({
-                            changes: { from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[firstCorruptShader.documentIndex].source
+                            changes: {
+                                from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[firstCorruptShader.documentIndex].source
                             }
                         });
                         // Dispatch the transaction to the editor view
@@ -255,6 +256,7 @@ class Editor {
         });
         DOMUtis_1.DOMUtils.on("click", "#btn-delete", () => {
             this.storage.delete(this.currentShader);
+            alert();
             // get the firstShader from the storage,
             let firstShader = this.storage.all()[0];
             this.setCurrentShader(firstShader);
@@ -280,12 +282,52 @@ class Editor {
         DOMUtis_1.DOMUtils.on("click", "#btn-remove-renderpass", () => {
             this.currentShader.documents.splice(this.sourceIndex, 1);
             const transaction = this.editorView.state.update({
-                changes: { from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[0].source
+                changes: {
+                    from: 0, to: this.editorView.state.doc.length, insert: this.currentShader.documents[0].source
                 }
             });
             this.editorView.dispatch(transaction);
             this.sourceIndex = 0;
             this.renderSourceList(this.currentShader.documents);
+        });
+        DOMUtis_1.DOMUtils.on("click", "#btn-export", () => {
+            const blob = new Blob([this.storage.deSerialize()], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = DOMUtis_1.DOMUtils.create("a");
+            a.href = url;
+            a.download = 'data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        DOMUtis_1.DOMUtils.on("change", "#upload-json", (evt, fileInput) => {
+            var _a;
+            if (!fileInput || ((_a = fileInput.files) === null || _a === void 0 ? void 0 : _a.length) === 0) {
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                var _a;
+                const content = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
+                try {
+                    const data = JSON.parse(content);
+                    console.log(data);
+                    data.collection.forEach(shader => {
+                        const clone = new StoredShader_1.StoredShader(`${shader.name}`, shader.description);
+                        clone.documents = shader.documents;
+                        this.storage.insert(clone);
+                    });
+                    this.storage.save();
+                    this.renderStoredShaders(this.storage.all());
+                    const p = DOMUtis_1.DOMUtils.create("p");
+                    p.textContent = "Shaders imported.";
+                    DOMUtis_1.DOMUtils.get("#export-result").append(p);
+                }
+                catch (e) {
+                    console.error('Error parsing JSON:', e);
+                }
+            };
+            reader.readAsText(file);
         });
     }
     setCurrentShader(shader) {

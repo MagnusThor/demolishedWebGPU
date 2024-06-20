@@ -11,10 +11,10 @@ export class DOMUtils {
         for (let i = 0; i < queryResult.length; i++) results.push(queryResult.item(i));
         return results;
     }
-    static on<T extends HTMLElement>(event: string, element: string | HTMLElement, fn: (event?: any, el?: HTMLElement | any) => void, options?: AddEventListenerOptions): T {
+    static on<T extends HTMLElement>(event: string, element: string | HTMLElement, fn: (event?: any, el?: T) => void, options?: AddEventListenerOptions): T {
         typeof (element) === "string" ? element = DOMUtils.get<T>(element) : element = element;
         element.addEventListener(event, (e: Event) => {
-            fn(e, element);
+            fn(e, element as T);
         }, options);
         return element as T;
     }
