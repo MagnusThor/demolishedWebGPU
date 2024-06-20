@@ -34,6 +34,7 @@
     "@types/codemirror": "^5.60.15",
     "@uiw/codemirror-theme-monokai": "^4.22.2",
     "@webgpu/types": "^0.1.40",
+    "axios": "^1.7.2",
     "cm6-theme-solarized-dark": "^0.2.0",
     "webgpu": "^0.1.16",
     "yy-fps": "^2.0.1"
