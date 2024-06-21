@@ -175,7 +175,6 @@ class Editor {
                                     vertex: mainShader_1.mainShader.vertex
                                 };
                             }
-                            console.log(typeToCompile, this.sourceIndex);
                         }).catch(err => {
                         });
                         return true;
@@ -305,7 +304,6 @@ class Editor {
                 const content = (_a = event.target) === null || _a === void 0 ? void 0 : _a.result;
                 try {
                     const data = JSON.parse(content);
-                    console.log(data);
                     data.collection.forEach(shader => {
                         const clone = new StoredShader_1.StoredShader(`${shader.name}`, shader.description);
                         clone.documents = shader.documents;
@@ -336,6 +334,7 @@ class Editor {
         this.editorView.dispatch(transaction);
         this.renderSourceList(shader.documents);
         this.editorView.focus();
+        this.sourceIndex = 0;
     }
     updateCurrentShader() {
         this.currentShader.documents[this.sourceIndex].source = this.editorView.state.doc.toString();
@@ -397,8 +396,8 @@ class Editor {
                 catch (err) {
                     this.storage = new OfflineStorage_1.OfflineStorage("editor");
                     this.storage.setup();
-                    axios_1.default.get("shaders/default.json").then(defaultShaders => {
-                        defaultShaders.data.collection.forEach(shader => {
+                    axios_1.default.get(`shaders/default.json?rnd=${randomStr()}`).then(model => {
+                        model.data.collection.forEach(shader => {
                             this.storage.insert(shader);
                         });
                         this.storage.save();
