@@ -219,7 +219,7 @@ export class Editor {
                                 vertex: mainShader.vertex
                             }
                         }
-                        console.log(typeToCompile, this.sourceIndex);
+                        
                     }).catch(err => {
                     });
                     return true;
@@ -368,18 +368,11 @@ export class Editor {
                 const content = event.target?.result as string;
                 try {
                     const data = JSON.parse(content) as IOfflineGraph<StoredShader>;
-
-                    console.log(data);
-                    
-                    data.collection.forEach ( shader => {
-
+                        data.collection.forEach ( shader => {
                         const clone = new StoredShader(`${shader.name}`,
                             shader.description);
                         clone.documents = shader.documents;
                         this.storage.insert(clone);
-
-                    
-
                     });    
                     this.storage.save();
                     this.renderStoredShaders(this.storage.all())  
@@ -408,6 +401,8 @@ export class Editor {
         this.editorView.dispatch(transaction);
         this.renderSourceList(shader.documents);
         this.editorView.focus();
+        this.sourceIndex  = 0;
+        
     }
 
     updateCurrentShader() {
@@ -478,8 +473,9 @@ export class Editor {
             } catch (err) {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.setup();
-                axios.get<IOfflineGraph<StoredShader>>("shaders/default.json").then ( defaultShaders => {
-                    defaultShaders.data.collection.forEach( shader => {
+                axios.get<IOfflineGraph<StoredShader>>(`shaders/default.json?rnd=${randomStr()}`).then ( 
+                    model => {
+                    model.data.collection.forEach( shader => {
                     this.storage.insert(shader);
                     });
                     this.storage.save();
