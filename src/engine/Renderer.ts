@@ -72,12 +72,16 @@ export class Renderer {
 
         this.uniforms = new Uniforms(this.device, this.canvas);
         this.canvas.addEventListener("mousemove", (evt: MouseEvent) => {
+            
             if (evt.buttons) {
                 const rect = this.canvas.getBoundingClientRect();
                 const x = evt.clientX - rect.left;
                 const y = evt.clientY - rect.top;
                 this.uniforms.setUniforms([x, y, evt.buttons, 0], 4)
                 this.uniforms.updateUniformBuffer();
+                if(this.isPaused){
+                    this.update(performance.now() / 1000);
+                }
             }
         });
     }

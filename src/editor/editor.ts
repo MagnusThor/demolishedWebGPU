@@ -123,6 +123,7 @@ export class Editor {
     }
 
     async onCompile(view: EditorView): Promise<boolean> {
+        this.renderer.clear();
         const source = view.state.doc.toString();
         this.currentShader.documents[this.sourceIndex].source = view.state.doc.toString();
 
@@ -273,7 +274,7 @@ export class Editor {
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill")
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill")
             if (this.isRunning) {
-                this.renderer.clear();
+                
                 this.renderer.isPaused = true;
 
             } else {
@@ -424,7 +425,7 @@ export class Editor {
                    <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">${shader.name}</div>
-                        ${shader.description}
+                        ${DOMUtils.truncString(shader.description,80)}
                     </div>
                     <button class="btn btn-sm btn-secondary" data-id=${shader.id}">
                     <i class="bi bi-pencil-square"></i>

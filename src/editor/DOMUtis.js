@@ -54,6 +54,16 @@ class DOMUtils {
             return `<a href="${url}" target="_blank">${url}</a>`;
         });
     }
+    static truncString(text, maxLength, ellipsis = "...") {
+        if (!text || maxLength <= 0)
+            return "";
+        // Base case (no truncation):
+        if (text.length <= maxLength)
+            return text;
+        // Calculate truncation point:
+        const truncatedLength = Math.max(0, maxLength - ellipsis.length);
+        return text.slice(0, truncatedLength) + ellipsis;
+    }
     static toDOM(html) {
         var d = document, i, a = d.createElement("div"), b = d.createDocumentFragment();
         a.innerHTML = html;
