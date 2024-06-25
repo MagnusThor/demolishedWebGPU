@@ -220,7 +220,7 @@ export class Editor {
                                 vertex: mainShader.vertex
                             }
                         }
-                        
+
                     }).catch(err => {
                     });
                     return true;
@@ -239,7 +239,7 @@ export class Editor {
             }
         ];
 
-        
+
 
         const state = EditorState.create({
             doc: shader.documents[this.sourceIndex].source,
@@ -274,7 +274,7 @@ export class Editor {
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill")
             DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill")
             if (this.isRunning) {
-                
+
                 this.renderer.isPaused = true;
 
             } else {
@@ -304,8 +304,8 @@ export class Editor {
         DOMUtils.on("click", "#btn-delete", () => {
             this.storage.delete(this.currentShader);
 
-         
-        
+
+
             // get the firstShader from the storage,
             let firstShader = this.storage.all()[0];
             this.setCurrentShader(firstShader);
@@ -347,18 +347,18 @@ export class Editor {
         });
 
         DOMUtils.on("click", "#btn-export", () => {
-        
+
             const blob = new Blob([this.storage.deSerialize()], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = DOMUtils.create<HTMLAnchorElement>("a");
             a.href = url;
             a.download = 'data.json';
             a.click();
-            URL.revokeObjectURL(url);          
-          
+            URL.revokeObjectURL(url);
+
         });
 
-        DOMUtils.on<HTMLInputElement>("change","#upload-json", (evt,fileInput) => {
+        DOMUtils.on<HTMLInputElement>("change", "#upload-json", (evt, fileInput) => {
             if (!fileInput || fileInput.files?.length === 0) {
                 return;
             }
@@ -369,17 +369,17 @@ export class Editor {
                 const content = event.target?.result as string;
                 try {
                     const data = JSON.parse(content) as IOfflineGraph<StoredShader>;
-                        data.collection.forEach ( shader => {
+                    data.collection.forEach(shader => {
                         const clone = new StoredShader(`${shader.name}`,
                             shader.description);
                         clone.documents = shader.documents;
                         this.storage.insert(clone);
-                    });    
+                    });
                     this.storage.save();
-                    this.renderStoredShaders(this.storage.all())  
+                    this.renderStoredShaders(this.storage.all())
                     const p = DOMUtils.create("p");
-                    p.textContent = "Shaders imported.";  
-                    DOMUtils.get("#export-result").append(p);          
+                    p.textContent = "Shaders imported.";
+                    DOMUtils.get("#export-result").append(p);
                 } catch (e) {
                     console.error('Error parsing JSON:', e);
                 }
@@ -402,8 +402,8 @@ export class Editor {
         this.editorView.dispatch(transaction);
         this.renderSourceList(shader.documents);
         this.editorView.focus();
-        this.sourceIndex  = 0;
-        
+        this.sourceIndex = 0;
+
     }
 
     updateCurrentShader() {
@@ -425,7 +425,7 @@ export class Editor {
                    <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">${shader.name}</div>
-                        ${DOMUtils.truncString(shader.description,80)}
+                        ${DOMUtils.truncString(shader.description, 80)}
                     </div>
                     <button class="btn btn-sm btn-secondary" data-id=${shader.id}">
                     <i class="bi bi-pencil-square"></i>
@@ -469,19 +469,19 @@ export class Editor {
                 const lastModified = this.storage.all().sort((a: StoredShader, b: StoredShader) => {
                     return b.lastModified - a.lastModified
                 })[0];
-                this.renderSourceList(lastModified.documents);                
+                this.renderSourceList(lastModified.documents);
                 resolve(lastModified);
             } catch (err) {
                 this.storage = new OfflineStorage<StoredShader>("editor");
                 this.storage.setup();
-                axios.get<IOfflineGraph<StoredShader>>(`shaders/default.json?rnd=${randomStr()}`).then ( 
+                axios.get<IOfflineGraph<StoredShader>>(`shaders/default.json?rnd=${randomStr()}`).then(
                     model => {
-                    model.data.collection.forEach( shader => {
-                    this.storage.insert(shader);
+                        model.data.collection.forEach(shader => {
+                            this.storage.insert(shader);
+                        });
+                        this.storage.save();
+                        reject("No storage found")
                     });
-                    this.storage.save();
-                    reject("No storage found")
-                });                                
             }
         });
     }
@@ -526,7 +526,24 @@ export class Editor {
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  
 
+    const getURLParameter = (name: string): string | null => {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    };
+    
+    const widthStr = getURLParameter("w");
+    const heightStr = getURLParameter("h");
+    
+    // Type Assertions for Safety
+    const width = widthStr ? parseInt(widthStr, 10) : null; 
+    const height = heightStr ? parseInt(heightStr, 10) : null;
+    
+    if (width && height) { 
+        const canvas = document.querySelector("#result-canvas") as HTMLCanvasElement;
+        canvas.width = width;
+        canvas.height = height;       
+    }
     const editor = new Editor();
-
 });

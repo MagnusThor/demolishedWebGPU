@@ -19,6 +19,7 @@ const TextureLoader_1 = require("./TextureLoader");
 class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
+        this.zoomLevel = 0.001;
         this.renderPassBacklog = new Map();
         this.textures = new Array();
     }
@@ -51,12 +52,16 @@ class Renderer {
             this.context = context;
             this.geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
             this.uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
+            this.canvas.addEventListener('wheel', (event) => {
+                this.zoomLevel += event.deltaY * 0.01; // Adjust the scaling factor as needed
+                this.zoomLevel = Math.max(0.1, Math.min(this.zoomLevel, 10));
+            });
             this.canvas.addEventListener("mousemove", (evt) => {
                 if (evt.buttons) {
                     const rect = this.canvas.getBoundingClientRect();
                     const x = evt.clientX - rect.left;
                     const y = evt.clientY - rect.top;
-                    this.uniforms.setUniforms([x, y, evt.buttons, 0], 4);
+                    this.uniforms.setUniforms([x, y, evt.buttons, this.zoomLevel], 4);
                     this.uniforms.updateUniformBuffer();
                     if (this.isPaused) {
                         this.update(performance.now() / 1000);

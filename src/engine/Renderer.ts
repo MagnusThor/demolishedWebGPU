@@ -31,6 +31,7 @@ export class Renderer {
     textures: Array<ITextureData>;
     frame: number;
     uniforms: Uniforms;
+    zoomLevel: number = 0.001;
 
     constructor(public canvas: HTMLCanvasElement
     ) {
@@ -71,13 +72,21 @@ export class Renderer {
         this.geometry = new Geometry(device, rectGeometry);
 
         this.uniforms = new Uniforms(this.device, this.canvas);
+
+
+        this.canvas.addEventListener('wheel', (event) => {
+            this.zoomLevel += event.deltaY * 0.01; // Adjust the scaling factor as needed
+            this.zoomLevel = Math.max(0.1, Math.min(this.zoomLevel, 10));
+        });
+
+
         this.canvas.addEventListener("mousemove", (evt: MouseEvent) => {
             
             if (evt.buttons) {
                 const rect = this.canvas.getBoundingClientRect();
                 const x = evt.clientX - rect.left;
                 const y = evt.clientY - rect.top;
-                this.uniforms.setUniforms([x, y, evt.buttons, 0], 4)
+                this.uniforms.setUniforms([x, y, evt.buttons, this.zoomLevel], 4)
                 this.uniforms.updateUniformBuffer();
                 if(this.isPaused){
                     this.update(performance.now() / 1000);

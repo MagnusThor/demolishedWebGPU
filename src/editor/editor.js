@@ -439,5 +439,19 @@ class Editor {
 }
 exports.Editor = Editor;
 document.addEventListener("DOMContentLoaded", () => {
+    const getURLParameter = (name) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    };
+    const widthStr = getURLParameter("w");
+    const heightStr = getURLParameter("h");
+    // Type Assertions for Safety
+    const width = widthStr ? parseInt(widthStr, 10) : null;
+    const height = heightStr ? parseInt(heightStr, 10) : null;
+    if (width && height) {
+        const canvas = document.querySelector("#result-canvas");
+        canvas.width = width;
+        canvas.height = height;
+    }
     const editor = new Editor();
 });
