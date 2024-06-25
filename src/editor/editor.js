@@ -94,6 +94,7 @@ class Editor {
     }
     onCompile(view) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.renderer.clear();
             const source = view.state.doc.toString();
             this.currentShader.documents[this.sourceIndex].source = view.state.doc.toString();
             if (this.isRunning) {
@@ -224,7 +225,6 @@ class Editor {
             DOMUtis_1.DOMUtils.get("#btn-run-shader i").classList.toggle("bi-play-btn-fill");
             DOMUtis_1.DOMUtils.get("#btn-run-shader i").classList.toggle("bi-stop-fill");
             if (this.isRunning) {
-                this.renderer.clear();
                 this.renderer.isPaused = true;
             }
             else {
@@ -354,7 +354,7 @@ class Editor {
                    <img src="${image}" style="max-width:80px" class="img-thumbnail mr-3" >
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">${shader.name}</div>
-                        ${shader.description}
+                        ${DOMUtis_1.DOMUtils.truncString(shader.description, 80)}
                     </div>
                     <button class="btn btn-sm btn-secondary" data-id=${shader.id}">
                     <i class="bi bi-pencil-square"></i>

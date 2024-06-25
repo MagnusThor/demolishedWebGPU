@@ -58,6 +58,9 @@ class Renderer {
                     const y = evt.clientY - rect.top;
                     this.uniforms.setUniforms([x, y, evt.buttons, 0], 4);
                     this.uniforms.updateUniformBuffer();
+                    if (this.isPaused) {
+                        this.update(performance.now() / 1000);
+                    }
                 }
             });
         });
