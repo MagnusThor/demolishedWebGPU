@@ -19,6 +19,7 @@ const TextureLoader_1 = require("./TextureLoader");
 class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
+        this.zoomLevel = 1.;
         this.renderPassBacklog = new Map();
         this.textures = new Array();
     }
@@ -51,12 +52,22 @@ class Renderer {
             this.context = context;
             this.geometry = new Geometry_1.Geometry(device, Rectangle_1.rectGeometry);
             this.uniforms = new Uniforms_1.Uniforms(this.device, this.canvas);
+            this.canvas.addEventListener('wheel', (evt) => {
+                this.zoomLevel += evt.deltaY * 0.01;
+                const rect = this.canvas.getBoundingClientRect();
+                const x = evt.clientX - rect.left;
+                const y = evt.clientY - rect.top;
+                this.uniforms.setUniforms([x, y, this.zoomLevel, evt.buttons], 4);
+                if (this.isPaused) {
+                    this.update(performance.now() / 1000);
+                }
+            });
             this.canvas.addEventListener("mousemove", (evt) => {
                 if (evt.buttons) {
                     const rect = this.canvas.getBoundingClientRect();
                     const x = evt.clientX - rect.left;
                     const y = evt.clientY - rect.top;
-                    this.uniforms.setUniforms([x, y, evt.buttons, 0], 4);
+                    this.uniforms.setUniforms([x, y, this.zoomLevel, evt.buttons], 4);
                     this.uniforms.updateUniformBuffer();
                     if (this.isPaused) {
                         this.update(performance.now() / 1000);
@@ -426,6 +437,9 @@ class Renderer {
     }
     clear() {
         this.renderPassBacklog.clear();
+    }
+    destroy() {
+        throw "not yet implememted";
     }
 }
 exports.Renderer = Renderer;
